@@ -1,0 +1,107 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum ServiceOrderStatus {
+  RECEIVED
+  IN_DIAGNOSTICS
+  WAITING_APPROVAL
+  IN_PROGRESS
+  FINISHED
+  DELIVERED
+}
+
+model Client {
+  id            String         @id @default(uuid())
+  cpfCnpj       String         @unique
+  name          String
+  email         String?
+  phone         String?
+  vehicles      Vehicle[]
+  serviceOrders ServiceOrder[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
+model Vehicle {
+  id            String         @id @default(uuid())
+  plate         String         @unique
+  brand         String
+  model         String
+  year          Int
+  clientId      String
+  client        Client         @relation(fields: [clientId], references: [id])
+  serviceOrders ServiceOrder[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
+model ServiceCatalog {
+  id          String             @id @default(uuid())
+  name        String
+  description String?
+  price       Float
+  orderItems  ServiceOrderItem[]
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+}
+
+model Part {
+  id            String             @id @default(uuid())
+  name          String
+  description   String?
+  price         Float
+  stockQuantity Int                @default(0)
+  orderParts    ServiceOrderPart[]
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+}
+
+model ServiceOrder {
+  id        String             @id @default(uuid())
+  status    ServiceOrderStatus @default(RECEIVED)
+  clientId  String
+  client    Client             @relation(fields: [clientId], references: [id])
+  vehicleId String
+  vehicle   Vehicle            @relation(fields: [vehicleId], references: [id])
+
+  services ServiceOrderItem[]
+  parts    ServiceOrderPart[]
+
+  totalPrice Float?
+
+  startedExecutionAt  DateTime?
+  finishedExecutionAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ServiceOrderItem {
+  id               String         @id @default(uuid())
+  serviceOrderId   String
+  serviceOrder     ServiceOrder   @relation(fields: [serviceOrderId], references: [id])
+  serviceCatalogId String
+  serviceCatalog   ServiceCatalog @relation(fields: [serviceCatalogId], references: [id])
+  quantity         Int            @default(1)
+  priceAtTime      Float
+}
+
+model ServiceOrderPart {
+  id             String       @id @default(uuid())
+  serviceOrderId String
+  serviceOrder   ServiceOrder @relation(fields: [serviceOrderId], references: [id])
+  partId         String
+  part           Part         @relation(fields: [partId], references: [id])
+  quantity       Int          @default(1)
+  priceAtTime    Float
+}
