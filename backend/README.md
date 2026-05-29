@@ -14,7 +14,7 @@ Desenvolvido utilizando Node.js com NestJS, PostgreSQL e Prisma ORM, seguindo os
 ## 🛠️ Como Executar o Projeto Localmente
 
 ### Pré-requisitos
-- Node.js (v20+)
+- Node.js (v22+)
 - NPM ou Yarn
 - Docker e Docker Compose (Para rodar o banco de dados localmente)
 

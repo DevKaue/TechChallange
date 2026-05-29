@@ -1,32 +1,28 @@
-# Base image
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 
-# Create app directory
 WORKDIR /usr/src/app
 
-# A wildcard is used to ensure both package.json AND package-lock.json are copied
 COPY package*.json ./
+COPY prisma ./prisma
 
-# Install app dependencies
 RUN npm ci
 
-# Bundle app source
 COPY . .
 
-# Build the app
+RUN npx prisma generate
 RUN npm run build
 
-# --- Production Image ---
-FROM node:20-alpine
+FROM node:22-alpine
 
 WORKDIR /usr/src/app
+ENV NODE_ENV=production
 
 COPY package*.json ./
+COPY prisma ./prisma
 
-# Install only production dependencies
-RUN npm ci --only=production
+RUN npm ci --omit=dev
 
 COPY --from=builder /usr/src/app/dist ./dist
+COPY --from=builder /usr/src/app/node_modules/.prisma ./node_modules/.prisma
 
-# Start the server using the production build
-CMD [ "node", "dist/main.js" ]
+CMD ["node", "dist/src/main.js"]
