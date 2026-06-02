@@ -5,16 +5,19 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { ServiceOrdersRepositoryInterface } from './service-orders-repository.interface';
-import { CreateServiceOrderDto } from './dto/create-service-order.dto';
-import { UpdateServiceOrderStatusDto } from './dto/update-service-order-status.dto';
-import { AddItemToOrderDto } from './dto/add-item-to-order.dto';
-import { ServiceOrderStatus } from '@prisma/client';
+import { CreateServiceOrderDto } from './dto/service-order/create-service-order.dto';
+import { AddEstimateItemDto } from './dto/estimate/add-estimate-item.dto';
+import { UpdateEstimateStatusDto } from './dto/estimate/update-estimate-status.dto';
+import { RejectEstimateDto } from './dto/estimate/reject-estimate.dto';
+import { ServiceOrderStatus, EstimateStatus } from '@prisma/client';
 import { plainToInstance } from 'class-transformer';
+import { ServiceOrderResponseDto } from './dto/service-order/service-order-response.dto';
 import {
-  ServiceOrderResponseDto,
-  ServiceItemDto,
-  PartItemDto,
-} from './dto/service-order-response.dto';
+  EstimateResponseDto,
+  EstimateItemDto,
+} from './dto/estimate/estimate-response.dto';
+import { AssignMechanicDto } from './dto/mechanic/assign-mechanic.dto';
+import { StartDiagnosisDto } from './dto/diagnosis/start-diagnosis.dto';
 
 @Injectable()
 export class ServiceOrdersUseCase {
@@ -33,15 +36,21 @@ export class ServiceOrdersUseCase {
       );
     }
 
-    return plainToInstance(
-      ServiceOrderResponseDto,
-      await this.repository.create({
-        clientId: createDto.clientId,
-        vehicleId: createDto.vehicleId,
-        status: ServiceOrderStatus.RECEIVED,
-      }),
-      { excludeExtraneousValues: true },
-    );
+    const order = await this.repository.create({
+      clientId: createDto.clientId,
+      vehicleId: createDto.vehicleId,
+      status: ServiceOrderStatus.RECEIVED,
+    });
+
+    await this.repository.createStatusHistory({
+      serviceOrderId: order.id,
+      previousStatus: null,
+      newStatus: ServiceOrderStatus.RECEIVED,
+    });
+
+    return plainToInstance(ServiceOrderResponseDto, order, {
+      excludeExtraneousValues: true,
+    });
   }
 
   async findAll() {
@@ -57,7 +66,7 @@ export class ServiceOrdersUseCase {
     const serviceOrder = await this.repository.findById(id);
 
     if (!serviceOrder) {
-      throw new NotFoundException(`Service Order ${id} not found`);
+      throw new NotFoundException(`Service order ${id} not found`);
     }
 
     return plainToInstance(ServiceOrderResponseDto, serviceOrder, {
@@ -65,146 +74,290 @@ export class ServiceOrdersUseCase {
     });
   }
 
-  async updateStatus(id: string, updateDto: UpdateServiceOrderStatusDto) {
-    const serviceOrder = await this.findOne(id);
-
-    const data: {
-      status: ServiceOrderStatus;
-      startedExecutionAt?: Date;
-      finishedExecutionAt?: Date;
-    } = { status: updateDto.status };
-
-    if (
-      updateDto.status === ServiceOrderStatus.IN_PROGRESS &&
-      !serviceOrder.startedExecutionAt
-    ) {
-      data.startedExecutionAt = new Date();
-    } else if (
-      updateDto.status === ServiceOrderStatus.FINISHED &&
-      !serviceOrder.finishedExecutionAt
-    ) {
-      data.finishedExecutionAt = new Date();
+  async assignMechanic(id: string, dto: AssignMechanicDto) {
+    const current = await this.repository.findById(id);
+    if (!current) {
+      throw new NotFoundException(`Service order ${id} not found`);
     }
 
-    return plainToInstance(
-      ServiceOrderResponseDto,
-      await this.repository.updateStatus(id, data),
-      { excludeExtraneousValues: true },
-    );
+    this.assertStatus(current.status, ServiceOrderStatus.RECEIVED);
+
+    const user = await this.repository.findUserById(dto.mechanicId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    if (user.role !== 'MECHANIC') {
+      throw new BadRequestException('User is not a mechanic');
+    }
+
+    const updated = await this.repository.assignMechanic(id, dto.mechanicId);
+    return plainToInstance(ServiceOrderResponseDto, updated, {
+      excludeExtraneousValues: true,
+    });
   }
 
-  async addService(orderId: string, addDto: AddItemToOrderDto) {
-    const serviceOrder = await this.findOne(orderId);
-
-    if (
-      serviceOrder.status !== ServiceOrderStatus.RECEIVED &&
-      serviceOrder.status !== ServiceOrderStatus.IN_DIAGNOSTICS
-    ) {
-      throw new BadRequestException(
-        'Cannot add services to an order that is already approved or further.',
-      );
+  async startDiagnosis(id: string, dto: StartDiagnosisDto) {
+    const current = await this.repository.findById(id);
+    if (!current) {
+      throw new NotFoundException(`Service order ${id} not found`);
     }
 
-    const catalogService = await this.repository.findServiceCatalogById(
-      addDto.itemId,
+    this.assertStatus(
+      current.status,
+      ServiceOrderStatus.RECEIVED,
+      ServiceOrderStatus.IN_DIAGNOSIS,
     );
 
-    if (!catalogService) {
-      throw new NotFoundException('Service not found in catalog');
+    const updated = await this.repository.updateStatus(
+      id,
+      ServiceOrderStatus.IN_DIAGNOSIS,
+    );
+
+    await this.repository.createStatusHistory({
+      serviceOrderId: id,
+      previousStatus: current.status,
+      newStatus: ServiceOrderStatus.IN_DIAGNOSIS,
+      notes: dto.diagnosis,
+    });
+
+    return plainToInstance(ServiceOrderResponseDto, updated, {
+      excludeExtraneousValues: true,
+    });
+  }
+
+  async createEstimate(orderId: string) {
+    const order = await this.repository.findById(orderId);
+
+    if (!order) {
+      throw new NotFoundException(`Service order ${orderId} not found`);
     }
 
-    return plainToInstance(
-      ServiceItemDto,
-      await this.repository.createServiceItem({
+    this.assertStatus(
+      order.status,
+      ServiceOrderStatus.RECEIVED,
+      ServiceOrderStatus.IN_DIAGNOSIS,
+    );
+
+    const [estimate] = await Promise.all([
+      this.repository.createEstimate({
         serviceOrderId: orderId,
-        serviceCatalogId: catalogService.id,
-        quantity: addDto.quantity,
-        priceAtTime: catalogService.price,
+        status: EstimateStatus.PENDING,
+        totalAmount: 0,
       }),
-      { excludeExtraneousValues: true },
-    );
-  }
-
-  async addPart(orderId: string, addDto: AddItemToOrderDto) {
-    const serviceOrder = await this.findOne(orderId);
-
-    if (
-      serviceOrder.status !== ServiceOrderStatus.RECEIVED &&
-      serviceOrder.status !== ServiceOrderStatus.IN_DIAGNOSTICS
-    ) {
-      throw new BadRequestException(
-        'Cannot add parts to an order that is already approved or further.',
-      );
-    }
-
-    const part = await this.repository.findPartById(addDto.itemId);
-
-    if (!part) {
-      throw new NotFoundException('Part not found');
-    }
-
-    if (part.stockQuantity < addDto.quantity) {
-      throw new ConflictException(
-        `Insufficient stock for part ${part.name}. Available: ${part.stockQuantity}`,
-      );
-    }
-
-    await this.repository.updatePartStock(part.id, addDto.quantity);
-
-    return plainToInstance(
-      PartItemDto,
-      await this.repository.createPartItem({
-        serviceOrderId: orderId,
-        partId: part.id,
-        quantity: addDto.quantity,
-        priceAtTime: part.price,
-      }),
-      { excludeExtraneousValues: true },
-    );
-  }
-
-  async generateBudget(id: string) {
-    const order = await this.findOne(id);
-
-    const servicesTotal = (order.services ?? []).reduce(
-      (acc, item) => acc + item.priceAtTime * item.quantity,
-      0,
-    );
-    const partsTotal = (order.parts ?? []).reduce(
-      (acc, item) => acc + item.priceAtTime * item.quantity,
-      0,
-    );
-
-    const totalPrice = servicesTotal + partsTotal;
-
-    return plainToInstance(
-      ServiceOrderResponseDto,
-      await this.repository.updateTotalPrice(
-        id,
-        totalPrice,
+      this.repository.updateStatus(
+        orderId,
         ServiceOrderStatus.WAITING_APPROVAL,
       ),
-      { excludeExtraneousValues: true },
+    ]);
+
+    await this.repository.createStatusHistory({
+      serviceOrderId: orderId,
+      previousStatus: order.status,
+      newStatus: ServiceOrderStatus.WAITING_APPROVAL,
+      changedBy: 'system',
+      notes: 'Estimate generated',
+    });
+
+    return plainToInstance(EstimateResponseDto, estimate, {
+      excludeExtraneousValues: true,
+    });
+  }
+
+  async addEstimateItem(estimateId: string, dto: AddEstimateItemDto) {
+    let unitPrice = 0;
+    let description = '';
+
+    if (dto.itemType === 'SERVICE') {
+      const service = await this.repository.findServiceCatalogById(
+        dto.referenceId,
+      );
+      if (!service) {
+        throw new NotFoundException('Service not found in catalog');
+      }
+      unitPrice = service.price;
+    } else {
+      const part = await this.repository.findPartById(dto.referenceId);
+      if (!part) {
+        throw new NotFoundException('Part not found');
+      }
+      if (part.stockQuantity < dto.quantity) {
+        throw new ConflictException(
+          `Insufficient stock for part ${part.name}. Available: ${part.stockQuantity}`,
+        );
+      }
+      unitPrice = part.price;
+      description = part.name;
+      await this.repository.updatePartStock(part.id, dto.quantity);
+    }
+
+    const totalPrice = unitPrice * dto.quantity;
+
+    const item = await this.repository.addEstimateItem({
+      estimateId,
+      itemType: dto.itemType,
+      referenceId: dto.referenceId,
+      description: dto.description ?? description,
+      quantity: dto.quantity,
+      unitPrice,
+      totalPrice,
+    });
+
+    return plainToInstance(EstimateItemDto, item, {
+      excludeExtraneousValues: true,
+    });
+  }
+
+  async updateEstimateStatus(estimateId: string, dto: UpdateEstimateStatusDto) {
+    if (dto.status === EstimateStatus.APPROVED) {
+      const estimate = await this.repository.updateEstimateStatus(
+        estimateId,
+        dto.status,
+        new Date(),
+      );
+
+      const order = await this.repository.findById(estimate.serviceOrderId);
+      if (!order) {
+        throw new NotFoundException('Service order not found');
+      }
+
+      await this.repository.updateStatus(
+        order.id,
+        ServiceOrderStatus.IN_EXECUTION,
+      );
+      await this.repository.createStatusHistory({
+        serviceOrderId: order.id,
+        previousStatus: order.status,
+        newStatus: ServiceOrderStatus.IN_EXECUTION,
+      });
+
+      return plainToInstance(EstimateResponseDto, estimate, {
+        excludeExtraneousValues: true,
+      });
+    }
+
+    const estimate = await this.repository.updateEstimateStatus(
+      estimateId,
+      dto.status,
     );
+
+    return plainToInstance(EstimateResponseDto, estimate, {
+      excludeExtraneousValues: true,
+    });
+  }
+
+  async rejectEstimate(id: string, dto: RejectEstimateDto) {
+    const current = await this.repository.findById(id);
+    if (!current) {
+      throw new NotFoundException(`Service order ${id} not found`);
+    }
+
+    this.assertStatus(current.status, ServiceOrderStatus.WAITING_APPROVAL);
+
+    const updated = await this.repository.updateStatus(
+      id,
+      ServiceOrderStatus.DELIVERED,
+    );
+
+    await this.repository.createStatusHistory({
+      serviceOrderId: id,
+      previousStatus: current.status,
+      newStatus: ServiceOrderStatus.DELIVERED,
+      notes: dto.reason,
+    });
+
+    return plainToInstance(ServiceOrderResponseDto, updated, {
+      excludeExtraneousValues: true,
+    });
+  }
+
+  async finish(id: string) {
+    const current = await this.repository.findById(id);
+    if (!current) {
+      throw new NotFoundException(`Service order ${id} not found`);
+    }
+
+    this.assertStatus(current.status, ServiceOrderStatus.IN_EXECUTION);
+
+    const updated = await this.repository.updateStatus(
+      id,
+      ServiceOrderStatus.FINISHED,
+    );
+
+    await this.repository.createStatusHistory({
+      serviceOrderId: id,
+      previousStatus: current.status,
+      newStatus: ServiceOrderStatus.FINISHED,
+    });
+
+    return plainToInstance(ServiceOrderResponseDto, updated, {
+      excludeExtraneousValues: true,
+    });
+  }
+
+  async deliverVehicle(id: string) {
+    const current = await this.repository.findById(id);
+    if (!current) {
+      throw new NotFoundException(`Service order ${id} not found`);
+    }
+
+    this.assertStatus(current.status, ServiceOrderStatus.FINISHED);
+
+    const updated = await this.repository.updateStatus(
+      id,
+      ServiceOrderStatus.DELIVERED,
+    );
+
+    await this.repository.createStatusHistory({
+      serviceOrderId: id,
+      previousStatus: current.status,
+      newStatus: ServiceOrderStatus.DELIVERED,
+    });
+
+    return plainToInstance(ServiceOrderResponseDto, updated, {
+      excludeExtraneousValues: true,
+    });
+  }
+
+  async close(id: string) {
+    const current = await this.repository.findById(id);
+    if (!current) {
+      throw new NotFoundException(`Service order ${id} not found`);
+    }
+
+    this.assertStatus(current.status, ServiceOrderStatus.DELIVERED);
+
+    await this.repository.setClosedAt(id, new Date());
+    const updated = await this.repository.updateStatus(
+      id,
+      ServiceOrderStatus.CLOSED,
+    );
+
+    await this.repository.createStatusHistory({
+      serviceOrderId: id,
+      previousStatus: current.status,
+      newStatus: ServiceOrderStatus.CLOSED,
+    });
+
+    return plainToInstance(ServiceOrderResponseDto, updated, {
+      excludeExtraneousValues: true,
+    });
   }
 
   async getAverageExecutionTime() {
-    const finishedOrders = await this.repository.findFinishedOrders();
+    const finishedOrders = await this.repository.findExecutionTimes();
 
     if (finishedOrders.length === 0) {
       return {
         averageExecutionTimeMinutes: 0,
         totalOrdersAnalyzed: 0,
         message:
-          'Nenhuma ordem de serviço finalizada ou entregue para calcular a média.',
+          'No finished or delivered service orders to calculate average.',
       };
     }
 
     let totalDurationMs = 0;
     for (const order of finishedOrders) {
-      const start = new Date(order.startedExecutionAt!).getTime();
-      const end = new Date(order.finishedExecutionAt!).getTime();
-      totalDurationMs += end - start;
+      totalDurationMs += order.endTime.getTime() - order.startTime.getTime();
     }
 
     const averageDurationMinutes =
@@ -216,5 +369,16 @@ export class ServiceOrdersUseCase {
       ),
       totalOrdersAnalyzed: finishedOrders.length,
     };
+  }
+
+  private assertStatus(
+    current: ServiceOrderStatus,
+    ...expected: ServiceOrderStatus[]
+  ) {
+    if (!expected.includes(current)) {
+      throw new BadRequestException(
+        `Order status "${current}" does not allow this operation. Expected: ${expected.join(' or ')}`,
+      );
+    }
   }
 }

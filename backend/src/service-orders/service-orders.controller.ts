@@ -8,9 +8,12 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ServiceOrdersUseCase } from './service-orders.use-case';
-import { CreateServiceOrderDto } from './dto/create-service-order.dto';
-import { UpdateServiceOrderStatusDto } from './dto/update-service-order-status.dto';
-import { AddItemToOrderDto } from './dto/add-item-to-order.dto';
+import { CreateServiceOrderDto } from './dto/service-order/create-service-order.dto';
+import { AddEstimateItemDto } from './dto/estimate/add-estimate-item.dto';
+import { UpdateEstimateStatusDto } from './dto/estimate/update-estimate-status.dto';
+import { AssignMechanicDto } from './dto/mechanic/assign-mechanic.dto';
+import { StartDiagnosisDto } from './dto/diagnosis/start-diagnosis.dto';
+import { RejectEstimateDto } from './dto/estimate/reject-estimate.dto';
 import { JwtAuthGuard } from '@/auth/jwt-auth.guard';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
@@ -41,38 +44,78 @@ export class ServiceOrdersController {
   }
 
   @Get(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   findOne(@Param('id') id: string) {
     return this.serviceOrdersUseCase.findOne(id);
   }
 
-  @Patch(':id/status')
+  @Patch(':id/mechanic')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  updateStatus(
-    @Param('id') id: string,
-    @Body() dto: UpdateServiceOrderStatusDto,
+  assignMechanic(@Param('id') id: string, @Body() dto: AssignMechanicDto) {
+    return this.serviceOrdersUseCase.assignMechanic(id, dto);
+  }
+
+  @Patch(':id/diagnosis')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  startDiagnosis(@Param('id') id: string, @Body() dto: StartDiagnosisDto) {
+    return this.serviceOrdersUseCase.startDiagnosis(id, dto);
+  }
+
+  @Post(':id/estimates')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  createEstimate(@Param('id') id: string) {
+    return this.serviceOrdersUseCase.createEstimate(id);
+  }
+
+  @Post('estimates/:estimateId/items')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  addEstimateItem(
+    @Param('estimateId') estimateId: string,
+    @Body() dto: AddEstimateItemDto,
   ) {
-    return this.serviceOrdersUseCase.updateStatus(id, dto);
+    return this.serviceOrdersUseCase.addEstimateItem(estimateId, dto);
   }
 
-  @Post(':id/services')
+  @Patch('estimates/:estimateId/status')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  addService(@Param('id') id: string, @Body() dto: AddItemToOrderDto) {
-    return this.serviceOrdersUseCase.addService(id, dto);
+  updateEstimateStatus(
+    @Param('estimateId') estimateId: string,
+    @Body() dto: UpdateEstimateStatusDto,
+  ) {
+    return this.serviceOrdersUseCase.updateEstimateStatus(estimateId, dto);
   }
 
-  @Post(':id/parts')
+  @Patch(':id/reject')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  addPart(@Param('id') id: string, @Body() dto: AddItemToOrderDto) {
-    return this.serviceOrdersUseCase.addPart(id, dto);
+  rejectEstimate(@Param('id') id: string, @Body() dto: RejectEstimateDto) {
+    return this.serviceOrdersUseCase.rejectEstimate(id, dto);
   }
 
-  @Patch(':id/budget')
+  @Patch(':id/finish')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  generateBudget(@Param('id') id: string) {
-    return this.serviceOrdersUseCase.generateBudget(id);
+  finish(@Param('id') id: string) {
+    return this.serviceOrdersUseCase.finish(id);
+  }
+
+  @Patch(':id/deliver')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  deliverVehicle(@Param('id') id: string) {
+    return this.serviceOrdersUseCase.deliverVehicle(id);
+  }
+
+  @Patch(':id/close')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  close(@Param('id') id: string) {
+    return this.serviceOrdersUseCase.close(id);
   }
 }
