@@ -9,4 +9,5 @@ npm-debug.log*
 
 .mcplens/
 opencode.json.idea/
+.idea/
 opencode.json
