@@ -1,11 +1,16 @@
-import { IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
-import { IsCpfOrCnpj } from '../../common/validators/cpf-cnpj.validator';
+import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { DocumentType } from '@prisma/client';
+import { IsValidDocument } from '../../common/validators/document.validator';
 
 export class CreateClientDto {
   @IsNotEmpty()
   @IsString()
-  @IsCpfOrCnpj()
-  cpfCnpj: string;
+  @IsValidDocument()
+  document: string;
+
+  @IsNotEmpty()
+  @IsEnum(DocumentType)
+  documentType: DocumentType;
 
   @IsNotEmpty()
   @IsString()
