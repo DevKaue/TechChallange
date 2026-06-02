@@ -18,9 +18,7 @@ import {
 
 @Injectable()
 export class ServiceOrdersUseCase {
-  constructor(
-    private readonly repository: ServiceOrdersRepositoryInterface,
-  ) {}
+  constructor(private readonly repository: ServiceOrdersRepositoryInterface) {}
 
   async create(createDto: CreateServiceOrderDto) {
     const vehicle = await this.repository.findVehicleById(createDto.vehicleId);
@@ -107,8 +105,9 @@ export class ServiceOrdersUseCase {
       );
     }
 
-    const catalogService =
-      await this.repository.findServiceCatalogById(addDto.itemId);
+    const catalogService = await this.repository.findServiceCatalogById(
+      addDto.itemId,
+    );
 
     if (!catalogService) {
       throw new NotFoundException('Service not found in catalog');

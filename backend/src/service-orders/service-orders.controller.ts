@@ -17,9 +17,7 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 @ApiTags('Service Orders')
 @Controller('service-orders')
 export class ServiceOrdersController {
-  constructor(
-    private readonly serviceOrdersUseCase: ServiceOrdersUseCase,
-  ) {}
+  constructor(private readonly serviceOrdersUseCase: ServiceOrdersUseCase) {}
 
   @Post()
   @UseGuards(JwtAuthGuard)
