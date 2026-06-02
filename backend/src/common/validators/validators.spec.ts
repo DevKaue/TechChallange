@@ -21,7 +21,7 @@ describe('Custom Validators', () => {
     it('should reject invalid CPFs', () => {
       expect(validator.validate('12345678912', mockArgs)).toBe(false); // Invalid digits
       expect(validator.validate('11111111111', mockArgs)).toBe(false); // Same digits
-      expect(validator.validate('1234', mockArgs)).toBe(false);        // Too short
+      expect(validator.validate('1234', mockArgs)).toBe(false); // Too short
     });
 
     it('should validate correct CNPJs', () => {
@@ -34,7 +34,7 @@ describe('Custom Validators', () => {
     it('should reject invalid CNPJs', () => {
       expect(validator.validate('11222333000100', mockArgs)).toBe(false); // Invalid digits
       expect(validator.validate('00000000000000', mockArgs)).toBe(false); // Same digits
-      expect(validator.validate('123', mockArgs)).toBe(false);           // Too short
+      expect(validator.validate('123', mockArgs)).toBe(false); // Too short
     });
   });
 

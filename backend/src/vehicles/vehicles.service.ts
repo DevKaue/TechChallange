@@ -1,7 +1,11 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateVehicleDto } from './dto/create-vehicle.dto';
 import { UpdateVehicleDto } from './dto/update-vehicle.dto';
-import { PrismaService } from '../prisma/prisma.service';
+import { PrismaService } from '@/prisma/prisma.service';
 
 @Injectable()
 export class VehiclesService {
@@ -13,7 +17,9 @@ export class VehiclesService {
     });
 
     if (exists) {
-      throw new ConflictException('Já existe um veículo cadastrado com esta placa');
+      throw new ConflictException(
+        'Já existe um veículo cadastrado com esta placa',
+      );
     }
 
     // Valida se o cliente existe

@@ -1,7 +1,12 @@
-import { ConflictException, Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
-import { PrismaService } from '../prisma/prisma.service';
+import { PrismaService } from '@/prisma/prisma.service';
 
 @Injectable()
 export class ClientsService {
@@ -13,7 +18,9 @@ export class ClientsService {
     });
 
     if (exists) {
-      throw new ConflictException('Já existe um cliente cadastrado com este CPF/CNPJ');
+      throw new ConflictException(
+        'Já existe um cliente cadastrado com este CPF/CNPJ',
+      );
     }
 
     return this.prisma.client.create({
@@ -36,7 +43,9 @@ export class ClientsService {
   async update(id: string, updateClientDto: UpdateClientDto) {
     const client = await this.findOne(id); // Garante que existe
     if (updateClientDto.cpfCnpj && updateClientDto.cpfCnpj !== client.cpfCnpj) {
-      throw new BadRequestException('O CPF/CNPJ de um cliente não pode ser alterado após o cadastro.');
+      throw new BadRequestException(
+        'O CPF/CNPJ de um cliente não pode ser alterado após o cadastro.',
+      );
     }
     return this.prisma.client.update({
       where: { id },

@@ -10,7 +10,15 @@ import { ServiceOrdersModule } from './service-orders/service-orders.module';
 import { AuthModule } from './auth/auth.module';
 
 @Module({
-  imports: [ClientsModule, VehiclesModule, PartsModule, ServiceCatalogModule, PrismaModule, ServiceOrdersModule, AuthModule],
+  imports: [
+    ClientsModule,
+    VehiclesModule,
+    PartsModule,
+    ServiceCatalogModule,
+    PrismaModule,
+    ServiceOrdersModule,
+    AuthModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

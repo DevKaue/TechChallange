@@ -1,11 +1,17 @@
-import { registerDecorator, ValidationOptions, ValidatorConstraint, ValidatorConstraintInterface, ValidationArguments } from 'class-validator';
+import {
+  registerDecorator,
+  ValidationOptions,
+  ValidatorConstraint,
+  ValidatorConstraintInterface,
+  ValidationArguments,
+} from 'class-validator';
 
 @ValidatorConstraint({ name: 'isValidPlate', async: false })
 export class IsValidPlateConstraint implements ValidatorConstraintInterface {
   validate(value: any, args: ValidationArguments) {
     if (typeof value !== 'string') return false;
     const cleanPlate = value.trim().toUpperCase();
-    
+
     // Traditional: ABC-1234 or ABC1234
     const traditionalRegex = /^[A-Z]{3}-?[0-9]{4}$/;
     // Mercosul: ABC1D23
@@ -20,7 +26,7 @@ export class IsValidPlateConstraint implements ValidatorConstraintInterface {
 }
 
 export function IsValidPlate(validationOptions?: ValidationOptions) {
-  return function (object: Object, propertyName: string) {
+  return function (object: object, propertyName: string) {
     registerDecorator({
       name: 'isValidPlate',
       target: object.constructor,

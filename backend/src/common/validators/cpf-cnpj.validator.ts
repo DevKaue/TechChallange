@@ -1,4 +1,10 @@
-import { registerDecorator, ValidationOptions, ValidatorConstraint, ValidatorConstraintInterface, ValidationArguments } from 'class-validator';
+import {
+  registerDecorator,
+  ValidationOptions,
+  ValidatorConstraint,
+  ValidatorConstraintInterface,
+  ValidationArguments,
+} from 'class-validator';
 
 function isValidCpf(cpf: string): boolean {
   const clean = cpf.replace(/\D/g, '');
@@ -80,7 +86,7 @@ export class IsValidCpfCnpjConstraint implements ValidatorConstraintInterface {
 }
 
 export function IsCpfOrCnpj(validationOptions?: ValidationOptions) {
-  return function (object: Object, propertyName: string) {
+  return function (object: object, propertyName: string) {
     registerDecorator({
       name: 'isCpfOrCnpj',
       target: object.constructor,

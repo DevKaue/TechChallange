@@ -1,8 +1,17 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+} from '@nestjs/common';
 import { ServiceCatalogService } from './service-catalog.service';
 import { CreateServiceCatalogDto } from './dto/create-service-catalog.dto';
 import { UpdateServiceCatalogDto } from './dto/update-service-catalog.dto';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { JwtAuthGuard } from '@/auth/jwt-auth.guard';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Service Catalog')
@@ -28,7 +37,10 @@ export class ServiceCatalogController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateServiceCatalogDto: UpdateServiceCatalogDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updateServiceCatalogDto: UpdateServiceCatalogDto,
+  ) {
     return this.serviceCatalogService.update(id, updateServiceCatalogDto);
   }
 
