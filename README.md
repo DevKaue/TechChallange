@@ -75,20 +75,49 @@ Pré-requisitos:
 - npm
 - Docker e Docker Compose
 
-Suba o PostgreSQL:
+### 1. Suba o PostgreSQL
 
 ```bash
 docker compose up -d db
 ```
 
-Prepare o backend:
+> O banco fica na porta **5433** para evitar conflito com outras instâncias PostgreSQL locais.
+
+### 2. Prepare o backend
 
 ```bash
 cd backend
 cp .env.example .env
 npm install
 npm run prisma:generate
+```
+
+### 3. Crie as tabelas (migrations)
+
+```bash
+# Em ambiente local (gera um arquivo de migration se houver mudanças)
 npm run prisma:migrate:dev
+
+# Ou, se a base já estiver com as migrations prontas (recomendado):
+npm run prisma:migrate:deploy
+```
+
+### 4. Popule o banco com dados iniciais (seeders)
+
+```bash
+npm run prisma:seed
+```
+
+Os seeders criam:
+- **3 usuários** (2 mecânicos, 1 atendente)
+- **6 serviços** no catálogo (ex.: revisão básica, troca de óleo, alinhamento)
+- **6 peças** em estoque (ex.: filtro de óleo, pastilha de freio)
+- **3 clientes** (pessoa física e jurídica)
+- **3 veículos** vinculados aos clientes
+
+### 5. Inicie a API
+
+```bash
 npm run start:dev
 ```
 
@@ -100,19 +129,19 @@ Swagger:
 http://localhost:3000/api/docs
 ```
 
-## Docker
+## Docker (API + banco completos)
 
-Para subir API e banco por Docker Compose:
+Para subir tudo com Docker Compose (já inclui migrations e seed):
 
 ```bash
 docker compose up --build
 ```
 
-Em uma base nova, aplique as migrations no banco antes de usar a API:
+Se quiser aplicar migrations e seed manualmente dentro do container:
 
 ```bash
-cd backend
-npm run prisma:migrate:deploy
+docker compose exec api npm run prisma:migrate:deploy
+docker compose exec api npm run prisma:seed
 ```
 
 ## Autenticação
