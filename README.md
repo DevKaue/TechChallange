@@ -83,6 +83,18 @@ docker compose up -d db
 
 > O banco fica na porta **5433** para evitar conflito com outras instâncias PostgreSQL locais.
 
+> O Docker Compose já cria o banco `oficinadb` automaticamente (variável `POSTGRES_DB` no `docker-compose.yml`).
+
+**Se estiver usando uma instalação local do PostgreSQL (sem Docker):**
+
+Crie o banco manualmente antes de prosseguir:
+
+```bash
+psql -U postgres -c "CREATE DATABASE oficinadb;"
+```
+
+E ajuste a `DATABASE_URL` no `.env` para apontar para sua instância local.
+
 ### 2. Prepare o backend
 
 ```bash
@@ -94,13 +106,17 @@ npm run prisma:generate
 
 ### 3. Crie as tabelas (migrations)
 
+O DDL (`CREATE TABLE`, `ALTER TABLE`, etc.) está versionado nas migrations do Prisma em `prisma/migrations/`. Para aplicá-las ao banco:
+
 ```bash
-# Em ambiente local (gera um arquivo de migration se houver mudanças)
+# Se for a primeira vez ou quiser recriar (gera migrations do schema):
 npm run prisma:migrate:dev
 
-# Ou, se a base já estiver com as migrations prontas (recomendado):
+# Para aplicar as migrations já existentes (recomendado em time):
 npm run prisma:migrate:deploy
 ```
+
+O schema completo da base está em `prisma/schema.prisma`. Qualquer alteração no schema gera uma nova migration com `prisma:migrate:dev`. Sempre comite o arquivo da migration gerado.
 
 ### 4. Popule o banco com dados iniciais (seeders)
 
