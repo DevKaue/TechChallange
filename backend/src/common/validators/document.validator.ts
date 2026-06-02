@@ -67,32 +67,57 @@ function isValidCnpj(cnpj: string): boolean {
   return true;
 }
 
-@ValidatorConstraint({ name: 'isValidCpfCnpj', async: false })
-export class IsValidCpfCnpjConstraint implements ValidatorConstraintInterface {
+@ValidatorConstraint({ name: 'isValidDocument', async: false })
+export class IsValidDocumentConstraint implements ValidatorConstraintInterface {
   validate(value: any, args: ValidationArguments) {
     if (typeof value !== 'string') return false;
-    const cleanValue = value.replace(/\D/g, '');
-    if (cleanValue.length === 11) {
-      return isValidCpf(cleanValue);
-    } else if (cleanValue.length === 14) {
-      return isValidCnpj(cleanValue);
+
+    const docTypeField = args.constraints?.[0] || 'documentType';
+    const obj = args.object as Record<string, any>;
+    const docType = obj[docTypeField];
+
+    if (docType === 'CPF') {
+      return isValidCpf(value);
     }
+
+    if (docType === 'CNPJ') {
+      return isValidCnpj(value);
+    }
+
+    if (docType === 'PASSPORT' || docType === 'RNE') {
+      return value.trim().length > 0;
+    }
+
     return false;
   }
 
   defaultMessage(args: ValidationArguments) {
-    return 'O campo CPF/CNPJ deve ser um documento válido no formato brasileiro (CPF ou CNPJ).';
+    const docTypeField = args.constraints?.[0] || 'documentType';
+    const obj = args.object as Record<string, any>;
+    const docType = obj[docTypeField];
+
+    if (docType === 'CPF') {
+      return 'Document must be a valid Brazilian CPF';
+    }
+    if (docType === 'CNPJ') {
+      return 'Document must be a valid Brazilian CNPJ';
+    }
+    return 'Document must not be empty';
   }
 }
 
-export function IsCpfOrCnpj(validationOptions?: ValidationOptions) {
+export function IsValidDocument(
+  docTypeField?: string,
+  validationOptions?: ValidationOptions,
+) {
   return function (object: object, propertyName: string) {
     registerDecorator({
-      name: 'isCpfOrCnpj',
+      name: 'isValidDocument',
       target: object.constructor,
       propertyName: propertyName,
+      constraints: [docTypeField ?? 'documentType'],
       options: validationOptions,
-      validator: IsValidCpfCnpjConstraint,
+      validator: IsValidDocumentConstraint,
     });
   };
 }

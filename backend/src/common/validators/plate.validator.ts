@@ -21,7 +21,7 @@ export class IsValidPlateConstraint implements ValidatorConstraintInterface {
   }
 
   defaultMessage(args: ValidationArguments) {
-    return 'A placa do veículo deve ser válida no formato brasileiro tradicional (AAA-9999) ou Mercosul (AAA9A99).';
+    return 'License plate must be valid in Brazilian traditional (AAA-9999) or Mercosul (AAA9A99) format.';
   }
 }
 
