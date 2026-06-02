@@ -12,7 +12,13 @@ import { ServiceCatalogService } from './service-catalog.service';
 import { CreateServiceCatalogDto } from './dto/create-service-catalog.dto';
 import { UpdateServiceCatalogDto } from './dto/update-service-catalog.dto';
 import { JwtAuthGuard } from '@/auth/jwt-auth.guard';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiTags,
+  ApiCreatedResponse,
+  ApiOkResponse,
+} from '@nestjs/swagger';
+import { ServiceCatalogResponseDto } from './dto/service-catalog-response.dto';
 
 @ApiTags('Service Catalog')
 @ApiBearerAuth()
@@ -22,21 +28,25 @@ export class ServiceCatalogController {
   constructor(private readonly serviceCatalogService: ServiceCatalogService) {}
 
   @Post()
+  @ApiCreatedResponse({ type: ServiceCatalogResponseDto })
   create(@Body() createServiceCatalogDto: CreateServiceCatalogDto) {
     return this.serviceCatalogService.create(createServiceCatalogDto);
   }
 
   @Get()
+  @ApiOkResponse({ type: ServiceCatalogResponseDto, isArray: true })
   findAll() {
     return this.serviceCatalogService.findAll();
   }
 
   @Get(':id')
+  @ApiOkResponse({ type: ServiceCatalogResponseDto })
   findOne(@Param('id') id: string) {
     return this.serviceCatalogService.findOne(id);
   }
 
   @Patch(':id')
+  @ApiOkResponse({ type: ServiceCatalogResponseDto })
   update(
     @Param('id') id: string,
     @Body() updateServiceCatalogDto: UpdateServiceCatalogDto,
@@ -45,6 +55,7 @@ export class ServiceCatalogController {
   }
 
   @Delete(':id')
+  @ApiOkResponse({ type: ServiceCatalogResponseDto })
   remove(@Param('id') id: string) {
     return this.serviceCatalogService.remove(id);
   }
