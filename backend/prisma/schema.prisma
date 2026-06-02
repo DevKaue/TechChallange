@@ -1,8 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,95 +8,180 @@ datasource db {
 
 enum ServiceOrderStatus {
   RECEIVED
-  IN_DIAGNOSTICS
+  IN_DIAGNOSIS
   WAITING_APPROVAL
-  IN_PROGRESS
+  IN_EXECUTION
   FINISHED
   DELIVERED
+  CLOSED
+}
+
+enum UserRole {
+  MECHANIC
+  ATTENDANT
+}
+
+enum EstimateStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  NEGOTIATED
+}
+
+enum ServiceOrderItemType {
+  SERVICE
+  PART
+}
+
+enum DocumentType {
+  CPF
+  CNPJ
+  PASSPORT
+  RNE
 }
 
 model Client {
-  id            String         @id @default(uuid())
-  cpfCnpj       String         @unique
-  name          String
+  id            String         @id @default(uuid()) @map("id")
+  document      String         @map("document")
+  documentType  DocumentType   @map("document_type")
+  name          String         @map("name")
   email         String?
   phone         String?
   vehicles      Vehicle[]
   serviceOrders ServiceOrder[]
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+
+  @@unique([document, documentType], name: "uq_client_document")
+  @@map("clients")
 }
 
 model Vehicle {
-  id            String         @id @default(uuid())
-  plate         String         @unique
-  brand         String
-  model         String
-  year          Int
-  clientId      String
+  id            String         @id @default(uuid()) @map("id")
+  plate         String         @unique @map("plate")
+  brand         String         @map("brand")
+  model         String         @map("model")
+  year          Int            @map("year")
+  clientId      String         @map("client_id")
   client        Client         @relation(fields: [clientId], references: [id])
   serviceOrders ServiceOrder[]
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+
+  @@map("vehicles")
 }
 
 model ServiceCatalog {
-  id          String             @id @default(uuid())
-  name        String
+  id          String   @id @default(uuid()) @map("id")
+  name        String   @map("name")
   description String?
-  price       Float
-  orderItems  ServiceOrderItem[]
-  createdAt   DateTime           @default(now())
-  updatedAt   DateTime           @updatedAt
+  price       Float    @map("price")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("service_catalog")
 }
 
 model Part {
-  id            String             @id @default(uuid())
-  name          String
+  id            String   @id @default(uuid()) @map("id")
+  name          String   @map("name")
   description   String?
-  price         Float
-  stockQuantity Int                @default(0)
-  orderParts    ServiceOrderPart[]
-  createdAt     DateTime           @default(now())
-  updatedAt     DateTime           @updatedAt
+  price         Float    @map("price")
+  stockQuantity Int      @default(0) @map("stock_quantity")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@map("parts")
+}
+
+model User {
+  id            String         @id @default(uuid()) @map("id")
+  name          String         @map("name")
+  role          UserRole       @map("role")
+  email         String?
+  phone         String?
+  serviceOrders ServiceOrder[] @relation("AssignedMechanic")
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+
+  @@map("users")
 }
 
 model ServiceOrder {
-  id        String             @id @default(uuid())
-  status    ServiceOrderStatus @default(RECEIVED)
-  clientId  String
-  client    Client             @relation(fields: [clientId], references: [id])
-  vehicleId String
-  vehicle   Vehicle            @relation(fields: [vehicleId], references: [id])
+  id              String              @id @default(uuid()) @map("id")
+  clientId        String              @map("client_id")
+  client          Client              @relation(fields: [clientId], references: [id])
+  vehicleId       String              @map("vehicle_id")
+  vehicle         Vehicle             @relation(fields: [vehicleId], references: [id])
+  status          ServiceOrderStatus  @default(RECEIVED) @map("status")
+  mileage         Int?
+  notes           String?
+  mechanicId      String?             @map("mechanic_id")
+  mechanic        User?               @relation("AssignedMechanic", fields: [mechanicId], references: [id])
+  closedAt        DateTime?           @map("closed_at")
 
-  services ServiceOrderItem[]
-  parts    ServiceOrderPart[]
+  statusHistory ServiceOrderStatusHistory[]
+  estimates     Estimate[]
 
-  totalPrice Float?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
-  startedExecutionAt  DateTime?
-  finishedExecutionAt DateTime?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  @@index([clientId], name: "idx_service_orders_client_id")
+  @@index([vehicleId], name: "idx_service_orders_vehicle_id")
+  @@index([status], name: "idx_service_orders_status")
+  @@index([createdAt], name: "idx_service_orders_created_at")
+  @@map("service_orders")
 }
 
-model ServiceOrderItem {
-  id               String         @id @default(uuid())
-  serviceOrderId   String
-  serviceOrder     ServiceOrder   @relation(fields: [serviceOrderId], references: [id])
-  serviceCatalogId String
-  serviceCatalog   ServiceCatalog @relation(fields: [serviceCatalogId], references: [id])
-  quantity         Int            @default(1)
-  priceAtTime      Float
+model ServiceOrderStatusHistory {
+  id              String              @id @default(uuid()) @map("id")
+  serviceOrderId  String              @map("service_order_id")
+  serviceOrder    ServiceOrder        @relation(fields: [serviceOrderId], references: [id], onDelete: Cascade)
+  previousStatus  ServiceOrderStatus? @map("previous_status")
+  newStatus       ServiceOrderStatus  @map("new_status")
+  changedBy       String?             @db.VarChar(150) @map("changed_by")
+  notes           String?
+  changedAt       DateTime            @default(now()) @map("changed_at")
+
+  @@index([serviceOrderId], name: "idx_status_history_service_order_id")
+  @@index([changedAt], name: "idx_status_history_changed_at")
+  @@map("service_order_status_history")
 }
 
-model ServiceOrderPart {
-  id             String       @id @default(uuid())
-  serviceOrderId String
-  serviceOrder   ServiceOrder @relation(fields: [serviceOrderId], references: [id])
-  partId         String
-  part           Part         @relation(fields: [partId], references: [id])
-  quantity       Int          @default(1)
-  priceAtTime    Float
+model Estimate {
+  id              String         @id @default(uuid()) @map("id")
+  serviceOrderId  String         @map("service_order_id")
+  serviceOrder    ServiceOrder   @relation(fields: [serviceOrderId], references: [id], onDelete: Restrict)
+  status          EstimateStatus @default(PENDING) @map("status")
+  totalAmount     Decimal        @default(0) @db.Decimal(10, 2) @map("total_amount")
+  validUntil      DateTime?      @map("valid_until")
+  approvedAt      DateTime?      @map("approved_at")
+  notes           String?
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+
+  items EstimateItem[]
+
+  @@index([serviceOrderId], name: "idx_estimates_service_order_id")
+  @@index([status], name: "idx_estimates_status")
+  @@map("estimates")
+}
+
+model EstimateItem {
+  id          String               @id @default(uuid()) @map("id")
+  estimateId  String               @map("estimate_id")
+  estimate    Estimate             @relation(fields: [estimateId], references: [id], onDelete: Cascade)
+  itemType    ServiceOrderItemType @map("item_type")
+  referenceId String               @map("reference_id")
+  description String               @db.VarChar(200) @map("description")
+  quantity    Decimal              @db.Decimal(10, 3) @map("quantity")
+  unitPrice   Decimal              @db.Decimal(10, 2) @map("unit_price")
+  totalPrice  Decimal              @db.Decimal(10, 2) @map("total_price")
+  notes       String?
+
+  @@unique([estimateId, itemType, referenceId], name: "uq_estimate_item")
+  @@index([estimateId], name: "idx_estimate_items_estimate_id")
+  @@index([referenceId], name: "idx_estimate_items_reference_id")
+  @@index([itemType], name: "idx_estimate_items_item_type")
+  @@map("estimate_items")
 }
