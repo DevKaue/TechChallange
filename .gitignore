@@ -6,3 +6,8 @@ coverage/
 !.env.example
 npm-debug.log*
 .DS_Store
+
+.mcplens/
+opencode.json.idea/
+.idea/
+opencode.json

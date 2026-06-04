@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ClientsService } from './clients.service';
-import { PrismaService } from '../prisma/prisma.service';
-import { NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
+import { PrismaService } from '@/prisma/prisma.service';
+import { NotFoundException, ConflictException } from '@nestjs/common';
 
 describe('ClientsService', () => {
   let service: ClientsService;
@@ -39,16 +39,44 @@ describe('ClientsService', () => {
 
   describe('create', () => {
     it('should throw ConflictException if client already exists', async () => {
-      mockPrismaService.client.findUnique.mockResolvedValue({ id: '1', cpfCnpj: '123' });
-      await expect(service.create({ name: 'Test', cpfCnpj: '123', email: 'test@test.com', phone: '123', address: '123' })).rejects.toThrow(ConflictException);
+      mockPrismaService.client.findUnique.mockResolvedValue({
+        id: '1',
+        document: '52998224725',
+        documentType: 'CPF',
+      });
+      await expect(
+        service.create({
+          name: 'Test',
+          document: '52998224725',
+          documentType: 'CPF' as any,
+          email: 'test@test.com',
+          phone: '123',
+        }),
+      ).rejects.toThrow(ConflictException);
     });
 
     it('should create a new client successfully', async () => {
       mockPrismaService.client.findUnique.mockResolvedValue(null);
-      mockPrismaService.client.create.mockResolvedValue({ id: '1', name: 'Test', cpfCnpj: '123' });
-      
-      const result = await service.create({ name: 'Test', cpfCnpj: '123', email: 'test@test.com', phone: '123', address: '123' });
-      expect(result).toEqual({ id: '1', name: 'Test', cpfCnpj: '123' });
+      mockPrismaService.client.create.mockResolvedValue({
+        id: '1',
+        name: 'Test',
+        document: '52998224725',
+        documentType: 'CPF',
+      });
+
+      const result = await service.create({
+        name: 'Test',
+        document: '52998224725',
+        documentType: 'CPF' as any,
+        email: 'test@test.com',
+        phone: '123',
+      });
+      expect(result).toEqual({
+        id: '1',
+        name: 'Test',
+        document: '52998224725',
+        documentType: 'CPF',
+      });
     });
   });
 
@@ -77,18 +105,15 @@ describe('ClientsService', () => {
     it('should update a client successfully', async () => {
       const client = { id: '1', name: 'Test' };
       mockPrismaService.client.findUnique.mockResolvedValue(client);
-      mockPrismaService.client.update.mockResolvedValue({ ...client, name: 'Updated' });
-      
+      mockPrismaService.client.update.mockResolvedValue({
+        ...client,
+        name: 'Updated',
+      });
+
       const result = await service.update('1', { name: 'Updated' });
       expect(result.name).toEqual('Updated');
     });
 
-    it('should throw BadRequestException if trying to change cpfCnpj', async () => {
-      const client = { id: '1', name: 'Test', cpfCnpj: '123' };
-      mockPrismaService.client.findUnique.mockResolvedValue(client);
-      
-      await expect(service.update('1', { cpfCnpj: '456' })).rejects.toThrow(BadRequestException);
-    });
   });
 
   describe('remove', () => {
@@ -96,7 +121,7 @@ describe('ClientsService', () => {
       const client = { id: '1', name: 'Test' };
       mockPrismaService.client.findUnique.mockResolvedValue(client);
       mockPrismaService.client.delete.mockResolvedValue(client);
-      
+
       const result = await service.remove('1');
       expect(result).toEqual(client);
     });

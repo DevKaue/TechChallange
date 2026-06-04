@@ -1,7 +1,11 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateVehicleDto } from './dto/create-vehicle.dto';
 import { UpdateVehicleDto } from './dto/update-vehicle.dto';
-import { PrismaService } from '../prisma/prisma.service';
+import { PrismaService } from '@/prisma/prisma.service';
 
 @Injectable()
 export class VehiclesService {
@@ -13,16 +17,17 @@ export class VehiclesService {
     });
 
     if (exists) {
-      throw new ConflictException('Já existe um veículo cadastrado com esta placa');
+      throw new ConflictException(
+        'A vehicle with this plate already exists',
+      );
     }
 
-    // Valida se o cliente existe
     const client = await this.prisma.client.findUnique({
       where: { id: createVehicleDto.clientId },
     });
 
     if (!client) {
-      throw new NotFoundException('Cliente não encontrado');
+      throw new NotFoundException('Client not found');
     }
 
     return this.prisma.vehicle.create({
@@ -41,12 +46,12 @@ export class VehiclesService {
       where: { id },
       include: { client: true },
     });
-    if (!vehicle) throw new NotFoundException('Veículo não encontrado');
+    if (!vehicle) throw new NotFoundException('Vehicle not found');
     return vehicle;
   }
 
   async update(id: string, updateVehicleDto: UpdateVehicleDto) {
-    await this.findOne(id); // Garante que existe
+    await this.findOne(id);
     return this.prisma.vehicle.update({
       where: { id },
       data: updateVehicleDto,
@@ -54,7 +59,7 @@ export class VehiclesService {
   }
 
   async remove(id: string) {
-    await this.findOne(id); // Garante que existe
+    await this.findOne(id);
     return this.prisma.vehicle.delete({
       where: { id },
     });

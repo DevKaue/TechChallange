@@ -1,40 +1,61 @@
-import { IsValidCpfCnpjConstraint } from './cpf-cnpj.validator';
+import { IsValidDocumentConstraint } from './document.validator';
 import { IsValidPlateConstraint } from './plate.validator';
 import { ValidationArguments } from 'class-validator';
 
+function makeArgs(documentType: string): ValidationArguments {
+  return {
+    object: { documentType },
+    property: 'document',
+    value: undefined,
+    constraints: ['documentType'],
+    targetName: '',
+  } as unknown as ValidationArguments;
+}
+
 describe('Custom Validators', () => {
-  describe('CPF / CNPJ Validator', () => {
-    let validator: IsValidCpfCnpjConstraint;
-    const mockArgs = {} as ValidationArguments;
+  describe('Document Validator', () => {
+    let validator: IsValidDocumentConstraint;
 
     beforeEach(() => {
-      validator = new IsValidCpfCnpjConstraint();
+      validator = new IsValidDocumentConstraint();
     });
 
     it('should validate correct CPFs', () => {
-      // Test with clean CPF
-      expect(validator.validate('52998224725', mockArgs)).toBe(true);
-      // Test with formatted CPF
-      expect(validator.validate('529.982.247-25', mockArgs)).toBe(true);
+      const args = makeArgs('CPF');
+      expect(validator.validate('52998224725', args)).toBe(true);
+      expect(validator.validate('529.982.247-25', args)).toBe(true);
     });
 
     it('should reject invalid CPFs', () => {
-      expect(validator.validate('12345678912', mockArgs)).toBe(false); // Invalid digits
-      expect(validator.validate('11111111111', mockArgs)).toBe(false); // Same digits
-      expect(validator.validate('1234', mockArgs)).toBe(false);        // Too short
+      const args = makeArgs('CPF');
+      expect(validator.validate('12345678912', args)).toBe(false);
+      expect(validator.validate('11111111111', args)).toBe(false);
+      expect(validator.validate('1234', args)).toBe(false);
     });
 
     it('should validate correct CNPJs', () => {
-      // Test with clean CNPJ
-      expect(validator.validate('11222333000181', mockArgs)).toBe(true);
-      // Test with formatted CNPJ
-      expect(validator.validate('11.222.333/0001-81', mockArgs)).toBe(true);
+      const args = makeArgs('CNPJ');
+      expect(validator.validate('11222333000181', args)).toBe(true);
+      expect(validator.validate('11.222.333/0001-81', args)).toBe(true);
     });
 
     it('should reject invalid CNPJs', () => {
-      expect(validator.validate('11222333000100', mockArgs)).toBe(false); // Invalid digits
-      expect(validator.validate('00000000000000', mockArgs)).toBe(false); // Same digits
-      expect(validator.validate('123', mockArgs)).toBe(false);           // Too short
+      const args = makeArgs('CNPJ');
+      expect(validator.validate('11222333000100', args)).toBe(false);
+      expect(validator.validate('00000000000000', args)).toBe(false);
+      expect(validator.validate('123', args)).toBe(false);
+    });
+
+    it('should accept any non-empty passport', () => {
+      const args = makeArgs('PASSPORT');
+      expect(validator.validate('AB123456', args)).toBe(true);
+      expect(validator.validate('', args)).toBe(false);
+    });
+
+    it('should accept any non-empty RNE', () => {
+      const args = makeArgs('RNE');
+      expect(validator.validate('V123456-7', args)).toBe(true);
+      expect(validator.validate('', args)).toBe(false);
     });
   });
 
