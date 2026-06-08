@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import { ServiceOrdersUseCase } from './service-orders.use-case';
 import { CreateServiceOrderDto } from './dto/service-order/create-service-order.dto';
@@ -16,6 +17,9 @@ import { StartDiagnosisDto } from './dto/diagnosis/start-diagnosis.dto';
 import { RejectEstimateDto } from './dto/estimate/reject-estimate.dto';
 import { JwtAuthGuard } from '@/auth/jwt-auth.guard';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { FinishServiceDto } from './dto/mechanic/finish-service.dto';
+import { StartServiceDto } from './dto/mechanic/start-service.dto';
+import { UpdateMechanicAvailabilityDto } from './dto/mechanic/update-mechanic-availability.dto';
 
 @ApiTags('Service Orders')
 @Controller('service-orders')
@@ -55,6 +59,34 @@ export class ServiceOrdersController {
   @ApiBearerAuth()
   assignMechanic(@Param('id') id: string, @Body() dto: AssignMechanicDto) {
     return this.serviceOrdersUseCase.assignMechanic(id, dto);
+  }
+
+  @Patch(':id/start-service')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  startService(@Param('id') id: string, @Body() dto: StartServiceDto) {
+    return this.serviceOrdersUseCase.startService(id, dto);
+  }
+
+  @Patch(':id/finish-service')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  finishService(@Param('id') id: string, @Body() dto: FinishServiceDto) {
+    return this.serviceOrdersUseCase.finish(id, dto.notes);
+  }
+
+  @Patch(':id/availability')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  updateMechanicAvailability(
+    @Req() req: any,
+    @Body() dto: UpdateMechanicAvailabilityDto,
+  ) {
+    const userId = req.user?.id;
+    return this.serviceOrdersUseCase.updateMechanicAvailability(
+      userId,
+      dto.available,
+    );
   }
 
   @Patch(':id/diagnosis')

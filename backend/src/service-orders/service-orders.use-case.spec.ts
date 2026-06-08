@@ -71,6 +71,7 @@ describe('ServiceOrdersUseCase', () => {
             addEstimateItem: jest.fn(),
             updateEstimateStatus: jest.fn(),
             updatePartStock: jest.fn(),
+            updateUserAvailability: jest.fn(),
             findExecutionTimes: jest.fn(),
           },
         },
@@ -252,6 +253,39 @@ describe('ServiceOrdersUseCase', () => {
     });
   });
 
+  describe('startService', () => {
+    it('should move from WAITING_APPROVAL to IN_EXECUTION', async () => {
+      const waitingApproval = {
+        ...mockOrder,
+        status: ServiceOrderStatus.WAITING_APPROVAL,
+      };
+      repository.findById.mockResolvedValue(waitingApproval);
+      repository.updateStatus.mockResolvedValue({
+        ...waitingApproval,
+        status: ServiceOrderStatus.IN_EXECUTION,
+      });
+      repository.createStatusHistory.mockResolvedValue({} as any);
+
+      const result = await useCase.startService('order-1', {
+        serviceOrderId: 'order-1',
+      });
+
+      expect(repository.updateStatus).toHaveBeenCalledWith(
+        'order-1',
+        ServiceOrderStatus.IN_EXECUTION,
+      );
+      expect(result).toBeDefined();
+    });
+
+    it('should throw if status is not WAITING_APPROVAL', async () => {
+      repository.findById.mockResolvedValue(mockOrder);
+
+      await expect(
+        useCase.startService('order-1', { serviceOrderId: 'order-1' }),
+      ).rejects.toThrow(BadRequestException);
+    });
+  });
+
   describe('finish', () => {
     it('should move from IN_EXECUTION to FINISHED', async () => {
       const inExecution = {
@@ -271,6 +305,50 @@ describe('ServiceOrdersUseCase', () => {
         'order-1',
         ServiceOrderStatus.FINISHED,
       );
+    });
+
+    it('should pass notes to status history', async () => {
+      const inExecution = {
+        ...mockOrder,
+        status: ServiceOrderStatus.IN_EXECUTION,
+      };
+      repository.findById.mockResolvedValue(inExecution);
+      repository.updateStatus.mockResolvedValue({
+        ...inExecution,
+        status: ServiceOrderStatus.FINISHED,
+      });
+      repository.createStatusHistory.mockResolvedValue({} as any);
+
+      await useCase.finish('order-1', 'Completed all repairs');
+
+      expect(repository.createStatusHistory).toHaveBeenCalledWith(
+        expect.objectContaining({ notes: 'Completed all repairs' }),
+      );
+    });
+  });
+
+  describe('updateAvailability', () => {
+    it('should update mechanic availability', async () => {
+      repository.findUserById.mockResolvedValue(mockUser);
+      repository.updateUserAvailability.mockResolvedValue({} as any);
+
+      const result = await useCase.updateAvailability('user-1', {
+        available: false,
+      });
+
+      expect(repository.updateUserAvailability).toHaveBeenCalledWith(
+        'user-1',
+        false,
+      );
+      expect(result).toEqual({ userId: 'user-1', available: false });
+    });
+
+    it('should throw if user not found', async () => {
+      repository.findUserById.mockResolvedValue(null);
+
+      await expect(
+        useCase.updateAvailability('invalid', { available: false }),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 

@@ -17,7 +17,9 @@ import {
   EstimateItemDto,
 } from './dto/estimate/estimate-response.dto';
 import { AssignMechanicDto } from './dto/mechanic/assign-mechanic.dto';
+import { StartServiceDto } from './dto/mechanic/start-service.dto';
 import { StartDiagnosisDto } from './dto/diagnosis/start-diagnosis.dto';
+import { UpdateMechanicAvailabilityDto } from './dto/mechanic/update-mechanic-availability.dto';
 
 @Injectable()
 export class ServiceOrdersUseCase {
@@ -270,7 +272,31 @@ export class ServiceOrdersUseCase {
     });
   }
 
-  async finish(id: string) {
+  async startService(id: string, _dto: StartServiceDto) {
+    const current = await this.repository.findById(id);
+    if (!current) {
+      throw new NotFoundException(`Service order ${id} not found`);
+    }
+
+    this.assertStatus(current.status, ServiceOrderStatus.WAITING_APPROVAL);
+
+    const updated = await this.repository.updateStatus(
+      id,
+      ServiceOrderStatus.IN_EXECUTION,
+    );
+
+    await this.repository.createStatusHistory({
+      serviceOrderId: id,
+      previousStatus: current.status,
+      newStatus: ServiceOrderStatus.IN_EXECUTION,
+    });
+
+    return plainToInstance(ServiceOrderResponseDto, updated, {
+      excludeExtraneousValues: true,
+    });
+  }
+
+  async finish(id: string, notes?: string) {
     const current = await this.repository.findById(id);
     if (!current) {
       throw new NotFoundException(`Service order ${id} not found`);
@@ -292,6 +318,10 @@ export class ServiceOrdersUseCase {
     return plainToInstance(ServiceOrderResponseDto, updated, {
       excludeExtraneousValues: true,
     });
+  }
+
+  async updateMechanicAvailability(mechanicId: string, available: boolean) {
+    await this.repository.updateMechanicAvailability(mechanicId, available);
   }
 
   async deliverVehicle(id: string) {

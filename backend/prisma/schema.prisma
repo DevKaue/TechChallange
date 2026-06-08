@@ -100,6 +100,7 @@ model User {
   role          UserRole       @map("role")
   email         String?
   phone         String?
+  available     Boolean        @default(true) @map("available")
   serviceOrders ServiceOrder[] @relation("AssignedMechanic")
   createdAt     DateTime       @default(now()) @map("created_at")
   updatedAt     DateTime       @updatedAt @map("updated_at")
