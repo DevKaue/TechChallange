@@ -1,0 +1,58 @@
+erDiagram
+    Client ||--o{ Vehicle : "possui"
+    Client ||--o{ ServiceOrder : "abre"
+    Vehicle ||--o{ ServiceOrder : "vinculado"
+    ServiceOrder ||--o{ ServiceOrderStatusHistory : "historiza"
+    ServiceOrder ||--o{ Estimate : "tem"
+    Estimate ||--o{ EstimateItem : "composto por"
+    User ||--o{ ServiceOrder : "mecanico responsavel"
+
+    Client {
+        uuid id PK
+        string document UK
+        enum documentType
+        string name
+        string email
+        string phone
+    }
+
+    Vehicle {
+        uuid id PK
+        string plate UK
+        string brand
+        string model
+        int year
+        uuid clientId FK
+    }
+
+    ServiceOrder {
+        uuid id PK
+        uuid clientId FK
+        uuid vehicleId FK
+        uuid mechanicId FK
+        enum status
+        int mileage
+        text notes
+        datetime closedAt
+    }
+
+    Estimate {
+        uuid id PK
+        uuid serviceOrderId FK
+        enum status
+        decimal totalAmount
+        date validUntil
+        datetime approvedAt
+        text notes
+    }
+
+    EstimateItem {
+        uuid id PK
+        uuid estimateId FK
+        enum itemType
+        uuid referenceId
+        string description
+        int quantity
+        decimal unitPrice
+        decimal totalPrice
+    }
