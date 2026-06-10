@@ -118,14 +118,10 @@ export abstract class ServiceOrdersRepositoryInterface {
     mechanicId: string,
   ): Promise<ServiceOrder>;
 
-  abstract startService(id: string, startTime: Date): Promise<ServiceOrder>;
-
-  abstract finishService(id: string, notes?: string): Promise<ServiceOrder>;
-
   abstract updateMechanicAvailability(
     mechanicId: string,
     available: boolean,
-  ): Promise<ServiceOrder>;
+  ): Promise<void>;
 
   abstract setClosedAt(id: string, date: Date): Promise<ServiceOrder>;
 

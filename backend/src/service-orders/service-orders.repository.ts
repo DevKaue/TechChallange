@@ -86,8 +86,8 @@ export class ServiceOrdersRepository extends ServiceOrdersRepositoryInterface {
     });
   }
 
-  async updateUserAvailability(userId: string, available: boolean) {
-    return this.prisma.user.update({
+  async updateMechanicAvailability(userId: string, available: boolean) {
+    await this.prisma.user.update({
       where: { id: userId },
       data: { available },
     });
