@@ -1,0 +1,10 @@
+stateDiagram-v2
+    [*] --> RECEIVED
+    RECEIVED --> IN_DIAGNOSIS : startDiagnosis
+    RECEIVED --> WAITING_APPROVAL : createEstimate
+    IN_DIAGNOSIS --> WAITING_APPROVAL : createEstimate
+    WAITING_APPROVAL --> IN_EXECUTION : approveEstimate / startService
+    WAITING_APPROVAL --> DELIVERED : rejectEstimate
+    IN_EXECUTION --> FINISHED : finish
+    FINISHED --> DELIVERED : deliverVehicle
+    DELIVERED --> CLOSED : close
