@@ -3,6 +3,7 @@ import {
   NotFoundException,
   ConflictException,
   BadRequestException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { ServiceOrdersRepositoryInterface } from './service-orders-repository.interface';
 import { CreateServiceOrderDto } from './dto/service-order/create-service-order.dto';
@@ -17,16 +18,18 @@ import {
   EstimateItemDto,
 } from './dto/estimate/estimate-response.dto';
 import { AssignMechanicDto } from './dto/mechanic/assign-mechanic.dto';
-import { StartServiceDto } from './dto/mechanic/start-service.dto';
 import { StartDiagnosisDto } from './dto/diagnosis/start-diagnosis.dto';
-import { UpdateMechanicAvailabilityDto } from './dto/mechanic/update-mechanic-availability.dto';
 
 @Injectable()
 export class ServiceOrdersUseCase {
-  constructor(private readonly repository: ServiceOrdersRepositoryInterface) {}
+  constructor(
+    private readonly serviceOrdersRepositoryInterface: ServiceOrdersRepositoryInterface,
+  ) {}
 
   async create(createDto: CreateServiceOrderDto) {
-    const vehicle = await this.repository.findVehicleById(createDto.vehicleId);
+    const vehicle = await this.serviceOrdersRepositoryInterface.findVehicleById(
+      createDto.vehicleId,
+    );
 
     if (!vehicle) {
       throw new NotFoundException('Vehicle not found');
@@ -38,13 +41,13 @@ export class ServiceOrdersUseCase {
       );
     }
 
-    const order = await this.repository.create({
+    const order = await this.serviceOrdersRepositoryInterface.create({
       clientId: createDto.clientId,
       vehicleId: createDto.vehicleId,
       status: ServiceOrderStatus.RECEIVED,
     });
 
-    await this.repository.createStatusHistory({
+    await this.serviceOrdersRepositoryInterface.createStatusHistory({
       serviceOrderId: order.id,
       previousStatus: null,
       newStatus: ServiceOrderStatus.RECEIVED,
@@ -56,7 +59,7 @@ export class ServiceOrdersUseCase {
   }
 
   async findAll() {
-    const orders = await this.repository.findAll();
+    const orders = await this.serviceOrdersRepositoryInterface.findAll();
     return orders.map((item) =>
       plainToInstance(ServiceOrderResponseDto, item, {
         excludeExtraneousValues: true,
@@ -65,7 +68,8 @@ export class ServiceOrdersUseCase {
   }
 
   async findOne(id: string) {
-    const serviceOrder = await this.repository.findById(id);
+    const serviceOrder =
+      await this.serviceOrdersRepositoryInterface.findById(id);
 
     if (!serviceOrder) {
       throw new NotFoundException(`Service order ${id} not found`);
@@ -77,14 +81,16 @@ export class ServiceOrdersUseCase {
   }
 
   async assignMechanic(id: string, dto: AssignMechanicDto) {
-    const current = await this.repository.findById(id);
+    const current = await this.serviceOrdersRepositoryInterface.findById(id);
     if (!current) {
       throw new NotFoundException(`Service order ${id} not found`);
     }
 
     this.assertStatus(current.status, ServiceOrderStatus.RECEIVED);
 
-    const user = await this.repository.findUserById(dto.mechanicId);
+    const user = await this.serviceOrdersRepositoryInterface.findUserById(
+      dto.mechanicId,
+    );
     if (!user) {
       throw new NotFoundException('User not found');
     }
@@ -92,14 +98,17 @@ export class ServiceOrdersUseCase {
       throw new BadRequestException('User is not a mechanic');
     }
 
-    const updated = await this.repository.assignMechanic(id, dto.mechanicId);
+    const updated = await this.serviceOrdersRepositoryInterface.assignMechanic(
+      id,
+      dto.mechanicId,
+    );
     return plainToInstance(ServiceOrderResponseDto, updated, {
       excludeExtraneousValues: true,
     });
   }
 
   async startDiagnosis(id: string, dto: StartDiagnosisDto) {
-    const current = await this.repository.findById(id);
+    const current = await this.serviceOrdersRepositoryInterface.findById(id);
     if (!current) {
       throw new NotFoundException(`Service order ${id} not found`);
     }
@@ -110,12 +119,12 @@ export class ServiceOrdersUseCase {
       ServiceOrderStatus.IN_DIAGNOSIS,
     );
 
-    const updated = await this.repository.updateStatus(
+    const updated = await this.serviceOrdersRepositoryInterface.updateStatus(
       id,
       ServiceOrderStatus.IN_DIAGNOSIS,
     );
 
-    await this.repository.createStatusHistory({
+    await this.serviceOrdersRepositoryInterface.createStatusHistory({
       serviceOrderId: id,
       previousStatus: current.status,
       newStatus: ServiceOrderStatus.IN_DIAGNOSIS,
@@ -128,7 +137,7 @@ export class ServiceOrdersUseCase {
   }
 
   async createEstimate(orderId: string) {
-    const order = await this.repository.findById(orderId);
+    const order = await this.serviceOrdersRepositoryInterface.findById(orderId);
 
     if (!order) {
       throw new NotFoundException(`Service order ${orderId} not found`);
@@ -141,18 +150,18 @@ export class ServiceOrdersUseCase {
     );
 
     const [estimate] = await Promise.all([
-      this.repository.createEstimate({
+      this.serviceOrdersRepositoryInterface.createEstimate({
         serviceOrderId: orderId,
         status: EstimateStatus.PENDING,
         totalAmount: 0,
       }),
-      this.repository.updateStatus(
+      this.serviceOrdersRepositoryInterface.updateStatus(
         orderId,
         ServiceOrderStatus.WAITING_APPROVAL,
       ),
     ]);
 
-    await this.repository.createStatusHistory({
+    await this.serviceOrdersRepositoryInterface.createStatusHistory({
       serviceOrderId: orderId,
       previousStatus: order.status,
       newStatus: ServiceOrderStatus.WAITING_APPROVAL,
@@ -170,15 +179,18 @@ export class ServiceOrdersUseCase {
     let description = '';
 
     if (dto.itemType === 'SERVICE') {
-      const service = await this.repository.findServiceCatalogById(
-        dto.referenceId,
-      );
+      const service =
+        await this.serviceOrdersRepositoryInterface.findServiceCatalogById(
+          dto.referenceId,
+        );
       if (!service) {
         throw new NotFoundException('Service not found in catalog');
       }
       unitPrice = service.price;
     } else {
-      const part = await this.repository.findPartById(dto.referenceId);
+      const part = await this.serviceOrdersRepositoryInterface.findPartById(
+        dto.referenceId,
+      );
       if (!part) {
         throw new NotFoundException('Part not found');
       }
@@ -189,12 +201,15 @@ export class ServiceOrdersUseCase {
       }
       unitPrice = part.price;
       description = part.name;
-      await this.repository.updatePartStock(part.id, dto.quantity);
+      await this.serviceOrdersRepositoryInterface.updatePartStock(
+        part.id,
+        dto.quantity,
+      );
     }
 
     const totalPrice = unitPrice * dto.quantity;
 
-    const item = await this.repository.addEstimateItem({
+    const item = await this.serviceOrdersRepositoryInterface.addEstimateItem({
       estimateId,
       itemType: dto.itemType,
       referenceId: dto.referenceId,
@@ -211,22 +226,25 @@ export class ServiceOrdersUseCase {
 
   async updateEstimateStatus(estimateId: string, dto: UpdateEstimateStatusDto) {
     if (dto.status === EstimateStatus.APPROVED) {
-      const estimate = await this.repository.updateEstimateStatus(
-        estimateId,
-        dto.status,
-        new Date(),
-      );
+      const estimate =
+        await this.serviceOrdersRepositoryInterface.updateEstimateStatus(
+          estimateId,
+          dto.status,
+          new Date(),
+        );
 
-      const order = await this.repository.findById(estimate.serviceOrderId);
+      const order = await this.serviceOrdersRepositoryInterface.findById(
+        estimate.serviceOrderId,
+      );
       if (!order) {
         throw new NotFoundException('Service order not found');
       }
 
-      await this.repository.updateStatus(
+      await this.serviceOrdersRepositoryInterface.updateStatus(
         order.id,
         ServiceOrderStatus.IN_EXECUTION,
       );
-      await this.repository.createStatusHistory({
+      await this.serviceOrdersRepositoryInterface.createStatusHistory({
         serviceOrderId: order.id,
         previousStatus: order.status,
         newStatus: ServiceOrderStatus.IN_EXECUTION,
@@ -237,10 +255,11 @@ export class ServiceOrdersUseCase {
       });
     }
 
-    const estimate = await this.repository.updateEstimateStatus(
-      estimateId,
-      dto.status,
-    );
+    const estimate =
+      await this.serviceOrdersRepositoryInterface.updateEstimateStatus(
+        estimateId,
+        dto.status,
+      );
 
     return plainToInstance(EstimateResponseDto, estimate, {
       excludeExtraneousValues: true,
@@ -248,19 +267,19 @@ export class ServiceOrdersUseCase {
   }
 
   async rejectEstimate(id: string, dto: RejectEstimateDto) {
-    const current = await this.repository.findById(id);
+    const current = await this.serviceOrdersRepositoryInterface.findById(id);
     if (!current) {
       throw new NotFoundException(`Service order ${id} not found`);
     }
 
     this.assertStatus(current.status, ServiceOrderStatus.WAITING_APPROVAL);
 
-    const updated = await this.repository.updateStatus(
+    const updated = await this.serviceOrdersRepositoryInterface.updateStatus(
       id,
       ServiceOrderStatus.DELIVERED,
     );
 
-    await this.repository.createStatusHistory({
+    await this.serviceOrdersRepositoryInterface.createStatusHistory({
       serviceOrderId: id,
       previousStatus: current.status,
       newStatus: ServiceOrderStatus.DELIVERED,
@@ -272,20 +291,20 @@ export class ServiceOrdersUseCase {
     });
   }
 
-  async startService(id: string, _dto: StartServiceDto) {
-    const current = await this.repository.findById(id);
+  async startService(id: string) {
+    const current = await this.serviceOrdersRepositoryInterface.findById(id);
     if (!current) {
       throw new NotFoundException(`Service order ${id} not found`);
     }
 
     this.assertStatus(current.status, ServiceOrderStatus.WAITING_APPROVAL);
 
-    const updated = await this.repository.updateStatus(
+    const updated = await this.serviceOrdersRepositoryInterface.updateStatus(
       id,
       ServiceOrderStatus.IN_EXECUTION,
     );
 
-    await this.repository.createStatusHistory({
+    await this.serviceOrdersRepositoryInterface.createStatusHistory({
       serviceOrderId: id,
       previousStatus: current.status,
       newStatus: ServiceOrderStatus.IN_EXECUTION,
@@ -296,23 +315,30 @@ export class ServiceOrdersUseCase {
     });
   }
 
-  async finish(id: string, notes?: string) {
-    const current = await this.repository.findById(id);
-    if (!current) {
+  async finish(id: string, mechanicId: string, notes?: string) {
+    const serviceOrder = await this.serviceOrdersRepositoryInterface.findById(id);
+    if (!serviceOrder) {
       throw new NotFoundException(`Service order ${id} not found`);
     }
 
-    this.assertStatus(current.status, ServiceOrderStatus.IN_EXECUTION);
+    this.assertStatus(serviceOrder.status, ServiceOrderStatus.IN_EXECUTION);
 
-    const updated = await this.repository.updateStatus(
+    if (!serviceOrder.mechanicId || serviceOrder.mechanicId !== mechanicId) {
+      throw new ForbiddenException(
+        'Only the assigned mechanic can finish this service order',
+      );
+    }
+
+    const updated = await this.serviceOrdersRepositoryInterface.updateStatus(
       id,
       ServiceOrderStatus.FINISHED,
     );
 
-    await this.repository.createStatusHistory({
+    await this.serviceOrdersRepositoryInterface.createStatusHistory({
       serviceOrderId: id,
-      previousStatus: current.status,
+      previousStatus: serviceOrder.status,
       newStatus: ServiceOrderStatus.FINISHED,
+      ...(notes ? { notes } : {}),
     });
 
     return plainToInstance(ServiceOrderResponseDto, updated, {
@@ -321,23 +347,26 @@ export class ServiceOrdersUseCase {
   }
 
   async updateMechanicAvailability(mechanicId: string, available: boolean) {
-    await this.repository.updateMechanicAvailability(mechanicId, available);
+    await this.serviceOrdersRepositoryInterface.updateMechanicAvailability(
+      mechanicId,
+      available,
+    );
   }
 
   async deliverVehicle(id: string) {
-    const current = await this.repository.findById(id);
+    const current = await this.serviceOrdersRepositoryInterface.findById(id);
     if (!current) {
       throw new NotFoundException(`Service order ${id} not found`);
     }
 
     this.assertStatus(current.status, ServiceOrderStatus.FINISHED);
 
-    const updated = await this.repository.updateStatus(
+    const updated = await this.serviceOrdersRepositoryInterface.updateStatus(
       id,
       ServiceOrderStatus.DELIVERED,
     );
 
-    await this.repository.createStatusHistory({
+    await this.serviceOrdersRepositoryInterface.createStatusHistory({
       serviceOrderId: id,
       previousStatus: current.status,
       newStatus: ServiceOrderStatus.DELIVERED,
@@ -349,20 +378,20 @@ export class ServiceOrdersUseCase {
   }
 
   async close(id: string) {
-    const current = await this.repository.findById(id);
+    const current = await this.serviceOrdersRepositoryInterface.findById(id);
     if (!current) {
       throw new NotFoundException(`Service order ${id} not found`);
     }
 
     this.assertStatus(current.status, ServiceOrderStatus.DELIVERED);
 
-    await this.repository.setClosedAt(id, new Date());
-    const updated = await this.repository.updateStatus(
+    await this.serviceOrdersRepositoryInterface.setClosedAt(id, new Date());
+    const updated = await this.serviceOrdersRepositoryInterface.updateStatus(
       id,
       ServiceOrderStatus.CLOSED,
     );
 
-    await this.repository.createStatusHistory({
+    await this.serviceOrdersRepositoryInterface.createStatusHistory({
       serviceOrderId: id,
       previousStatus: current.status,
       newStatus: ServiceOrderStatus.CLOSED,
@@ -374,7 +403,8 @@ export class ServiceOrdersUseCase {
   }
 
   async getAverageExecutionTime() {
-    const finishedOrders = await this.repository.findExecutionTimes();
+    const finishedOrders =
+      await this.serviceOrdersRepositoryInterface.findExecutionTimes();
 
     if (finishedOrders.length === 0) {
       return {

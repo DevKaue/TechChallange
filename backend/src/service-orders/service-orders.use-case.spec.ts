@@ -6,6 +6,7 @@ import {
   NotFoundException,
   ConflictException,
   BadRequestException,
+  ForbiddenException,
 } from '@nestjs/common';
 
 describe('ServiceOrdersUseCase', () => {
@@ -16,16 +17,16 @@ describe('ServiceOrdersUseCase', () => {
     id: 'order-1',
     clientId: 'client-1',
     vehicleId: 'vehicle-1',
-    status: ServiceOrderStatus.RECEIVED as string,
+    status: ServiceOrderStatus.RECEIVED,
     mileage: null,
     notes: null,
-    dataFechamento: null,
+    mechanicId: null,
+    closedAt: null,
     createdAt: new Date(),
     updatedAt: new Date(),
     client: {
       id: 'client-1',
-      name: 'John',
-      cpfCnpj: '123',
+      document: '123',
       email: null,
       phone: null,
       createdAt: new Date(),
@@ -41,7 +42,7 @@ describe('ServiceOrdersUseCase', () => {
       createdAt: new Date(),
       updatedAt: new Date(),
     },
-    mecanico: null,
+    mechanic: null,
     estimates: [],
     statusHistory: [],
   };
@@ -71,7 +72,7 @@ describe('ServiceOrdersUseCase', () => {
             addEstimateItem: jest.fn(),
             updateEstimateStatus: jest.fn(),
             updatePartStock: jest.fn(),
-            updateUserAvailability: jest.fn(),
+            updateMechanicAvailability: jest.fn(),
             findExecutionTimes: jest.fn(),
           },
         },
@@ -121,6 +122,15 @@ describe('ServiceOrdersUseCase', () => {
     });
   });
 
+  describe('findAll', () => {
+    it('should return all orders', async () => {
+      repository.findAll.mockResolvedValue([mockOrder]);
+      const result = await useCase.findAll();
+      expect(result).toHaveLength(1);
+      expect(result[0]).toHaveProperty('id', 'order-1');
+    });
+  });
+
   describe('findOne', () => {
     it('should return the order', async () => {
       repository.findById.mockResolvedValue(mockOrder);
@@ -160,12 +170,29 @@ describe('ServiceOrdersUseCase', () => {
       repository.findUserById.mockResolvedValue({
         id: 'u1',
         name: 'Ana',
-        role: 'RECEPTIONIST' as const,
+        role: 'ATTENDANT',
       });
 
       await expect(
         useCase.assignMechanic('order-1', { mechanicId: 'u1' }),
       ).rejects.toThrow(BadRequestException);
+    });
+
+    it('should throw if user not found', async () => {
+      repository.findById.mockResolvedValue(mockOrder);
+      repository.findUserById.mockResolvedValue(null);
+
+      await expect(
+        useCase.assignMechanic('order-1', { mechanicId: 'invalid' }),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('should throw if order not found', async () => {
+      repository.findById.mockResolvedValue(null);
+
+      await expect(
+        useCase.assignMechanic('invalid', { mechanicId: 'user-1' }),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -188,6 +215,14 @@ describe('ServiceOrdersUseCase', () => {
       );
       expect(result).toBeDefined();
     });
+
+    it('should throw if order not found', async () => {
+      repository.findById.mockResolvedValue(null);
+
+      await expect(
+        useCase.startDiagnosis('invalid', { diagnosis: 'test' }),
+      ).rejects.toThrow(NotFoundException);
+    });
   });
 
   describe('createEstimate', () => {
@@ -197,7 +232,7 @@ describe('ServiceOrdersUseCase', () => {
         status: ServiceOrderStatus.IN_DIAGNOSIS,
       };
       repository.findById.mockResolvedValue(orderInDiagnosis);
-      repository.createEstimate.mockResolvedValue({
+      const mockEstimate = {
         id: 'est-1',
         serviceOrderId: 'order-1',
         status: EstimateStatus.PENDING,
@@ -208,7 +243,8 @@ describe('ServiceOrdersUseCase', () => {
         createdAt: new Date(),
         updatedAt: new Date(),
         items: [],
-      });
+      } as any;
+      repository.createEstimate.mockResolvedValue(mockEstimate);
       repository.updateStatus.mockResolvedValue({
         ...mockOrder,
         status: ServiceOrderStatus.WAITING_APPROVAL,
@@ -223,6 +259,204 @@ describe('ServiceOrdersUseCase', () => {
         totalAmount: 0,
       });
       expect(result).toHaveProperty('id', 'est-1');
+    });
+
+    it('should throw if order not found', async () => {
+      repository.findById.mockResolvedValue(null);
+
+      await expect(useCase.createEstimate('invalid')).rejects.toThrow(
+        NotFoundException,
+      );
+    });
+  });
+
+  describe('addEstimateItem', () => {
+    it('should add a service item from catalog', async () => {
+      repository.findServiceCatalogById.mockResolvedValue({
+        id: 'svc-1',
+        price: 150,
+      });
+      repository.addEstimateItem.mockResolvedValue({
+        id: 'item-1',
+        estimateId: 'est-1',
+        itemType: 'SERVICE',
+        referenceId: 'svc-1',
+        description: 'Troca de oleo',
+        quantity: 1,
+        unitPrice: 150,
+        totalPrice: 150,
+        notes: null,
+      } as any);
+
+      const result = await useCase.addEstimateItem('est-1', {
+        itemType: 'SERVICE' as any,
+        referenceId: 'svc-1',
+        description: 'Troca de oleo',
+        quantity: 1,
+      });
+
+      expect(repository.addEstimateItem).toHaveBeenCalledWith(
+        expect.objectContaining({ unitPrice: 150, totalPrice: 150 }),
+      );
+      expect(result).toHaveProperty('id', 'item-1');
+    });
+
+    it('should add a part item with stock decrement', async () => {
+      repository.findPartById.mockResolvedValue({
+        id: 'part-1',
+        name: 'Filtro de oleo',
+        price: 45,
+        stockQuantity: 10,
+      });
+      repository.addEstimateItem.mockResolvedValue({
+        id: 'item-2',
+        estimateId: 'est-1',
+        itemType: 'PART',
+        referenceId: 'part-1',
+        description: 'Filtro de oleo',
+        quantity: 2,
+        unitPrice: 45,
+        totalPrice: 90,
+        notes: null,
+      } as any);
+
+      const result = await useCase.addEstimateItem('est-1', {
+        itemType: 'PART' as any,
+        referenceId: 'part-1',
+        quantity: 2,
+      });
+
+      expect(repository.updatePartStock).toHaveBeenCalledWith('part-1', 2);
+      expect(repository.addEstimateItem).toHaveBeenCalledWith(
+        expect.objectContaining({ unitPrice: 45, totalPrice: 90 }),
+      );
+      expect(result).toHaveProperty('id', 'item-2');
+    });
+
+    it('should throw if service not found in catalog', async () => {
+      repository.findServiceCatalogById.mockResolvedValue(null);
+
+      await expect(
+        useCase.addEstimateItem('est-1', {
+          itemType: 'SERVICE' as any,
+          referenceId: 'invalid',
+          quantity: 1,
+        }),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('should throw if part stock is insufficient', async () => {
+      repository.findPartById.mockResolvedValue({
+        id: 'part-1',
+        name: 'Filtro de oleo',
+        price: 45,
+        stockQuantity: 1,
+      });
+
+      await expect(
+        useCase.addEstimateItem('est-1', {
+          itemType: 'PART' as any,
+          referenceId: 'part-1',
+          quantity: 5,
+        }),
+      ).rejects.toThrow(ConflictException);
+    });
+
+    it('should throw if part not found', async () => {
+      repository.findPartById.mockResolvedValue(null);
+
+      await expect(
+        useCase.addEstimateItem('est-1', {
+          itemType: 'PART' as any,
+          referenceId: 'invalid',
+          quantity: 1,
+        }),
+      ).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('updateEstimateStatus', () => {
+    it('should approve estimate and move OS to IN_EXECUTION', async () => {
+      const mockEstimate = {
+        id: 'est-1',
+        serviceOrderId: 'order-1',
+        status: EstimateStatus.APPROVED,
+        totalAmount: 150,
+        validUntil: null,
+        approvedAt: null,
+        notes: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        items: [],
+      };
+      repository.updateEstimateStatus.mockResolvedValue(mockEstimate as any);
+
+      const waitingApproval = {
+        ...mockOrder,
+        status: ServiceOrderStatus.WAITING_APPROVAL,
+      };
+      repository.findById.mockResolvedValue(waitingApproval);
+      repository.updateStatus.mockResolvedValue({
+        ...waitingApproval,
+        status: ServiceOrderStatus.IN_EXECUTION,
+      });
+      repository.createStatusHistory.mockResolvedValue({} as any);
+
+      const result = await useCase.updateEstimateStatus('est-1', {
+        status: EstimateStatus.APPROVED,
+      });
+
+      expect(repository.updateStatus).toHaveBeenCalledWith(
+        'order-1',
+        ServiceOrderStatus.IN_EXECUTION,
+      );
+      expect(result).toHaveProperty('status', EstimateStatus.APPROVED);
+    });
+
+    it('should handle non-approved status without transitioning OS', async () => {
+      const mockEstimate = {
+        id: 'est-1',
+        serviceOrderId: 'order-1',
+        status: EstimateStatus.REJECTED,
+        totalAmount: 150,
+        validUntil: null,
+        approvedAt: null,
+        notes: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        items: [],
+      };
+      repository.updateEstimateStatus.mockResolvedValue(mockEstimate as any);
+
+      const result = await useCase.updateEstimateStatus('est-1', {
+        status: EstimateStatus.REJECTED,
+      });
+
+      expect(repository.updateStatus).not.toHaveBeenCalled();
+      expect(result).toHaveProperty('status', EstimateStatus.REJECTED);
+    });
+
+    it('should throw if service order not found after approve', async () => {
+      const mockEstimate = {
+        id: 'est-1',
+        serviceOrderId: 'order-1',
+        status: EstimateStatus.APPROVED,
+        totalAmount: 150,
+        validUntil: null,
+        approvedAt: null,
+        notes: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        items: [],
+      };
+      repository.updateEstimateStatus.mockResolvedValue(mockEstimate as any);
+      repository.findById.mockResolvedValue(null);
+
+      await expect(
+        useCase.updateEstimateStatus('est-1', {
+          status: EstimateStatus.APPROVED,
+        }),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -251,6 +485,14 @@ describe('ServiceOrdersUseCase', () => {
         expect.objectContaining({ notes: 'Too expensive' }),
       );
     });
+
+    it('should throw if order not found', async () => {
+      repository.findById.mockResolvedValue(null);
+
+      await expect(
+        useCase.rejectEstimate('invalid', { reason: 'No reason' }),
+      ).rejects.toThrow(NotFoundException);
+    });
   });
 
   describe('startService', () => {
@@ -266,9 +508,7 @@ describe('ServiceOrdersUseCase', () => {
       });
       repository.createStatusHistory.mockResolvedValue({} as any);
 
-      const result = await useCase.startService('order-1', {
-        serviceOrderId: 'order-1',
-      });
+      const result = await useCase.startService('order-1');
 
       expect(repository.updateStatus).toHaveBeenCalledWith(
         'order-1',
@@ -280,9 +520,17 @@ describe('ServiceOrdersUseCase', () => {
     it('should throw if status is not WAITING_APPROVAL', async () => {
       repository.findById.mockResolvedValue(mockOrder);
 
-      await expect(
-        useCase.startService('order-1', { serviceOrderId: 'order-1' }),
-      ).rejects.toThrow(BadRequestException);
+      await expect(useCase.startService('order-1')).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('should throw if order not found', async () => {
+      repository.findById.mockResolvedValue(null);
+
+      await expect(useCase.startService('invalid')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -291,6 +539,7 @@ describe('ServiceOrdersUseCase', () => {
       const inExecution = {
         ...mockOrder,
         status: ServiceOrderStatus.IN_EXECUTION,
+        mechanicId: 'user-1',
       };
       repository.findById.mockResolvedValue(inExecution);
       repository.updateStatus.mockResolvedValue({
@@ -299,7 +548,7 @@ describe('ServiceOrdersUseCase', () => {
       });
       repository.createStatusHistory.mockResolvedValue({} as any);
 
-      await useCase.finish('order-1');
+      await useCase.finish('order-1', 'user-1');
 
       expect(repository.updateStatus).toHaveBeenCalledWith(
         'order-1',
@@ -311,6 +560,7 @@ describe('ServiceOrdersUseCase', () => {
       const inExecution = {
         ...mockOrder,
         status: ServiceOrderStatus.IN_EXECUTION,
+        mechanicId: 'user-1',
       };
       repository.findById.mockResolvedValue(inExecution);
       repository.updateStatus.mockResolvedValue({
@@ -319,36 +569,58 @@ describe('ServiceOrdersUseCase', () => {
       });
       repository.createStatusHistory.mockResolvedValue({} as any);
 
-      await useCase.finish('order-1', 'Completed all repairs');
+      await useCase.finish('order-1', 'user-1', 'Completed all repairs');
 
       expect(repository.createStatusHistory).toHaveBeenCalledWith(
         expect.objectContaining({ notes: 'Completed all repairs' }),
       );
     });
+
+    it('should throw if not the assigned mechanic', async () => {
+      const inExecution = {
+        ...mockOrder,
+        status: ServiceOrderStatus.IN_EXECUTION,
+        mechanicId: 'mechanic-A',
+      };
+      repository.findById.mockResolvedValue(inExecution);
+
+      await expect(useCase.finish('order-1', 'mechanic-B')).rejects.toThrow(
+        ForbiddenException,
+      );
+    });
+
+    it('should throw if no mechanic assigned', async () => {
+      const inExecution = {
+        ...mockOrder,
+        status: ServiceOrderStatus.IN_EXECUTION,
+        mechanicId: null,
+      };
+      repository.findById.mockResolvedValue(inExecution);
+
+      await expect(useCase.finish('order-1', 'user-1')).rejects.toThrow(
+        ForbiddenException,
+      );
+    });
+
+    it('should throw if order not found', async () => {
+      repository.findById.mockResolvedValue(null);
+
+      await expect(useCase.finish('invalid', 'user-1')).rejects.toThrow(
+        NotFoundException,
+      );
+    });
   });
 
-  describe('updateAvailability', () => {
+  describe('updateMechanicAvailability', () => {
     it('should update mechanic availability', async () => {
-      repository.findUserById.mockResolvedValue(mockUser);
-      repository.updateUserAvailability.mockResolvedValue({} as any);
+      repository.updateMechanicAvailability.mockResolvedValue(undefined);
 
-      const result = await useCase.updateAvailability('user-1', {
-        available: false,
-      });
+      await useCase.updateMechanicAvailability('user-1', false);
 
-      expect(repository.updateUserAvailability).toHaveBeenCalledWith(
+      expect(repository.updateMechanicAvailability).toHaveBeenCalledWith(
         'user-1',
         false,
       );
-      expect(result).toEqual({ userId: 'user-1', available: false });
-    });
-
-    it('should throw if user not found', async () => {
-      repository.findUserById.mockResolvedValue(null);
-
-      await expect(
-        useCase.updateAvailability('invalid', { available: false }),
-      ).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -367,6 +639,14 @@ describe('ServiceOrdersUseCase', () => {
       expect(repository.updateStatus).toHaveBeenCalledWith(
         'order-1',
         ServiceOrderStatus.DELIVERED,
+      );
+    });
+
+    it('should throw if order not found', async () => {
+      repository.findById.mockResolvedValue(null);
+
+      await expect(useCase.deliverVehicle('invalid')).rejects.toThrow(
+        NotFoundException,
       );
     });
   });
@@ -389,6 +669,12 @@ describe('ServiceOrdersUseCase', () => {
         ServiceOrderStatus.CLOSED,
       );
       expect(repository.setClosedAt).toHaveBeenCalled();
+    });
+
+    it('should throw if order not found', async () => {
+      repository.findById.mockResolvedValue(null);
+
+      await expect(useCase.close('invalid')).rejects.toThrow(NotFoundException);
     });
   });
 
