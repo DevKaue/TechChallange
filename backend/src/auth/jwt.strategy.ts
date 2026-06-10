@@ -12,12 +12,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(payload: any) {
+  validate(payload: any) {
     // For MVP, we just validate the token payload.
     // In a real app, we would look up the user in the database.
     if (!payload.sub) {
       throw new UnauthorizedException();
     }
-    return { userId: payload.sub, role: payload.role };
+    return { id: payload.sub, role: payload.role };
   }
 }
