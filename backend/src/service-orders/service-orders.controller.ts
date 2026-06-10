@@ -16,10 +16,10 @@ import { AssignMechanicDto } from './dto/mechanic/assign-mechanic.dto';
 import { StartDiagnosisDto } from './dto/diagnosis/start-diagnosis.dto';
 import { RejectEstimateDto } from './dto/estimate/reject-estimate.dto';
 import { JwtAuthGuard } from '@/auth/jwt-auth.guard';
+import type { AuthenticatedRequest } from '@/auth/authenticated-request';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { FinishServiceDto } from './dto/mechanic/finish-service.dto';
-import { StartServiceDto } from './dto/mechanic/start-service.dto';
 import { UpdateMechanicAvailabilityDto } from './dto/mechanic/update-mechanic-availability.dto';
+import { FinishServiceOrderDto } from './dto/service-order/finish-service-order.dto';
 
 @ApiTags('Service Orders')
 @Controller('service-orders')
@@ -64,27 +64,19 @@ export class ServiceOrdersController {
   @Patch(':id/start-service')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  startService(@Param('id') id: string, @Body() dto: StartServiceDto) {
-    return this.serviceOrdersUseCase.startService(id, dto);
+  startService(@Param('id') id: string) {
+    return this.serviceOrdersUseCase.startService(id);
   }
 
-  @Patch(':id/finish-service')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  finishService(@Param('id') id: string, @Body() dto: FinishServiceDto) {
-    return this.serviceOrdersUseCase.finish(id, dto.notes);
-  }
-
-  @Patch(':id/availability')
+  @Patch('me/availability')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   updateMechanicAvailability(
-    @Req() req: any,
+    @Req() req: AuthenticatedRequest,
     @Body() dto: UpdateMechanicAvailabilityDto,
   ) {
-    const userId = req.user?.id;
     return this.serviceOrdersUseCase.updateMechanicAvailability(
-      userId,
+      req.user.id,
       dto.available,
     );
   }
@@ -133,8 +125,12 @@ export class ServiceOrdersController {
   @Patch(':id/finish')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  finish(@Param('id') id: string) {
-    return this.serviceOrdersUseCase.finish(id);
+  finish(
+    @Param('id') id: string,
+    @Body() dto: FinishServiceOrderDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.serviceOrdersUseCase.finish(id, req.user.id, dto.notes);
   }
 
   @Patch(':id/deliver')
