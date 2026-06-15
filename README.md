@@ -125,7 +125,7 @@ npm run prisma:seed
 ```
 
 Os seeders criam:
-- **3 usuários** (2 mecânicos, 1 atendente)
+- **3 usuários internos** (2 mecânicos, 1 atendente) com senha local padrão `Tech@123`
 - **6 serviços** no catálogo (ex.: revisão básica, troca de óleo, alinhamento)
 - **6 peças** em estoque (ex.: filtro de óleo, pastilha de freio)
 - **3 clientes** (pessoa física e jurídica)
@@ -162,7 +162,22 @@ docker compose exec api npm run prisma:seed
 
 ## Autenticação
 
-As rotas administrativas usam Bearer Token JWT. Gere um token em:
+As rotas administrativas usam Bearer Token JWT. Autentique um usuário interno em:
+
+```text
+POST /auth/login
+```
+
+Payload:
+
+```json
+{
+  "email": "ana.santos@oficina.com",
+  "password": "Tech@123"
+}
+```
+
+O endpoint legado abaixo continua disponível com o mesmo payload:
 
 ```text
 POST /auth/login-admin
@@ -172,6 +187,12 @@ Depois envie o header:
 
 ```text
 Authorization: Bearer <TOKEN>
+```
+
+Também é possível consultar a identidade autenticada em:
+
+```text
+GET /auth/me
 ```
 
 A consulta pública de acompanhamento da OS fica em:

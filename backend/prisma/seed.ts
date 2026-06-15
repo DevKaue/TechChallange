@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '@prisma/client';
+import { hashPassword } from '../src/auth/password-hasher';
 
 const connectionString = process.env.DATABASE_URL;
 if (!connectionString) {
@@ -17,6 +18,7 @@ const users = [
   { name: 'Carlos Oliveira', role: 'MECHANIC' as const, email: 'carlos.oliveira@oficina.com', phone: '(11) 99999-0002' },
   { name: 'Ana Santos', role: 'ATTENDANT' as const, email: 'ana.santos@oficina.com', phone: '(11) 99999-0003' },
 ];
+const defaultPassword = 'Tech@123';
 
 const services = [
   { name: 'Troca de Óleo', description: 'Substituição do óleo do motor e filtro', price: 150 },
@@ -59,7 +61,13 @@ async function main() {
 
   console.log('Creating users...');
   for (const user of users) {
-    await prisma.user.create({ data: user });
+    await prisma.user.create({
+      data: {
+        ...user,
+        email: user.email.toLowerCase(),
+        passwordHash: await hashPassword(defaultPassword),
+      },
+    });
   }
 
   console.log('Creating service catalog...');

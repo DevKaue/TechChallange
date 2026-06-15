@@ -16,6 +16,17 @@ import { AssignMechanicDto } from './dto/mechanic/assign-mechanic.dto';
 import { StartDiagnosisDto } from './dto/diagnosis/start-diagnosis.dto';
 import { RejectEstimateDto } from './dto/estimate/reject-estimate.dto';
 import { JwtAuthGuard } from '@/auth/jwt-auth.guard';
+import {
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import { ServiceOrderResponseDto } from './dto/service-order/service-order-response.dto';
+import {
+  EstimateItemDto,
+  EstimateResponseDto,
+} from './dto/estimate/estimate-response.dto';
 import type { AuthenticatedRequest } from '@/auth/authenticated-request';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { UpdateMechanicAvailabilityDto } from './dto/mechanic/update-mechanic-availability.dto';
@@ -29,6 +40,7 @@ export class ServiceOrdersController {
   @Post()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
+  @ApiCreatedResponse({ type: ServiceOrderResponseDto })
   create(@Body() dto: CreateServiceOrderDto) {
     return this.serviceOrdersUseCase.create(dto);
   }
@@ -36,6 +48,7 @@ export class ServiceOrdersController {
   @Get()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
+  @ApiOkResponse({ type: ServiceOrderResponseDto, isArray: true })
   findAll() {
     return this.serviceOrdersUseCase.findAll();
   }
@@ -43,13 +56,13 @@ export class ServiceOrdersController {
   @Get('metrics/average-time')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
+  @ApiOkResponse({ type: Object })
   getAverageExecutionTime() {
     return this.serviceOrdersUseCase.getAverageExecutionTime();
   }
 
   @Get(':id')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
+  @ApiOkResponse({ type: ServiceOrderResponseDto })
   findOne(@Param('id') id: string) {
     return this.serviceOrdersUseCase.findOne(id);
   }
@@ -57,6 +70,7 @@ export class ServiceOrdersController {
   @Patch(':id/mechanic')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
+  @ApiOkResponse({ type: ServiceOrderResponseDto })
   assignMechanic(@Param('id') id: string, @Body() dto: AssignMechanicDto) {
     return this.serviceOrdersUseCase.assignMechanic(id, dto);
   }
@@ -84,6 +98,7 @@ export class ServiceOrdersController {
   @Patch(':id/diagnosis')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
+  @ApiOkResponse({ type: ServiceOrderResponseDto })
   startDiagnosis(@Param('id') id: string, @Body() dto: StartDiagnosisDto) {
     return this.serviceOrdersUseCase.startDiagnosis(id, dto);
   }
@@ -91,6 +106,7 @@ export class ServiceOrdersController {
   @Post(':id/estimates')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
+  @ApiCreatedResponse({ type: EstimateResponseDto })
   createEstimate(@Param('id') id: string) {
     return this.serviceOrdersUseCase.createEstimate(id);
   }
@@ -98,6 +114,7 @@ export class ServiceOrdersController {
   @Post('estimates/:estimateId/items')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
+  @ApiCreatedResponse({ type: EstimateItemDto })
   addEstimateItem(
     @Param('estimateId') estimateId: string,
     @Body() dto: AddEstimateItemDto,
@@ -108,6 +125,7 @@ export class ServiceOrdersController {
   @Patch('estimates/:estimateId/status')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
+  @ApiOkResponse({ type: EstimateResponseDto })
   updateEstimateStatus(
     @Param('estimateId') estimateId: string,
     @Body() dto: UpdateEstimateStatusDto,
@@ -118,6 +136,7 @@ export class ServiceOrdersController {
   @Patch(':id/reject')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
+  @ApiOkResponse({ type: ServiceOrderResponseDto })
   rejectEstimate(@Param('id') id: string, @Body() dto: RejectEstimateDto) {
     return this.serviceOrdersUseCase.rejectEstimate(id, dto);
   }
@@ -131,11 +150,15 @@ export class ServiceOrdersController {
     @Req() req: AuthenticatedRequest,
   ) {
     return this.serviceOrdersUseCase.finish(id, req.user.id, dto.notes);
+  @ApiOkResponse({ type: ServiceOrderResponseDto })
+  finish(@Param('id') id: string) {
+    return this.serviceOrdersUseCase.finish(id);
   }
 
   @Patch(':id/deliver')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
+  @ApiOkResponse({ type: ServiceOrderResponseDto })
   deliverVehicle(@Param('id') id: string) {
     return this.serviceOrdersUseCase.deliverVehicle(id);
   }
@@ -143,6 +166,7 @@ export class ServiceOrdersController {
   @Patch(':id/close')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
+  @ApiOkResponse({ type: ServiceOrderResponseDto })
   close(@Param('id') id: string) {
     return this.serviceOrdersUseCase.close(id);
   }

@@ -98,7 +98,8 @@ model User {
   id            String         @id @default(uuid()) @map("id")
   name          String         @map("name")
   role          UserRole       @map("role")
-  email         String?
+  email         String         @unique
+  passwordHash  String         @map("password_hash")
   phone         String?
   available     Boolean        @default(true) @map("available")
   serviceOrders ServiceOrder[] @relation("AssignedMechanic")
