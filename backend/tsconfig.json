@@ -15,7 +15,8 @@
     "outDir": "./dist",
     "baseUrl": "./",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "@customer-management/*": ["src/customer-management/*"]
     },
     "incremental": true,
     "skipLibCheck": true,
