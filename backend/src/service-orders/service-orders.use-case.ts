@@ -10,7 +10,9 @@ import { CreateServiceOrderDto } from './dto/service-order/create-service-order.
 import { AddEstimateItemDto } from './dto/estimate/add-estimate-item.dto';
 import { UpdateEstimateStatusDto } from './dto/estimate/update-estimate-status.dto';
 import { RejectEstimateDto } from './dto/estimate/reject-estimate.dto';
-import { ServiceOrderStatus, EstimateStatus } from '@prisma/client';
+import { EstimateStatus } from '@prisma/client';
+import { ServiceOrderStatus } from './domain/enums/service-order-status.enum';
+import { ServiceOrder } from './domain/entities/service-order.entity';
 import { plainToInstance } from 'class-transformer';
 import { ServiceOrderResponseDto } from './dto/service-order/service-order-response.dto';
 import {
@@ -81,12 +83,10 @@ export class ServiceOrdersUseCase {
   }
 
   async assignMechanic(id: string, dto: AssignMechanicDto) {
-    const current = await this.serviceOrdersRepositoryInterface.findById(id);
-    if (!current) {
+    const data = await this.serviceOrdersRepositoryInterface.findById(id);
+    if (!data) {
       throw new NotFoundException(`Service order ${id} not found`);
     }
-
-    this.assertStatus(current.status, ServiceOrderStatus.RECEIVED);
 
     const user = await this.serviceOrdersRepositoryInterface.findUserById(
       dto.mechanicId,
@@ -94,8 +94,12 @@ export class ServiceOrdersUseCase {
     if (!user) {
       throw new NotFoundException('User not found');
     }
-    if (user.role !== 'MECHANIC') {
-      throw new BadRequestException('User is not a mechanic');
+
+    const order = ServiceOrder.fromPersistence(data);
+    try {
+      order.assignMechanic(user);
+    } catch (error: any) {
+      throw new BadRequestException(error.message);
     }
 
     const updated = await this.serviceOrdersRepositoryInterface.assignMechanic(
@@ -432,10 +436,10 @@ export class ServiceOrdersUseCase {
   }
 
   private assertStatus(
-    current: ServiceOrderStatus,
+    current: string,
     ...expected: ServiceOrderStatus[]
   ) {
-    if (!expected.includes(current)) {
+    if (!expected.includes(current as ServiceOrderStatus)) {
       throw new BadRequestException(
         `Order status "${current}" does not allow this operation. Expected: ${expected.join(' or ')}`,
       );
