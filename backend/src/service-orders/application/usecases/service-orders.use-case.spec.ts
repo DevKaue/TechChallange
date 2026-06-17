@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ServiceOrdersUseCase } from './service-orders.use-case';
-import { ServiceOrdersRepositoryInterface } from './service-orders-repository.interface';
+import { ServiceOrdersRepositoryInterface } from '../../domain/contracts/service-orders-repository.interface';
 import { ServiceOrderStatus, EstimateStatus } from '@prisma/client';
 import {
   NotFoundException,

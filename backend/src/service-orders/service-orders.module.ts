@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
-import { ServiceOrdersController } from './service-orders.controller';
-import { ServiceOrdersUseCase } from './service-orders.use-case';
-import { ServiceOrdersRepositoryInterface } from './service-orders-repository.interface';
-import { ServiceOrdersRepository } from './service-orders.repository';
+import { ServiceOrdersController } from './presentation/controllers/service-orders.controller';
+import { ServiceOrdersUseCase } from './application/usecases/service-orders.use-case';
+import { ServiceOrdersRepositoryInterface } from './domain/contracts/service-orders-repository.interface';
+import { ServiceOrdersRepository } from './infra/repositories/service-orders.repository';
 
 @Module({
   controllers: [ServiceOrdersController],

@@ -16,7 +16,8 @@
     "baseUrl": "./",
     "paths": {
       "@/*": ["src/*"],
-      "@customer-management/*": ["src/customer-management/*"]
+      "@customer-management/*": ["src/customer-management/*"],
+      "@service-orders/*": ["src/service-orders/*"]
     },
     "incremental": true,
     "skipLibCheck": true,

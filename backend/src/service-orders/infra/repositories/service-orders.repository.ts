@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@/prisma/prisma.service';
-import { ServiceOrdersRepositoryInterface } from './service-orders-repository.interface';
+import { ServiceOrdersRepositoryInterface } from '@/service-orders/domain/contracts/service-orders-repository.interface';
 import {
   ServiceOrderStatus,
   EstimateStatus,

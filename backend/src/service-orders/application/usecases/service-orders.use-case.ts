@@ -5,22 +5,22 @@ import {
   BadRequestException,
   ForbiddenException,
 } from '@nestjs/common';
-import { ServiceOrdersRepositoryInterface } from './service-orders-repository.interface';
-import { CreateServiceOrderDto } from './dto/service-order/create-service-order.dto';
-import { AddEstimateItemDto } from './dto/estimate/add-estimate-item.dto';
-import { UpdateEstimateStatusDto } from './dto/estimate/update-estimate-status.dto';
-import { RejectEstimateDto } from './dto/estimate/reject-estimate.dto';
+import { ServiceOrdersRepositoryInterface } from '@/service-orders/domain/contracts/service-orders-repository.interface';
+import { CreateServiceOrderDto } from '@/service-orders/application/dto/service-order/create-service-order.dto';
+import { AddEstimateItemDto } from '@/service-orders/application/dto/estimate/add-estimate-item.dto';
+import { UpdateEstimateStatusDto } from '@/service-orders/application/dto/estimate/update-estimate-status.dto';
+import { RejectEstimateDto } from '@/service-orders/application/dto/estimate/reject-estimate.dto';
 import { EstimateStatus } from '@prisma/client';
-import { ServiceOrderStatus } from './domain/enums/service-order-status.enum';
-import { ServiceOrder } from './domain/entities/service-order.entity';
+import { ServiceOrderStatus } from '@/service-orders/domain/enums/service-order-status.enum';
+import { ServiceOrder } from '@/service-orders/domain/entities/service-order.entity';
 import { plainToInstance } from 'class-transformer';
-import { ServiceOrderResponseDto } from './dto/service-order/service-order-response.dto';
+import { ServiceOrderResponseDto } from '@/service-orders/application/dto/service-order/service-order-response.dto';
 import {
   EstimateResponseDto,
   EstimateItemDto,
-} from './dto/estimate/estimate-response.dto';
-import { AssignMechanicDto } from './dto/mechanic/assign-mechanic.dto';
-import { StartDiagnosisDto } from './dto/diagnosis/start-diagnosis.dto';
+} from '@/service-orders/application/dto/estimate/estimate-response.dto';
+import { AssignMechanicDto } from '@/service-orders/application/dto/mechanic/assign-mechanic.dto';
+import { StartDiagnosisDto } from '@/service-orders/application/dto/diagnosis/start-diagnosis.dto';
 
 @Injectable()
 export class ServiceOrdersUseCase {

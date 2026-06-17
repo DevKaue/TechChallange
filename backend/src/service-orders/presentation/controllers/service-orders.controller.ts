@@ -8,13 +8,13 @@ import {
   UseGuards,
   Req,
 } from '@nestjs/common';
-import { ServiceOrdersUseCase } from './service-orders.use-case';
-import { CreateServiceOrderDto } from './dto/service-order/create-service-order.dto';
-import { AddEstimateItemDto } from './dto/estimate/add-estimate-item.dto';
-import { UpdateEstimateStatusDto } from './dto/estimate/update-estimate-status.dto';
-import { AssignMechanicDto } from './dto/mechanic/assign-mechanic.dto';
-import { StartDiagnosisDto } from './dto/diagnosis/start-diagnosis.dto';
-import { RejectEstimateDto } from './dto/estimate/reject-estimate.dto';
+import { ServiceOrdersUseCase } from '@/service-orders/application/usecases/service-orders.use-case';
+import { CreateServiceOrderDto } from '@/service-orders/application/dto/service-order/create-service-order.dto';
+import { AddEstimateItemDto } from '@/service-orders/application/dto/estimate/add-estimate-item.dto';
+import { UpdateEstimateStatusDto } from '@/service-orders/application/dto/estimate/update-estimate-status.dto';
+import { AssignMechanicDto } from '@/service-orders/application/dto/mechanic/assign-mechanic.dto';
+import { StartDiagnosisDto } from '@/service-orders/application/dto/diagnosis/start-diagnosis.dto';
+import { RejectEstimateDto } from '@/service-orders/application/dto/estimate/reject-estimate.dto';
 import { JwtAuthGuard } from '@/auth/jwt-auth.guard';
 import {
   ApiBearerAuth,
@@ -22,14 +22,14 @@ import {
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { ServiceOrderResponseDto } from './dto/service-order/service-order-response.dto';
+import { ServiceOrderResponseDto } from '@/service-orders/application/dto/service-order/service-order-response.dto';
 import {
   EstimateItemDto,
   EstimateResponseDto,
-} from './dto/estimate/estimate-response.dto';
+} from '@/service-orders/application/dto/estimate/estimate-response.dto';
 import type { AuthenticatedRequest } from '@/auth/authenticated-request';
-import { UpdateMechanicAvailabilityDto } from './dto/mechanic/update-mechanic-availability.dto';
-import { FinishServiceOrderDto } from './dto/service-order/finish-service-order.dto';
+import { UpdateMechanicAvailabilityDto } from '@/service-orders/application/dto/mechanic/update-mechanic-availability.dto';
+import { FinishServiceOrderDto } from '@/service-orders/application/dto/service-order/finish-service-order.dto';
 
 @ApiTags('Service Orders')
 @Controller('service-orders')
