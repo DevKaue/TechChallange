@@ -28,7 +28,6 @@ import {
   EstimateResponseDto,
 } from './dto/estimate/estimate-response.dto';
 import type { AuthenticatedRequest } from '@/auth/authenticated-request';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { UpdateMechanicAvailabilityDto } from './dto/mechanic/update-mechanic-availability.dto';
 import { FinishServiceOrderDto } from './dto/service-order/finish-service-order.dto';
 
@@ -144,15 +143,13 @@ export class ServiceOrdersController {
   @Patch(':id/finish')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
+  @ApiOkResponse({ type: ServiceOrderResponseDto })
   finish(
     @Param('id') id: string,
     @Body() dto: FinishServiceOrderDto,
     @Req() req: AuthenticatedRequest,
   ) {
     return this.serviceOrdersUseCase.finish(id, req.user.id, dto.notes);
-  @ApiOkResponse({ type: ServiceOrderResponseDto })
-  finish(@Param('id') id: string) {
-    return this.serviceOrdersUseCase.finish(id);
   }
 
   @Patch(':id/deliver')
