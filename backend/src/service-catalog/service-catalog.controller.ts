@@ -11,7 +11,7 @@ import {
 import { ServiceCatalogService } from './service-catalog.service';
 import { CreateServiceCatalogDto } from './dto/create-service-catalog.dto';
 import { UpdateServiceCatalogDto } from './dto/update-service-catalog.dto';
-import { JwtAuthGuard } from '@/auth/jwt-auth.guard';
+import { JwtAuthGuard } from '@/access-identity/presentation/guards/jwt-auth.guard';
 import {
   ApiBearerAuth,
   ApiTags,

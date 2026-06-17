@@ -6,7 +6,7 @@ Importante: esta parte do projeto usa **NestJS** no backend. Quando eu mencionar
 
 ## Objetivo
 
-Antes da feature, o modulo `auth` emitia um token JWT fixo por meio de `POST /auth/login-admin`, sem validar um usuario real no banco.
+Antes da feature, o fluxo legado de `auth` emitia um token JWT fixo por meio de `POST /auth/login-admin`, sem validar um usuario real no banco.
 
 A mudanca transformou esse fluxo em uma autenticacao baseada em usuarios internos da oficina:
 
@@ -23,6 +23,22 @@ A branch foi criada a partir de `develop`, seguindo o padrao ja existente no pro
 ```bash
 git switch -c feature/access-identity develop
 ```
+
+## Estrutura Atual Em Camadas
+
+O codigo de identidade de acesso foi reorganizado para o novo padrao do projeto:
+
+```text
+backend/src/access-identity/
+|-- application/usecases/
+|-- domain/contracts/
+|-- domain/entities/
+|-- infra/repositories/
+|-- infra/security/
+`-- presentation/
+```
+
+As rotas HTTP continuam em `/auth`, mas a implementacao interna agora fica no modulo `access-identity`.
 
 ## Alteracoes No Banco De Dados
 
@@ -64,7 +80,7 @@ Ela faz quatro coisas:
 Arquivo:
 
 ```text
-backend/src/auth/password-hasher.ts
+backend/src/access-identity/infra/security/scrypt-password-hasher.ts
 ```
 
 Foi criado um helper para gerar e validar hashes usando `scrypt`, que ja existe no Node.js.
@@ -84,7 +100,7 @@ Por enquanto nao foi adicionada dependencia externa como `bcrypt`, porque `scryp
 Arquivo:
 
 ```text
-backend/src/auth/auth.controller.ts
+backend/src/access-identity/presentation/controllers/auth.controller.ts
 ```
 
 ### POST /auth/login
@@ -137,7 +153,7 @@ Authorization: Bearer <TOKEN>
 Pasta:
 
 ```text
-backend/src/auth/dto/
+backend/src/access-identity/presentation/dto/
 ```
 
 Foram criados dois DTOs:
@@ -161,15 +177,15 @@ Esse padrao e importante no NestJS porque DTOs ajudam em tres pontos:
 - documentacao Swagger mais clara;
 - contrato explicito entre cliente e API.
 
-## AuthService
+## LoginUseCase
 
 Arquivo:
 
 ```text
-backend/src/auth/auth.service.ts
+backend/src/access-identity/application/usecases/login.usecase.ts
 ```
 
-O servico agora faz o fluxo real de autenticacao:
+O caso de uso agora faz o fluxo real de autenticacao:
 
 1. normaliza o email com `trim().toLowerCase()`;
 2. busca o usuario no Prisma;
@@ -194,7 +210,7 @@ O campo `sub` e uma convencao comum em JWT e significa "subject", ou seja, quem 
 Arquivo:
 
 ```text
-backend/src/auth/jwt.strategy.ts
+backend/src/access-identity/presentation/strategies/jwt.strategy.ts
 ```
 
 Antes, a strategy aceitava praticamente qualquer token com `sub`.
@@ -215,7 +231,7 @@ Isso e importante porque um token assinado pode continuar existindo mesmo depois
 Arquivo:
 
 ```text
-backend/src/auth/jwt-auth.guard.ts
+backend/src/access-identity/presentation/guards/jwt-auth.guard.ts
 ```
 
 O guard ja existia e foi reaproveitado:
@@ -293,21 +309,26 @@ As instrucoes agora explicam:
 Arquivos:
 
 ```text
-backend/src/auth/auth.service.spec.ts
-backend/src/auth/jwt.strategy.spec.ts
+backend/src/access-identity/application/usecases/login.usecase.spec.ts
+backend/src/access-identity/application/usecases/validate-authenticated-user.usecase.spec.ts
+backend/src/access-identity/presentation/strategies/jwt.strategy.spec.ts
 ```
 
-Testes do `AuthService`:
+Testes do `LoginUseCase`:
 
 - autentica usuario valido;
 - rejeita email inexistente;
 - rejeita senha invalida.
 
-Testes da `JwtStrategy`:
+Testes do `ValidateAuthenticatedUserUseCase`:
 
 - resolve o usuario a partir do `sub`;
 - rejeita token sem `sub`;
 - rejeita token de usuario inexistente.
+
+Teste da `JwtStrategy`:
+
+- valida que o payload do token e delegado para o caso de uso.
 
 ## Como Testar Manualmente
 
@@ -393,7 +414,7 @@ Comandos executados:
 npm run prisma:generate
 npm test -- --runInBand
 npm run build
-npx eslint "src/auth/**/*.ts" "src/service-orders/service-orders.controller.ts"
+npx eslint "src/access-identity/**/*.ts" "src/service-orders/service-orders.controller.ts"
 ```
 
 Resultado:

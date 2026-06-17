@@ -11,7 +11,7 @@ import {
 import { PartsService } from './parts.service';
 import { CreatePartDto } from './dto/create-part.dto';
 import { UpdatePartDto } from './dto/update-part.dto';
-import { JwtAuthGuard } from '@/auth/jwt-auth.guard';
+import { JwtAuthGuard } from '@/access-identity/presentation/guards/jwt-auth.guard';
 import {
   ApiBearerAuth,
   ApiTags,

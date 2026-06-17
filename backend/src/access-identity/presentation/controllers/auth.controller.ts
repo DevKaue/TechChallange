@@ -5,30 +5,30 @@ import {
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { AuthService } from './auth.service';
-import { LoginDto } from './dto/login.dto';
+import { LoginUseCase } from '../../application/usecases/login.usecase';
+import { LoginDto } from '../dto/login.dto';
 import {
   AuthenticatedUserDto,
   LoginResponseDto,
-} from './dto/login-response.dto';
-import { JwtAuthGuard } from './jwt-auth.guard';
-import type { RequestWithUser } from './authenticated-user.interface';
+} from '../dto/login-response.dto';
+import { JwtAuthGuard } from '../guards/jwt-auth.guard';
+import type { RequestWithUser } from '../interfaces/authenticated-user.interface';
 
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly loginUseCase: LoginUseCase) {}
 
   @Post('login')
   @ApiCreatedResponse({ type: LoginResponseDto })
   login(@Body() loginDto: LoginDto) {
-    return this.authService.login(loginDto);
+    return this.loginUseCase.execute(loginDto);
   }
 
   @Post('login-admin')
   @ApiCreatedResponse({ type: LoginResponseDto })
   loginAdmin(@Body() loginDto: LoginDto) {
-    return this.authService.loginAdmin(loginDto);
+    return this.loginUseCase.execute(loginDto);
   }
 
   @Get('me')

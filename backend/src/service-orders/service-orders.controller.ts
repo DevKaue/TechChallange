@@ -14,7 +14,7 @@ import { UpdateEstimateStatusDto } from './dto/estimate/update-estimate-status.d
 import { AssignMechanicDto } from './dto/mechanic/assign-mechanic.dto';
 import { StartDiagnosisDto } from './dto/diagnosis/start-diagnosis.dto';
 import { RejectEstimateDto } from './dto/estimate/reject-estimate.dto';
-import { JwtAuthGuard } from '@/auth/jwt-auth.guard';
+import { JwtAuthGuard } from '@/access-identity/presentation/guards/jwt-auth.guard';
 import {
   ApiBearerAuth,
   ApiCreatedResponse,

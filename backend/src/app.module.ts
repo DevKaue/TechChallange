@@ -7,7 +7,7 @@ import { PartsModule } from './parts/parts.module';
 import { ServiceCatalogModule } from './service-catalog/service-catalog.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ServiceOrdersModule } from './service-orders/service-orders.module';
-import { AuthModule } from './auth/auth.module';
+import { AccessIdentityModule } from './access-identity/access-identity.module';
 import { validateEnv } from './common/config/env';
 
 @Module({
@@ -18,7 +18,7 @@ import { validateEnv } from './common/config/env';
     ServiceCatalogModule,
     PrismaModule,
     ServiceOrdersModule,
-    AuthModule,
+    AccessIdentityModule,
   ],
   controllers: [AppController],
   providers: [AppService],
