@@ -1,5 +1,7 @@
+import { Injectable } from '@nestjs/common';
 import { randomBytes, scrypt as scryptCallback, timingSafeEqual } from 'crypto';
 import { promisify } from 'util';
+import { PasswordHasher } from '../../domain/contracts/password-hasher.interface';
 
 const scrypt = promisify(scryptCallback);
 const algorithm = 'scrypt';
@@ -30,4 +32,15 @@ export async function verifyPassword(
   }
 
   return timingSafeEqual(storedKey, derivedKey);
+}
+
+@Injectable()
+export class ScryptPasswordHasher implements PasswordHasher {
+  hash(password: string): Promise<string> {
+    return hashPassword(password);
+  }
+
+  verify(password: string, storedHash: string): Promise<boolean> {
+    return verifyPassword(password, storedHash);
+  }
 }

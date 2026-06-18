@@ -50,6 +50,7 @@ Após iniciar o servidor, a documentação estará disponível em:
 O sistema possui controle de acesso e validações estritas de dados sensíveis conforme exigido no desafio:
 - **Autenticação JWT:** As rotas administrativas (`clients`, `vehicles`, `parts`, `service-catalog`) e a rota de métricas são protegidas por autenticação. O token é obtido efetuando um `POST /auth/login` com email e senha de um usuário interno, e deve ser enviado no cabeçalho `Authorization: Bearer <TOKEN>` (ou inserido na interface do Swagger). O endpoint legado `POST /auth/login-admin` continua disponível com o mesmo payload. A rota de consulta individual de OS (`GET /service-orders/:id`) é pública para acompanhamento dos clientes.
 - **Identidade autenticada:** A rota protegida `GET /auth/me` retorna os dados do usuário interno identificado pelo token.
+- **Guia dos CRUDs:** veja `docs/autorizacao-crud-access-identity.md` para o passo a passo de autorização com o módulo `access-identity`.
 - **Validação de CPF/CNPJ:** Cadastro de clientes valida matematicamente o CPF ou CNPJ conforme o algoritmo de dígitos verificadores oficial brasileiro.
 - **Validação de Placas:** Cadastro de veículos valida placas seguindo o padrão Mercosul e o padrão brasileiro tradicional.
 

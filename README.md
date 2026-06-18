@@ -39,7 +39,7 @@ O MVP segue um monólito modular. A aplicação fica em um único deploy, mas os
 | Administrativo / Core Data | `clients`, `vehicles`, `service-catalog` | Manter os cadastros-base usados pelas ordens de serviço. |
 | Operação / Atendimento | `service-orders` | Criar OS, controlar status, itens, orçamento e métricas de execução. |
 | Estoque | `parts` | Controlar peças, insumos e saldo disponível para uso em OS. |
-| Plataforma | `auth`, `prisma`, `common` | Autenticação, acesso ao banco e validadores compartilhados. |
+| Plataforma | `access-identity`, `prisma`, `common` | Autenticação, acesso ao banco e validadores compartilhados. |
 
 Fluxo principal da OS:
 
@@ -54,7 +54,7 @@ RECEIVED -> IN_DIAGNOSTICS -> WAITING_APPROVAL -> IN_PROGRESS -> FINISHED -> DEL
 ├── backend/
 │   ├── prisma/                 # schema, migrations e config do Prisma
 │   ├── src/
-│   │   ├── auth/               # JWT + Passport
+│   │   ├── access-identity/    # identidade de acesso, JWT + Passport
 │   │   ├── clients/            # clientes
 │   │   ├── vehicles/           # veículos
 │   │   ├── parts/              # peças e estoque

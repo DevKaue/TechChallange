@@ -11,7 +11,7 @@ import {
 import { VehiclesService } from './vehicles.service';
 import { CreateVehicleDto } from './dto/create-vehicle.dto';
 import { UpdateVehicleDto } from './dto/update-vehicle.dto';
-import { JwtAuthGuard } from '@/auth/jwt-auth.guard';
+import { JwtAuthGuard } from '@/access-identity/presentation/guards/jwt-auth.guard';
 import {
   ApiBearerAuth,
   ApiTags,
