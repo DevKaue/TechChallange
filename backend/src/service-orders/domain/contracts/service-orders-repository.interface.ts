@@ -1,13 +1,12 @@
 import {
   ServiceOrder,
-  ServiceOrderStatus,
   Estimate,
   EstimateItem,
   ServiceOrderStatusHistory,
-  EstimateStatus,
   ServiceOrderItemType,
-  User,
 } from '@prisma/client';
+import { EstimateStatus } from '@service-orders/domain/enums/estimate-status.enum';
+import { ServiceOrderStatus } from '@service-orders/domain/enums/service-order-status.enum';
 
 type EstimateWithItems = Estimate & {
   items: EstimateItem[];
@@ -53,21 +52,6 @@ export abstract class ServiceOrdersRepositoryInterface {
 
   abstract findById(id: string): Promise<ServiceOrderWithRelations | null>;
 
-  abstract findVehicleById(
-    vehicleId: string,
-  ): Promise<{ id: string; clientId: string } | null>;
-
-  abstract findServiceCatalogById(
-    id: string,
-  ): Promise<{ id: string; price: number } | null>;
-
-  abstract findPartById(id: string): Promise<{
-    id: string;
-    name: string;
-    price: number;
-    stockQuantity: number;
-  } | null>;
-
   abstract updateStatus(
     id: string,
     status: ServiceOrderStatus,
@@ -103,25 +87,14 @@ export abstract class ServiceOrdersRepositoryInterface {
     approvedAt?: Date,
   ): Promise<Estimate>;
 
-  abstract updatePartStock(partId: string, quantity: number): Promise<void>;
-
   abstract findExecutionTimes(): Promise<
     Array<{ startTime: Date; endTime: Date }>
   >;
-
-  abstract findUserById(
-    id: string,
-  ): Promise<Pick<User, 'id' | 'name' | 'role'> | null>;
 
   abstract assignMechanic(
     id: string,
     mechanicId: string,
   ): Promise<ServiceOrder>;
-
-  abstract updateMechanicAvailability(
-    mechanicId: string,
-    available: boolean,
-  ): Promise<void>;
 
   abstract setClosedAt(id: string, date: Date): Promise<ServiceOrder>;
 
