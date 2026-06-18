@@ -1,48 +1,125 @@
-import { ServiceOrderStatus } from '../enums/service-order-status.enum';
+import { ServiceOrderStatus } from '@service-orders/domain/enums/service-order-status.enum';
+import { MechanicAssignment } from '@service-orders/domain/value-objects/mechanic-assignment.value-object';
+import { StatusChange } from '@service-orders/domain/value-objects/status-change.value-object';
 
-type MechanicData = { id: string; name: string; role: string };
+type CreateServiceOrderProps = {
+  id: string;
+  status: ServiceOrderStatus;
+  mechanic?: MechanicAssignment | null;
+};
 
 export class ServiceOrder {
-  private readonly _status: ServiceOrderStatus;
-  private _mechanicId: string | null;
-  private _mechanicName: string | null;
+  private _status: ServiceOrderStatus;
+  private _mechanic: MechanicAssignment | null;
 
   private constructor(
     private readonly _id: string,
     status: ServiceOrderStatus,
-    mechanicId: string | null,
-    mechanicName: string | null,
+    mechanic: MechanicAssignment | null,
   ) {
     this._status = status;
-    this._mechanicId = mechanicId;
-    this._mechanicName = mechanicName;
+    this._mechanic = mechanic;
   }
 
-  static fromPersistence(data: {
-    id: string;
-    status: string;
-    mechanicId: string | null;
-    mechanic: { id: string; name: string } | null;
-  }): ServiceOrder {
-    return new ServiceOrder(
-      data.id,
-      data.status as ServiceOrderStatus,
-      data.mechanicId,
-      data.mechanic?.name ?? null,
-    );
+  static create(props: CreateServiceOrderProps): ServiceOrder {
+    return new ServiceOrder(props.id, props.status, props.mechanic ?? null);
   }
 
-  assignMechanic(mechanic: MechanicData): void {
+  assignMechanic(mechanic: MechanicAssignment): void {
     if (this._status !== ServiceOrderStatus.RECEIVED) {
       throw new Error(
         `Cannot assign mechanic when status is ${this._status}. Expected: ${ServiceOrderStatus.RECEIVED}`,
       );
     }
-    if (mechanic.role !== 'MECHANIC') {
-      throw new Error('User is not a mechanic');
+    this._mechanic = mechanic;
+  }
+
+  startDiagnosis(): StatusChange {
+    if (
+      this._status !== ServiceOrderStatus.RECEIVED &&
+      this._status !== ServiceOrderStatus.IN_DIAGNOSIS
+    ) {
+      throw new Error(
+        `Cannot start diagnosis when status is ${this._status}. Expected: ${ServiceOrderStatus.RECEIVED} or ${ServiceOrderStatus.IN_DIAGNOSIS}`,
+      );
     }
-    this._mechanicId = mechanic.id;
-    this._mechanicName = mechanic.name;
+    const previous = this._status;
+    this._status = ServiceOrderStatus.IN_DIAGNOSIS;
+    return new StatusChange(previous, this._status);
+  }
+
+  requestApproval(): StatusChange {
+    if (
+      this._status !== ServiceOrderStatus.RECEIVED &&
+      this._status !== ServiceOrderStatus.IN_DIAGNOSIS
+    ) {
+      throw new Error(
+        `Cannot request approval when status is ${this._status}. Expected: ${ServiceOrderStatus.RECEIVED} or ${ServiceOrderStatus.IN_DIAGNOSIS}`,
+      );
+    }
+    const previous = this._status;
+    this._status = ServiceOrderStatus.WAITING_APPROVAL;
+    return new StatusChange(previous, this._status);
+  }
+
+  rejectEstimate(): StatusChange {
+    if (this._status !== ServiceOrderStatus.WAITING_APPROVAL) {
+      throw new Error(
+        `Cannot reject estimate when status is ${this._status}. Expected: ${ServiceOrderStatus.WAITING_APPROVAL}`,
+      );
+    }
+    const previous = this._status;
+    this._status = ServiceOrderStatus.DELIVERED;
+    return new StatusChange(previous, this._status);
+  }
+
+  startService(): StatusChange {
+    if (this._status !== ServiceOrderStatus.WAITING_APPROVAL) {
+      throw new Error(
+        `Cannot start service when status is ${this._status}. Expected: ${ServiceOrderStatus.WAITING_APPROVAL}`,
+      );
+    }
+    const previous = this._status;
+    this._status = ServiceOrderStatus.IN_EXECUTION;
+    return new StatusChange(previous, this._status);
+  }
+
+  finish(mechanicId: string): StatusChange {
+    if (this._status !== ServiceOrderStatus.IN_EXECUTION) {
+      throw new Error(
+        `Cannot finish when status is ${this._status}. Expected: ${ServiceOrderStatus.IN_EXECUTION}`,
+      );
+    }
+    if (!this._mechanic || !this._mechanic.isSame(mechanicId)) {
+      throw new Error(
+        'Only the assigned mechanic can finish this service order',
+      );
+    }
+    const previous = this._status;
+    this._status = ServiceOrderStatus.FINISHED;
+    return new StatusChange(previous, this._status);
+  }
+
+  deliverVehicle(): StatusChange {
+    if (this._status !== ServiceOrderStatus.FINISHED) {
+      throw new Error(
+        `Cannot deliver vehicle when status is ${this._status}. Expected: ${ServiceOrderStatus.FINISHED}`,
+      );
+    }
+    const previous = this._status;
+    this._status = ServiceOrderStatus.DELIVERED;
+    return new StatusChange(previous, this._status);
+  }
+
+  close(): StatusChange {
+    if (this._status !== ServiceOrderStatus.DELIVERED) {
+      throw new Error(
+        `Cannot close when status is ${this._status}. Expected: ${ServiceOrderStatus.DELIVERED}`,
+      );
+    }
+    const previous = this._status;
+    this._status = ServiceOrderStatus.CLOSED;
+    return new StatusChange(previous, this._status);
   }
 
   get id(): string {
@@ -54,10 +131,10 @@ export class ServiceOrder {
   }
 
   get mechanicId(): string | null {
-    return this._mechanicId;
+    return this._mechanic?.id ?? null;
   }
 
   get mechanicName(): string | null {
-    return this._mechanicName;
+    return this._mechanic?.name ?? null;
   }
 }
