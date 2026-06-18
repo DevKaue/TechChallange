@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@/prisma/prisma.service';
-import { ServiceOrdersRepositoryInterface } from '@/service-orders/domain/contracts/service-orders-repository.interface';
+import { ServiceOrdersRepositoryInterface } from '@service-orders/domain/contracts/service-orders-repository.interface';
 import {
   ServiceOrderStatus,
   EstimateStatus,
@@ -8,7 +8,7 @@ import {
 } from '@prisma/client';
 
 @Injectable()
-export class ServiceOrdersRepository extends ServiceOrdersRepositoryInterface {
+export class PrismaServiceOrdersRepository extends ServiceOrdersRepositoryInterface {
   constructor(private readonly prisma: PrismaService) {
     super();
   }
@@ -40,34 +40,6 @@ export class ServiceOrdersRepository extends ServiceOrdersRepositoryInterface {
     });
   }
 
-  async findVehicleById(vehicleId: string) {
-    return this.prisma.vehicle.findUnique({
-      where: { id: vehicleId },
-      select: { id: true, clientId: true },
-    });
-  }
-
-  async findServiceCatalogById(id: string) {
-    return this.prisma.serviceCatalog.findUnique({
-      where: { id },
-      select: { id: true, price: true },
-    });
-  }
-
-  async findPartById(id: string) {
-    return this.prisma.part.findUnique({
-      where: { id },
-      select: { id: true, name: true, price: true, stockQuantity: true },
-    });
-  }
-
-  async findUserById(id: string) {
-    return this.prisma.user.findUnique({
-      where: { id },
-      select: { id: true, name: true, role: true },
-    });
-  }
-
   async updateStatus(id: string, status: ServiceOrderStatus) {
     return this.prisma.serviceOrder.update({ where: { id }, data: { status } });
   }
@@ -83,13 +55,6 @@ export class ServiceOrdersRepository extends ServiceOrdersRepositoryInterface {
     return this.prisma.serviceOrder.update({
       where: { id },
       data: { closedAt: date },
-    });
-  }
-
-  async updateMechanicAvailability(userId: string, available: boolean) {
-    await this.prisma.user.update({
-      where: { id: userId },
-      data: { available },
     });
   }
 
@@ -131,13 +96,6 @@ export class ServiceOrdersRepository extends ServiceOrdersRepositoryInterface {
     return this.prisma.estimate.update({
       where: { id },
       data: { status, ...(approvedAt ? { approvedAt } : {}) },
-    });
-  }
-
-  async updatePartStock(partId: string, quantity: number) {
-    await this.prisma.part.update({
-      where: { id: partId },
-      data: { stockQuantity: { decrement: quantity } },
     });
   }
 
