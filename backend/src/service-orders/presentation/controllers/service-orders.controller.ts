@@ -15,7 +15,7 @@ import { UpdateEstimateStatusDto } from '@/service-orders/application/dto/estima
 import { AssignMechanicDto } from '@/service-orders/application/dto/mechanic/assign-mechanic.dto';
 import { StartDiagnosisDto } from '@/service-orders/application/dto/diagnosis/start-diagnosis.dto';
 import { RejectEstimateDto } from '@/service-orders/application/dto/estimate/reject-estimate.dto';
-import { JwtAuthGuard } from '@/auth/jwt-auth.guard';
+import { JwtAuthGuard } from '@/access-identity/presentation/guards/jwt-auth.guard';
 import {
   ApiBearerAuth,
   ApiCreatedResponse,
@@ -27,7 +27,7 @@ import {
   EstimateItemDto,
   EstimateResponseDto,
 } from '@/service-orders/application/dto/estimate/estimate-response.dto';
-import type { AuthenticatedRequest } from '@/auth/authenticated-request';
+import type { AuthenticatedRequest } from '@/access-identity/presentation/authenticated-request';
 import { UpdateMechanicAvailabilityDto } from '@/service-orders/application/dto/mechanic/update-mechanic-availability.dto';
 import { FinishServiceOrderDto } from '@/service-orders/application/dto/service-order/finish-service-order.dto';
 
