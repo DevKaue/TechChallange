@@ -1,0 +1,15 @@
+graph LR
+    subgraph "Camadas por Modulo"
+        CTR[Controller]
+        DTO[DTOs]
+        UC[UseCase / Service]
+        REP[Repository Interface]
+        REPI[Repository Impl]
+        DB[(Prisma/PostgreSQL)]
+    end
+
+    CTR --> DTO
+    CTR --> UC
+    UC --> REP
+    REP --> REPI
+    REPI --> DB

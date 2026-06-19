@@ -1,0 +1,103 @@
+import { Test, TestingModule } from '@nestjs/testing';
+import { DiagnosisUseCase } from './diagnosis.use-case';
+import { ServiceOrdersRepositoryInterface } from '@service-orders/domain/contracts/service-orders-repository.interface';
+import { ServiceOrderStatus } from '@service-orders/domain/enums/service-order-status.enum';
+import { NotFoundException, BadRequestException } from '@nestjs/common';
+
+describe('DiagnosisUseCase', () => {
+  let useCase: DiagnosisUseCase;
+  let repository: jest.Mocked<ServiceOrdersRepositoryInterface>;
+
+  const mockOrder: any = {
+    id: 'order-1',
+    clientId: 'client-1',
+    vehicleId: 'vehicle-1',
+    status: ServiceOrderStatus.RECEIVED,
+    mileage: null,
+    notes: null,
+    mechanicId: null,
+    closedAt: null,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    client: {
+      id: 'client-1',
+      document: '123',
+      email: null,
+      phone: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    vehicle: {
+      id: 'vehicle-1',
+      plate: 'ABC-123',
+      brand: 'Toyota',
+      model: 'Corolla',
+      year: 2020,
+      clientId: 'client-1',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    mechanic: null,
+    estimates: [],
+    statusHistory: [],
+  };
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        DiagnosisUseCase,
+        {
+          provide: ServiceOrdersRepositoryInterface,
+          useValue: {
+            findById: jest.fn(),
+            updateStatus: jest.fn(),
+            createStatusHistory: jest.fn(),
+          },
+        },
+      ],
+    }).compile();
+
+    useCase = module.get(DiagnosisUseCase);
+    repository = module.get(ServiceOrdersRepositoryInterface);
+  });
+
+  describe('startDiagnosis', () => {
+    it('should move to IN_DIAGNOSIS', async () => {
+      repository.findById.mockResolvedValue(mockOrder);
+      repository.updateStatus.mockResolvedValue({
+        ...mockOrder,
+        status: ServiceOrderStatus.IN_DIAGNOSIS,
+      });
+      repository.createStatusHistory.mockResolvedValue({} as any);
+
+      const result = await useCase.startDiagnosis('order-1', {
+        diagnosis: 'Checking engine',
+      });
+
+      expect(repository.updateStatus).toHaveBeenCalledWith(
+        'order-1',
+        ServiceOrderStatus.IN_DIAGNOSIS,
+      );
+      expect(result).toBeDefined();
+    });
+
+    it('should throw if order not found', async () => {
+      repository.findById.mockResolvedValue(null);
+
+      await expect(
+        useCase.startDiagnosis('invalid', { diagnosis: 'test' }),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('should throw when status is invalid', async () => {
+      repository.findById.mockResolvedValue({
+        ...mockOrder,
+        status: ServiceOrderStatus.WAITING_APPROVAL,
+      });
+
+      await expect(
+        useCase.startDiagnosis('order-1', { diagnosis: 'test' }),
+      ).rejects.toThrow(BadRequestException);
+    });
+  });
+});

@@ -7,7 +7,11 @@ export class PartResponseDto {
   @ApiProperty({ description: 'Part name' })
   name: string;
 
-  @ApiProperty({ description: 'Part description', required: false, nullable: true })
+  @ApiProperty({
+    description: 'Part description',
+    required: false,
+    nullable: true,
+  })
   description: string | null;
 
   @ApiProperty({ description: 'Unit price' })

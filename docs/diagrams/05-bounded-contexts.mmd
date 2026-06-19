@@ -1,0 +1,24 @@
+graph LR
+    subgraph Admin[Nucleo Administrativo]
+        CLI[Clientes]
+        VEH[Veiculos]
+        SCAT[Servicos]
+    end
+
+    subgraph Operacao[Nucleo Operacional]
+        SO[Ordens de Servico]
+    end
+
+    subgraph Estoque[Nucleo de Estoque]
+        PARTS[Pecas]
+    end
+
+    subgraph Plataforma[Nucleo de Plataforma]
+        AUTH[Autenticacao]
+        PRISMA[Prisma]
+    end
+
+    Operacao --> Admin
+    Operacao --> Estoque
+    Admin --> Plataforma
+    Estoque --> Plataforma

@@ -1,0 +1,58 @@
+sequenceDiagram
+    participant C as Cliente
+    participant A as Atendente
+    participant M as Mecanico
+    participant API as API NestJS
+    participant DB as PostgreSQL
+
+    C->>A: Chega com veiculo
+    A->>API: POST /service-orders (clientId, vehicleId)
+    API->>DB: INSERT service_order (status: RECEIVED)
+    API-->>A: OS criada
+
+    alt Servico simples (ex.: troca de pneu)
+        A->>API: POST /service-orders/:id/estimates
+        API->>DB: UPDATE status -> WAITING_APPROVAL
+        API->>DB: INSERT estimate
+        API-->>A: Orcamento gerado
+    else Servico complexo (ex.: motor)
+        A->>M: Encaminha para diagnostico
+        M->>API: PATCH /service-orders/:id/diagnosis
+        API->>DB: UPDATE status -> IN_DIAGNOSIS
+        M->>API: POST /service-orders/:id/estimates
+        API->>DB: UPDATE status -> WAITING_APPROVAL
+        API->>DB: INSERT estimate
+        API-->>M: Orcamento gerado
+    end
+
+    A->>C: Apresenta orcamento
+
+    alt Cliente aprova
+        C-->>A: Aprova orcamento
+        A->>API: PATCH /estimates/:id/status (APPROVED)
+        API->>DB: UPDATE estimate status -> APPROVED
+        API->>DB: UPDATE status -> IN_EXECUTION
+        API-->>A: Orcamento aprovado
+        A->>API: PATCH /service-orders/:id/mechanic
+        API->>DB: UPDATE mechanicId
+        API-->>M: Servico atribuido
+        M->>API: PATCH /service-orders/:id/finish
+        API->>DB: UPDATE status -> FINISHED
+        API-->>M: Servico finalizado
+        A->>API: PATCH /service-orders/:id/deliver
+        API->>DB: UPDATE status -> DELIVERED
+        API-->>A: Veiculo liberado
+        A->>C: Veiculo entregue
+        A->>API: PATCH /service-orders/:id/close
+        API->>DB: UPDATE status -> CLOSED
+        API-->>A: OS fechada
+    else Cliente rejeita
+        C-->>A: Rejeita orcamento
+        A->>API: PATCH /service-orders/:id/reject
+        API->>DB: UPDATE status -> DELIVERED
+        API-->>A: Veiculo liberado sem execucao
+        A->>C: Veiculo entregue (sem servico)
+        A->>API: PATCH /service-orders/:id/close
+        API->>DB: UPDATE status -> CLOSED
+        API-->>A: OS fechada
+    end
