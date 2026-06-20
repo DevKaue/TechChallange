@@ -6,7 +6,7 @@ export class CreateServiceOrderDto {
   @IsString()
   @IsNotEmpty()
   @IsUUID()
-  clientId: string;
+  customerId: string;
 
   @ApiProperty({ description: 'Vehicle UUID' })
   @IsString()

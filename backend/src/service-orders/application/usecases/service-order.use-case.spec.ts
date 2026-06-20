@@ -19,7 +19,7 @@ describe('ServiceOrderUseCase', () => {
 
   const mockOrder: any = {
     id: 'order-1',
-    clientId: 'client-1',
+    customerId: 'client-1',
     vehicleId: 'vehicle-1',
     status: ServiceOrderStatus.RECEIVED,
     mileage: null,
@@ -28,7 +28,7 @@ describe('ServiceOrderUseCase', () => {
     closedAt: null,
     createdAt: new Date(),
     updatedAt: new Date(),
-    client: {
+    customer: {
       id: 'client-1',
       document: '123',
       email: null,
@@ -42,7 +42,7 @@ describe('ServiceOrderUseCase', () => {
       brand: 'Toyota',
       model: 'Corolla',
       year: 2020,
-      clientId: 'client-1',
+      customerId: 'client-1',
       createdAt: new Date(),
       updatedAt: new Date(),
     },
@@ -57,7 +57,7 @@ describe('ServiceOrderUseCase', () => {
     brand: 'Toyota',
     model: 'Corolla',
     year: 2020,
-    clientId: 'client-1',
+    customerId: 'client-1',
   };
 
   beforeEach(async () => {
@@ -102,12 +102,12 @@ describe('ServiceOrderUseCase', () => {
       repository.createStatusHistory.mockResolvedValue({} as any);
 
       const result = await useCase.create({
-        clientId: 'client-1',
+        customerId: 'client-1',
         vehicleId: 'vehicle-1',
       });
 
       expect(repository.create).toHaveBeenCalledWith({
-        clientId: 'client-1',
+        customerId: 'client-1',
         vehicleId: 'vehicle-1',
         status: ServiceOrderStatus.RECEIVED,
       });
@@ -118,7 +118,7 @@ describe('ServiceOrderUseCase', () => {
       vehicleRepository.findById.mockResolvedValue(null);
 
       await expect(
-        useCase.create({ clientId: 'client-1', vehicleId: 'invalid' }),
+        useCase.create({ customerId: 'client-1', vehicleId: 'invalid' }),
       ).rejects.toThrow(NotFoundException);
     });
 
@@ -129,11 +129,11 @@ describe('ServiceOrderUseCase', () => {
         brand: 'Honda',
         model: 'Civic',
         year: 2021,
-        clientId: 'other-client',
+        customerId: 'other-client',
       });
 
       await expect(
-        useCase.create({ clientId: 'client-1', vehicleId: 'v1' }),
+        useCase.create({ customerId: 'client-1', vehicleId: 'v1' }),
       ).rejects.toThrow(BadRequestException);
     });
   });

@@ -3,13 +3,13 @@ import {
   NotFoundException,
   BadRequestException,
   ConflictException,
-  Inject,
 } from '@nestjs/common';
 import { ServiceOrdersRepositoryInterface } from '@service-orders/domain/contracts/service-orders-repository.interface';
-import { PART_REPOSITORY } from '@service-orders/domain/acls/part-repository.interface';
-import type { PartRepository } from '@service-orders/domain/acls/part-repository.interface';
-import { SERVICE_CATALOG_REPOSITORY } from '@service-orders/domain/acls/service-catalog-repository.interface';
-import type { ServiceCatalogRepository } from '@service-orders/domain/acls/service-catalog-repository.interface';
+// TODO: Descomente quando parts module estiver pronto
+// import { PART_REPOSITORY } from '@service-orders/domain/acls/part-repository.interface';
+// import type { PartRepository } from '@service-orders/domain/acls/part-repository.interface';
+// import { SERVICE_CATALOG_REPOSITORY } from '@service-orders/domain/acls/service-catalog-repository.interface';
+// import type { ServiceCatalogRepository } from '@service-orders/domain/acls/service-catalog-repository.interface';
 import { ServiceOrderMapper } from '@service-orders/domain/mappers/service-order.mapper';
 import { Money } from '@service-orders/domain/value-objects/money.value-object';
 import { EstimateStatus } from '@service-orders/domain/enums/estimate-status.enum';
@@ -27,9 +27,10 @@ import { plainToInstance } from 'class-transformer';
 export class EstimateUseCase {
   constructor(
     private readonly repository: ServiceOrdersRepositoryInterface,
-    @Inject(PART_REPOSITORY) private readonly partRepository: PartRepository,
-    @Inject(SERVICE_CATALOG_REPOSITORY)
-    private readonly serviceCatalogRepository: ServiceCatalogRepository,
+    // TODO: Descomente quando parts module estiver pronto
+    // @Inject(PART_REPOSITORY) private readonly partRepository: PartRepository,
+    // @Inject(SERVICE_CATALOG_REPOSITORY)
+    // private readonly serviceCatalogRepository: ServiceCatalogRepository,
   ) {}
 
   async createEstimate(orderId: string) {
@@ -70,27 +71,30 @@ export class EstimateUseCase {
   }
 
   async addEstimateItem(estimateId: string, dto: AddEstimateItemDto) {
+    // TODO: Descomente quando parts module estiver pronto
     let unitPriceMoney: Money | null = null;
     let description = '';
 
-    if (dto.itemType === 'SERVICE') {
-      const service = await this.serviceCatalogRepository.findById(
-        dto.referenceId,
-      );
-      if (!service) throw new NotFoundException('Service not found in catalog');
-      unitPriceMoney = Money.fromFloat(service.price);
-    } else {
-      const part = await this.partRepository.findById(dto.referenceId);
-      if (!part) throw new NotFoundException('Part not found');
-      if (part.stockQuantity < dto.quantity) {
-        throw new ConflictException(
-          `Insufficient stock for part ${part.name}. Available: ${part.stockQuantity}`,
-        );
-      }
-      unitPriceMoney = Money.fromFloat(part.price);
-      description = part.name;
-      await this.partRepository.decrementStock(part.id, dto.quantity);
-    }
+    // if (dto.itemType === 'SERVICE') {
+    //   const service = await this.serviceCatalogRepository.findById(
+    //     dto.referenceId,
+    //   );
+    //   if (!service) throw new NotFoundException('Service not found in catalog');
+    //   unitPriceMoney = Money.fromFloat(service.price);
+    // } else {
+    //   const part = await this.partRepository.findById(dto.referenceId);
+    //   if (!part) throw new NotFoundException('Part not found');
+    //   if (part.stockQuantity < dto.quantity) {
+    //     throw new ConflictException(
+    //       `Insufficient stock for part ${part.name}. Available: ${part.stockQuantity}`,
+    //     );
+    //   }
+    //   unitPriceMoney = Money.fromFloat(part.price);
+    //   description = part.name;
+    //   await this.partRepository.decrementStock(part.id, dto.quantity);
+    // }
+
+    unitPriceMoney = Money.fromFloat(0);
 
     const totalPriceMoney = unitPriceMoney.multiply(dto.quantity);
 

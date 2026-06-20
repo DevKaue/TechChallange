@@ -1,5 +1,5 @@
 -- DropForeignKey
-ALTER TABLE "ServiceOrder" DROP CONSTRAINT "ServiceOrder_clientId_fkey";
+ALTER TABLE "ServiceOrder" DROP CONSTRAINT "ServiceOrder_customerId_fkey";
 
 -- DropForeignKey
 ALTER TABLE "ServiceOrder" DROP CONSTRAINT "ServiceOrder_vehicleId_fkey";
@@ -17,7 +17,7 @@ ALTER TABLE "ServiceOrderPart" DROP CONSTRAINT "ServiceOrderPart_partId_fkey";
 ALTER TABLE "ServiceOrderPart" DROP CONSTRAINT "ServiceOrderPart_serviceOrderId_fkey";
 
 -- DropForeignKey
-ALTER TABLE "Vehicle" DROP CONSTRAINT "Vehicle_clientId_fkey";
+ALTER TABLE "Vehicle" DROP CONSTRAINT "Vehicle_customerId_fkey";
 
 -- DropTable
 DROP TABLE "ServiceOrderPart";

@@ -1,9 +1,11 @@
+import DomainException from "@customer-management/domain/exceptions/domain.exception";
+
 export default class LicensePlate {
   public readonly value: string;
 
   constructor(value: string) {
     if (!this.validate(value)) {
-      throw new Error("Invalid license plate format. Must be Mercosul or traditional Brazilian format.");
+      throw new DomainException("Invalid license plate format. Must be Mercosul or traditional Brazilian format.");
     }
     this.value = value.replace("-", "").toUpperCase();
   }

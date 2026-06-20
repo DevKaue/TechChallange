@@ -18,7 +18,8 @@
       "@/*": ["src/*"],
       "@access-identity/*": ["src/access-identity/*"],
       "@customer-management/*": ["src/customer-management/*"],
-      "@service-orders/*": ["src/service-orders/*"]
+      "@service-orders/*": ["src/service-orders/*"],
+      "@common/*": ["src/common/*"],
     },
     "incremental": true,
     "skipLibCheck": true,

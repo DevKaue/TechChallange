@@ -276,7 +276,7 @@ Repita a mesma logica em rotas protegidas representativas:
 Primeiro tente sem token:
 
 ```bash
-curl -i -X POST "$BASE_URL/service-orders" -H "Content-Type: application/json" -d '{"clientId":"00000000-0000-0000-0000-000000000000","vehicleId":"00000000-0000-0000-0000-000000000000"}'
+curl -i -X POST "$BASE_URL/service-orders" -H "Content-Type: application/json" -d '{"customerId":"00000000-0000-0000-0000-000000000000","vehicleId":"00000000-0000-0000-0000-000000000000"}'
 ```
 
 Resultado esperado:
@@ -286,18 +286,18 @@ Resultado esperado:
 
 ### CT-13 - Rota publica de acompanhamento de OS
 
-Obtenha um `clientId` e um `vehicleId` vinculado a ele:
+Obtenha um `customerId` e um `vehicleId` vinculado a ele:
 
 ```bash
 curl -s "$BASE_URL/vehicles" -H "Authorization: Bearer $TOKEN"
 ```
 
-Use o `id` do veiculo como `vehicleId` e o `clientId` do mesmo objeto como `clientId`.
+Use o `id` do veiculo como `vehicleId` e o `customerId` do mesmo objeto como `customerId`.
 
 Crie uma OS autenticada:
 
 ```bash
-curl -i -X POST "$BASE_URL/service-orders" -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" -d '{"clientId":"<CLIENT_ID>","vehicleId":"<VEHICLE_ID>"}'
+curl -i -X POST "$BASE_URL/service-orders" -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" -d '{"customerId":"<CLIENT_ID>","vehicleId":"<VEHICLE_ID>"}'
 ```
 
 Resultado esperado:

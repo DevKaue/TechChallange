@@ -6,7 +6,7 @@ sequenceDiagram
     participant DB as PostgreSQL
 
     C->>A: Chega com veiculo
-    A->>API: POST /service-orders (clientId, vehicleId)
+    A->>API: POST /service-orders (customerId, vehicleId)
     API->>DB: INSERT service_order (status: RECEIVED)
     API-->>A: OS criada
 
