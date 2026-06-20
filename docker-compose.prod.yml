@@ -1,7 +1,7 @@
 services:
   db:
     image: postgres:15-alpine
-    container_name: techchallenge_db
+    container_name: techchallenge_db_prod
     restart: unless-stopped
     environment:
       POSTGRES_USER: admin
@@ -21,23 +21,19 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-      target: development
-    container_name: techchallenge_api
+      target: production
+    container_name: techchallenge_api_prod
     restart: unless-stopped
-    command: npm run start:dev
     ports:
       - '3000:3000'
     environment:
       - DATABASE_URL=postgresql://admin:adminpassword@db:5432/oficinadb?schema=public
       - JWT_SECRET=techchallenge_secret_key_2026
       - PORT=3000
-      - NODE_ENV=development
+      - NODE_ENV=production
     depends_on:
       db:
         condition: service_healthy
-    volumes:
-      - ./backend/src:/usr/src/app/src
-      - ./backend/prisma:/usr/src/app/prisma
 
   sonar_db:
     image: postgres:15-alpine
