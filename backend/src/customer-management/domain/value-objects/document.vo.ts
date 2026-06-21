@@ -1,4 +1,5 @@
 import { DocumentType } from "@customer-management/domain/enums/document-type.enum";
+import DomainException from "@customer-management/domain/exceptions/domain.exception";
 
 export default class Document {
     public readonly type: DocumentType;
@@ -8,7 +9,7 @@ export default class Document {
         const cleanedValue = value.replace(/\D/g, "");
 
         if (!this.validate(type, cleanedValue)) {
-            throw new Error(`Invalid ${type} document.`);
+            throw new DomainException(`Invalid ${type} document.`);
         }
 
         this.type = type;

@@ -18,6 +18,6 @@ export interface VehicleRepository {
     brand: string;
     model: string;
     year: number;
-    clientId: string;
+    customerId: string;
   } | null>;
 }

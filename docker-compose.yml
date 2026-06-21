@@ -21,17 +21,23 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+      target: development
     container_name: techchallenge_api
     restart: unless-stopped
+    command: sh -c "npm run prisma:migrate:dev -- --name init || npm run prisma:migrate:deploy && npm run start:dev"
     ports:
       - '3000:3000'
     environment:
       - DATABASE_URL=postgresql://admin:adminpassword@db:5432/oficinadb?schema=public
       - JWT_SECRET=techchallenge_secret_key_2026
       - PORT=3000
+      - NODE_ENV=development
     depends_on:
       db:
         condition: service_healthy
+    volumes:
+      - ./backend/src:/usr/src/app/src
+      - ./backend/prisma:/usr/src/app/prisma
 
   sonar_db:
     image: postgres:15-alpine

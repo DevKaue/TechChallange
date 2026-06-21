@@ -38,23 +38,23 @@ const parts = [
   { name: 'Velas de Ignição (4 un)', description: 'Jogo de 4 velas de ignição', price: 90, stockQuantity: 10 },
 ];
 
-const clients = [
+const customers = [
   { name: 'Empresa ABC Ltda', document: '11222333000181', documentType: 'CNPJ', email: 'contato@abc.com', phone: '(11) 3333-0100' },
   { name: 'Maria Souza', document: '52998224725', documentType: 'CPF', email: 'maria.souza@email.com', phone: '(11) 98888-0001' },
   { name: 'Pedro Almeida', document: '98765432100', documentType: 'CPF', email: 'pedro.almeida@email.com', phone: '(11) 97777-0002' },
 ] as const;
 
 const vehicles = [
-  { plate: 'ABC-1A23', brand: 'Toyota', model: 'Corolla', year: 2022, clientIndex: 1 },
-  { plate: 'DEF-2B34', brand: 'Honda', model: 'Civic', year: 2021, clientIndex: 0 },
-  { plate: 'GHI-3C45', brand: 'Volkswagen', model: 'T-Cross', year: 2023, clientIndex: 2 },
+  { plate: 'ABC-1A23', brand: 'Toyota', model: 'Corolla', year: 2022, customerIndex: 1 },
+  { plate: 'DEF-2B34', brand: 'Honda', model: 'Civic', year: 2021, customerIndex: 0 },
+  { plate: 'GHI-3C45', brand: 'Volkswagen', model: 'T-Cross', year: 2023, customerIndex: 2 },
 ];
 
 async function main() {
   console.log('Seeding database...');
 
   await prisma.vehicle.deleteMany();
-  await prisma.client.deleteMany();
+  await prisma.customer.deleteMany();
   await prisma.part.deleteMany();
   await prisma.serviceCatalog.deleteMany();
   await prisma.user.deleteMany();
@@ -80,13 +80,13 @@ async function main() {
     await prisma.part.create({ data: part });
   }
 
-  console.log('Creating clients...');
-  for (const client of clients) {
-    await prisma.client.create({ data: client });
+  console.log('Creating customers...');
+  for (const customer of customers) {
+    await prisma.customer.create({ data: customer });
   }
 
   console.log('Creating vehicles...');
-  const createdClients = await prisma.client.findMany({ orderBy: { createdAt: 'asc' } });
+  const createdCustomers = await prisma.customer.findMany({ orderBy: { createdAt: 'asc' } });
   for (const vehicle of vehicles) {
     await prisma.vehicle.create({
       data: {
@@ -94,7 +94,7 @@ async function main() {
         brand: vehicle.brand,
         model: vehicle.model,
         year: vehicle.year,
-        clientId: createdClients[vehicle.clientIndex].id,
+        customerId: createdCustomers[vehicle.customerIndex].id,
       },
     });
   }

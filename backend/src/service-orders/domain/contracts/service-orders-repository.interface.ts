@@ -13,7 +13,7 @@ type EstimateWithItems = Estimate & {
 };
 
 type ServiceOrderWithRelations = ServiceOrder & {
-  client: {
+  customer: {
     id: string;
     document: string;
     email: string | null;
@@ -27,7 +27,7 @@ type ServiceOrderWithRelations = ServiceOrder & {
     brand: string;
     model: string;
     year: number;
-    clientId: string;
+    customerId: string;
     createdAt: Date;
     updatedAt: Date;
   };
@@ -43,7 +43,7 @@ type ServiceOrderWithRelations = ServiceOrder & {
 
 export abstract class ServiceOrdersRepositoryInterface {
   abstract create(data: {
-    clientId: string;
+    customerId: string;
     vehicleId: string;
     status: ServiceOrderStatus;
   }): Promise<ServiceOrder>;

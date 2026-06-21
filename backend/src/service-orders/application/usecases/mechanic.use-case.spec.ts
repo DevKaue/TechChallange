@@ -16,7 +16,7 @@ describe('MechanicUseCase', () => {
 
   const mockOrder: any = {
     id: 'order-1',
-    clientId: 'client-1',
+    customerId: 'client-1',
     vehicleId: 'vehicle-1',
     status: ServiceOrderStatus.RECEIVED,
     mileage: null,
@@ -25,7 +25,7 @@ describe('MechanicUseCase', () => {
     closedAt: null,
     createdAt: new Date(),
     updatedAt: new Date(),
-    client: {
+    customer: {
       id: 'client-1',
       document: '123',
       email: null,
@@ -39,7 +39,7 @@ describe('MechanicUseCase', () => {
       brand: 'Toyota',
       model: 'Corolla',
       year: 2020,
-      clientId: 'client-1',
+      customerId: 'client-1',
       createdAt: new Date(),
       updatedAt: new Date(),
     },

@@ -22,12 +22,12 @@ erDiagram
         string brand
         string model
         int year
-        uuid clientId FK
+        uuid customerId FK
     }
 
     ServiceOrder {
         uuid id PK
-        uuid clientId FK
+        uuid customerId FK
         uuid vehicleId FK
         uuid mechanicId FK
         enum status

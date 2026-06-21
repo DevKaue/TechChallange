@@ -14,7 +14,7 @@ export class PrismaServiceOrdersRepository extends ServiceOrdersRepositoryInterf
   }
 
   async create(data: {
-    clientId: string;
+    customerId: string;
     vehicleId: string;
     status: ServiceOrderStatus;
   }) {
@@ -23,7 +23,7 @@ export class PrismaServiceOrdersRepository extends ServiceOrdersRepositoryInterf
 
   async findAll() {
     return this.prisma.serviceOrder.findMany({
-      include: { client: true, vehicle: true },
+      include: { customer: true, vehicle: true },
     });
   }
 
@@ -31,7 +31,7 @@ export class PrismaServiceOrdersRepository extends ServiceOrdersRepositoryInterf
     return this.prisma.serviceOrder.findUnique({
       where: { id },
       include: {
-        client: true,
+        customer: true,
         vehicle: true,
         mechanic: { select: { id: true, name: true, role: true } },
         estimates: { include: { items: true } },
