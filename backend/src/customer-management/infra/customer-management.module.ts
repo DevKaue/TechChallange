@@ -5,6 +5,8 @@ import { VehicleController } from '@customer-management/presentation/controllers
 import CreateCustomerUseCase from '@customer-management/application/usecases/create-customer.usecase';
 import { CreateVehicleUseCase } from '@customer-management/application/usecases/create-vehicle.usecase';
 import FindVehicleByIdUseCase from '@customer-management/application/usecases/find-vehicle-by-id.usecase';
+import CustomerManagementFacade from '@customer-management/infra/integrations/customer-management.facade';
+import CustomerManagementInterface from '@/common/contracts/customer-management.interface';
 
 import CustomerRepositoryInterface from '@customer-management/domain/contracts/customer-repository.interface';
 import VehicleRepositoryInterface from '@customer-management/domain/contracts/vehicle-repository.interface';
@@ -71,6 +73,21 @@ import PrismaVehicleQueryService from '@customer-management/infra/services/prism
       },
       inject: [VehicleQueryServiceInterface],
     },
+
+    {
+      provide: CustomerManagementInterface,
+      useFactory: (
+        findCustomerByIdUseCase: FindCustomerByIdUseCase,
+        findVehicleByIdUseCase: FindVehicleByIdUseCase
+      ) => {
+        return new CustomerManagementFacade(
+          findCustomerByIdUseCase,
+          findVehicleByIdUseCase
+        );
+      },
+      inject: [FindCustomerByIdUseCase, FindVehicleByIdUseCase],
+    },
   ],
+  exports: [CustomerManagementInterface],
 })
 export class CustomerManagementModule {}

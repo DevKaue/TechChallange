@@ -6,8 +6,9 @@ import CustomerNotFoundException from "@/customer-management/application/excepti
 import FindVehicleByIdUseCase from "@/customer-management/application/usecases/find-vehicle-by-id.usecase";
 import VehicleNotFoundException from "@/customer-management/application/exceptions/vehicle-not-found.exception";
 import FindVehicleByIdInputDTO from "@/customer-management/application/dtos/find-vehicle-by-id-input.dto";
+import CustomerManagementInterface from "@/common/contracts/customer-management.interface";
 
-export default class CustomerManagementFacade {
+export default class CustomerManagementFacade implements CustomerManagementInterface {
     constructor(
         private readonly findCustomerByIdUseCase: FindCustomerByIdUseCase,
         private readonly findVehicleByIdUseCase: FindVehicleByIdUseCase
