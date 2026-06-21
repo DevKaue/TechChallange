@@ -7,7 +7,7 @@ import CustomerDTO from '@customer-management/application/dtos/customer.dto';
 
 import CustomerAlreadyExistsException from '@customer-management/application/exceptions/customer-already-exists.exception';
 
-export class CreateCustomerUseCase {
+export default class CreateCustomerUseCase {
   constructor(
     private readonly customerRepository: CustomerRepositoryInterface
   ) {}

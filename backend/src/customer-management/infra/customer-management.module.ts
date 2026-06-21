@@ -2,13 +2,16 @@ import { Module } from '@nestjs/common';
 import { PrismaModule } from '@/prisma/prisma.module';
 import { CustomerController } from '@customer-management/presentation/controllers/customer.controller';
 import { VehicleController } from '@customer-management/presentation/controllers/vehicle.controller';
-import { CreateCustomerUseCase } from '@customer-management/application/usecases/create-customer.usecase';
+import CreateCustomerUseCase from '@customer-management/application/usecases/create-customer.usecase';
 import { CreateVehicleUseCase } from '@customer-management/application/usecases/create-vehicle.usecase';
 
 import CustomerRepositoryInterface from '@customer-management/domain/contracts/customer-repository.interface';
 import VehicleRepositoryInterface from '@customer-management/domain/contracts/vehicle-repository.interface';
 import PrismaCustomerRepository from '@customer-management/infra/repositories/prisma-customer.repository';
 import PrismaVehicleRepository from '@customer-management/infra/repositories/prisma-vehicle.repository';
+import CustomerQueryServiceInterface from '@customer-management/application/contracts/customer-query-service.interface';
+import FindCustomerByIdUseCase from '@customer-management/application/usecases/find-customer-by-id.usecase';
+import PrismaCustomerQueryService from '@customer-management/infra/services/prisma-customer-query.service';
 
 @Module({
   imports: [PrismaModule],
@@ -38,6 +41,19 @@ import PrismaVehicleRepository from '@customer-management/infra/repositories/pri
         return new CreateVehicleUseCase(repository);
       },
       inject: [VehicleRepositoryInterface],
+    },
+
+    {
+      provide: CustomerQueryServiceInterface,
+      useClass: PrismaCustomerQueryService, 
+    },
+
+    {
+      provide: FindCustomerByIdUseCase,
+      useFactory: (queryService: CustomerQueryServiceInterface) => {
+        return new FindCustomerByIdUseCase(queryService); 
+      },
+      inject: [CustomerQueryServiceInterface],
     },
   ],
 })
