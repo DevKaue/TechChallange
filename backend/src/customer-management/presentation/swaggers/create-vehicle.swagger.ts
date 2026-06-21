@@ -1,27 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-
-class VehicleResponseData {
-  @ApiProperty({ example: '123e4567-e89b-12d3-a456-426614174000', description: 'ID do veículo' })
-  id!: string;
-
-  @ApiProperty({ example: 'ABC1234', description: 'Placa do veículo' })
-  license_plate!: string;
-
-  @ApiProperty({ example: 'Toyota' })
-  brand!: string;
-
-  @ApiProperty({ example: 'Corolla' })
-  model!: string;
-
-  @ApiProperty({ example: 2023 })
-  year!: number;
-
-  @ApiProperty({ example: '2026-06-21T15:00:00.000Z' })
-  created_at!: string;
-
-  @ApiProperty({ example: '2026-06-21T15:00:00.000Z' })
-  updated_at!: string;
-}
+import { VehicleResponseData } from '@customer-management/presentation/swaggers/vehicle.swagger';
 
 export class CreateVehicleSwaggerResponse extends VehicleResponseData {}
 
