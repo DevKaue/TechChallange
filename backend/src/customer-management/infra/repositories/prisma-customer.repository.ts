@@ -5,6 +5,7 @@ import CustomerFactory from '@customer-management/domain/factories/customer.fact
 import Document from "@customer-management/domain/value-objects/document.vo";
 import Email from "@customer-management/domain/value-objects/email.vo";
 import CustomerRepositoryInterface from "@customer-management/domain/contracts/customer-repository.interface";
+import { create } from 'domain';
 
 @Injectable()
 export default class PrismaCustomerRepository implements CustomerRepositoryInterface {
@@ -51,6 +52,8 @@ export default class PrismaCustomerRepository implements CustomerRepositoryInter
                 name: customer.name,
                 email: customer.email?.value,
                 phone: customer.phone,
+                createdAt: customer.createdAt,
+                updatedAt: customer.updatedAt,
             },
         });
     }
