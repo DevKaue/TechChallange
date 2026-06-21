@@ -23,10 +23,7 @@ class CustomerResponseData {
   created_at!: string;
 }
 
-export class CreateCustomerSwaggerResponse {
-  @ApiProperty({ type: CustomerResponseData })
-  customer!: CustomerResponseData;
-}
+export class CreateCustomerSwaggerResponse extends CustomerResponseData {}
 
 export class CreateCustomerSwaggerBody {
   @ApiProperty({ example: 'CPF', description: 'Tipo de documento do cliente' })
@@ -47,7 +44,7 @@ export class CreateCustomerSwaggerBody {
 
 export class CreateCustomerSwaggerConflictResponse {
   @ApiProperty({ example: 409 })
-  statusCode!: number;
+  status_code!: number;
 
   @ApiProperty({ example: 'Conflict' })
   error!: string;

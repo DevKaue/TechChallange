@@ -1,19 +1,18 @@
 import { ExceptionFilter, Catch, ArgumentsHost, HttpStatus } from '@nestjs/common';
-import CustomerAlreadyExistsException from '@customer-management/application/exceptions/customer-already-exists.exception';
+import VehicleAlreadyExistsException from '@customer-management/application/exceptions/vehicle-already-exists.exception';
 import DomainException from '@customer-management/domain/exceptions/domain.exception';
 import { Response } from 'express';
 
-// 1. Passe todas as exceções que este filtro deve interceptar aqui dentro
-@Catch(CustomerAlreadyExistsException, DomainException)
-export class CustomerExceptionFilter implements ExceptionFilter {
-  catch(exception: CustomerAlreadyExistsException | DomainException, host: ArgumentsHost) {
+@Catch(VehicleAlreadyExistsException, DomainException)
+export class VehicleExceptionFilter implements ExceptionFilter {
+  catch(exception: VehicleAlreadyExistsException | DomainException, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
 
     let statusCode = HttpStatus.BAD_REQUEST;
     let errorTitle = 'Bad Request';
 
-    if (exception instanceof CustomerAlreadyExistsException) {
+    if (exception instanceof VehicleAlreadyExistsException) {
       statusCode = HttpStatus.CONFLICT;
       errorTitle = 'Conflict';
     }

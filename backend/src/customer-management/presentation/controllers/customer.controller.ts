@@ -28,12 +28,9 @@ export class CustomerController {
     description: 'Documento já cadastrado no sistema',
     type: CreateCustomerSwaggerConflictResponse 
   })
-  async create(@BodyCamelCase() input: CreateCustomerInputDTO): Promise<{ status: string; data: CustomerResponse }> {
+  async create(@BodyCamelCase() input: CreateCustomerInputDTO): Promise<CustomerResponse> {
     const output = await this.createCustomerUseCase.execute(input);
     
-    return {
-      status: 'success',
-      data: JsonCustomerPresenter.present(output.customer),
-    };
+    return JsonCustomerPresenter.present(output.customer);
   }
 }

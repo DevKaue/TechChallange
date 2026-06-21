@@ -32,15 +32,7 @@ export class CreateCustomerUseCase {
     await this.customerRepository.create(customer);
 
     const output: CreateCustomerOutputDTO = {
-      customer: new CustomerDTO({
-        id: customer.id,
-        documentType: customer.document.type,
-        documentNumber: customer.document.value,
-        name: customer.name,
-        email: customer.email?.value,
-        phone: customer.phone,
-        createdAt: customer.createdAt,
-      }),
+      customer: CustomerDTO.fromDomain(customer),
     };
 
     return output;
