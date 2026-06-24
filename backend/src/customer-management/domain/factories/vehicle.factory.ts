@@ -12,6 +12,7 @@ export default class VehicleFactory {
     customerId: string;
     createdAt?: Date;
     updatedAt?: Date;
+    deletedAt?: Date;
   }): Vehicle {
     const licensePlate = new LicensePlate(props.licensePlate);
     const year = new Year(props.year);
@@ -25,6 +26,7 @@ export default class VehicleFactory {
       customerId: props.customerId,
       createdAt: props.createdAt,
       updatedAt: props.updatedAt,
+      deletedAt: props.deletedAt,
     });
   }
 }

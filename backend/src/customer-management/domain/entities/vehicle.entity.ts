@@ -10,6 +10,7 @@ export type VehicleProps = {
     customerId: string;
     createdAt?: Date;
     updatedAt?: Date;
+    deletedAt?: Date;
 };
 
 export default class Vehicle {
@@ -21,8 +22,9 @@ export default class Vehicle {
     private _customerId: string;
     private _createdAt: Date;
     private _updatedAt: Date;
+    private _deletedAt?: Date;
 
-    constructor({ id, licensePlate, brand, model, year, customerId, createdAt, updatedAt }: VehicleProps)  {
+    constructor({ id, licensePlate, brand, model, year, customerId, createdAt, updatedAt, deletedAt }: VehicleProps)  {
         
         this._id = id;
         this._licensePlate = licensePlate;
@@ -32,6 +34,7 @@ export default class Vehicle {
         this._customerId = customerId;
         this._createdAt = createdAt ?? new Date();
         this._updatedAt = updatedAt ?? new Date();
+        this._deletedAt = deletedAt ?? undefined;
     }
 
     // Getters
@@ -65,5 +68,14 @@ export default class Vehicle {
 
     public get updatedAt(): Date {
         return this._updatedAt;
+    }
+
+    public get deletedAt(): Date | undefined {
+        return this._deletedAt;
+    }
+
+    // Methods
+    public softDelete(): void {
+        this._deletedAt = new Date();
     }
 }

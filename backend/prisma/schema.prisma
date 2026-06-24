@@ -51,6 +51,7 @@ model Customer {
   serviceOrders ServiceOrder[]
   createdAt     DateTime       @default(now()) @map("created_at")
   updatedAt     DateTime       @updatedAt @map("updated_at")
+  deletedAt     DateTime?      @map("deleted_at")
 
   @@unique([document, documentType], name: "uq_customer_document")
   @@map("customers")
@@ -67,6 +68,7 @@ model Vehicle {
   serviceOrders ServiceOrder[]
   createdAt     DateTime       @default(now()) @map("created_at")
   updatedAt     DateTime       @updatedAt @map("updated_at")
+  deletedAt     DateTime?      @map("deleted_at")
 
   @@map("vehicles")
 }

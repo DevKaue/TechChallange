@@ -11,7 +11,7 @@ import { create } from 'domain';
 export default class PrismaCustomerRepository implements CustomerRepositoryInterface {
     constructor(private readonly prisma: PrismaService) {}
     
-    async find(id: string): Promise<Customer | null> {
+    async findById(id: string): Promise<Customer | null> {
         // Implement the logic to find a customer by ID in the database
         // Return the customer object if found, otherwise return null
         return null; // Placeholder implementation
