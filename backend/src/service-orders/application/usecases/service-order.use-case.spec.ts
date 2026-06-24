@@ -56,8 +56,7 @@ describe('ServiceOrderUseCase', () => {
           useValue: {
             create: jest.fn(),
             findById: jest.fn(),
-            updateStatus: jest.fn(),
-            setClosedAt: jest.fn(),
+            update: jest.fn(),
             createStatusHistory: jest.fn(),
           },
         },
@@ -88,7 +87,13 @@ describe('ServiceOrderUseCase', () => {
           createdAt: new Date(),
           updatedAt: new Date(),
           customer: { id: 'client-1', name: 'Client' },
-          vehicle: { id: 'vehicle-1', plate: 'ABC-123', brand: 'Toyota', model: 'Corolla', year: 2020 },
+          vehicle: {
+            id: 'vehicle-1',
+            plate: 'ABC-123',
+            brand: 'Toyota',
+            model: 'Corolla',
+            year: 2020,
+          },
           mechanic: null,
         },
       ];
@@ -110,8 +115,21 @@ describe('ServiceOrderUseCase', () => {
         closedAt: null,
         createdAt: new Date(),
         updatedAt: new Date(),
-        customer: { id: 'client-1', document: '123', name: 'Client', email: null, phone: null },
-        vehicle: { id: 'vehicle-1', plate: 'ABC-123', brand: 'Toyota', model: 'Corolla', year: 2020, customerId: 'client-1' },
+        customer: {
+          id: 'client-1',
+          document: '123',
+          name: 'Client',
+          email: null,
+          phone: null,
+        },
+        vehicle: {
+          id: 'vehicle-1',
+          plate: 'ABC-123',
+          brand: 'Toyota',
+          model: 'Corolla',
+          year: 2020,
+          customerId: 'client-1',
+        },
         mechanic: null,
         estimates: [],
         statusHistory: [],
@@ -156,7 +174,7 @@ describe('ServiceOrderUseCase', () => {
         status: ServiceOrderStatus.WAITING_APPROVAL,
       };
       repository.findById.mockResolvedValue(waitingApproval);
-      repository.updateStatus.mockResolvedValue({
+      repository.update.mockResolvedValue({
         ...waitingApproval,
         status: ServiceOrderStatus.IN_EXECUTION,
       });
@@ -164,9 +182,9 @@ describe('ServiceOrderUseCase', () => {
 
       const result = await useCase.startService('order-1');
 
-      expect(repository.updateStatus).toHaveBeenCalledWith(
+      expect(repository.update).toHaveBeenCalledWith(
         'order-1',
-        ServiceOrderStatus.IN_EXECUTION,
+        expect.objectContaining({ status: ServiceOrderStatus.IN_EXECUTION }),
       );
       expect(result).toBeDefined();
     });
@@ -194,7 +212,7 @@ describe('ServiceOrderUseCase', () => {
         mechanicId: 'user-1',
       };
       repository.findById.mockResolvedValue(inExecution);
-      repository.updateStatus.mockResolvedValue({
+      repository.update.mockResolvedValue({
         ...inExecution,
         status: ServiceOrderStatus.FINISHED,
       });
@@ -202,9 +220,9 @@ describe('ServiceOrderUseCase', () => {
 
       await useCase.finish('order-1', 'user-1');
 
-      expect(repository.updateStatus).toHaveBeenCalledWith(
+      expect(repository.update).toHaveBeenCalledWith(
         'order-1',
-        ServiceOrderStatus.FINISHED,
+        expect.objectContaining({ status: ServiceOrderStatus.FINISHED }),
       );
     });
 
@@ -215,7 +233,7 @@ describe('ServiceOrderUseCase', () => {
         mechanicId: 'user-1',
       };
       repository.findById.mockResolvedValue(inExecution);
-      repository.updateStatus.mockResolvedValue({
+      repository.update.mockResolvedValue({
         ...inExecution,
         status: ServiceOrderStatus.FINISHED,
       });
@@ -264,16 +282,16 @@ describe('ServiceOrderUseCase', () => {
     it('should move from FINISHED to DELIVERED', async () => {
       const finished = { ...mockOrder, status: ServiceOrderStatus.FINISHED };
       repository.findById.mockResolvedValue(finished);
-      repository.updateStatus.mockResolvedValue({
+      repository.update.mockResolvedValue({
         ...finished,
         status: ServiceOrderStatus.DELIVERED,
       });
       repository.createStatusHistory.mockResolvedValue({} as any);
 
       await useCase.deliverVehicle('order-1');
-      expect(repository.updateStatus).toHaveBeenCalledWith(
+      expect(repository.update).toHaveBeenCalledWith(
         'order-1',
-        ServiceOrderStatus.DELIVERED,
+        expect.objectContaining({ status: ServiceOrderStatus.DELIVERED }),
       );
     });
 
@@ -289,20 +307,21 @@ describe('ServiceOrderUseCase', () => {
     it('should move from DELIVERED to CLOSED', async () => {
       const delivered = { ...mockOrder, status: ServiceOrderStatus.DELIVERED };
       repository.findById.mockResolvedValue(delivered);
-      repository.updateStatus.mockResolvedValue({
+      repository.update.mockResolvedValue({
         ...delivered,
         status: ServiceOrderStatus.CLOSED,
       });
-      repository.setClosedAt.mockResolvedValue({} as any);
       repository.createStatusHistory.mockResolvedValue({} as any);
 
       await useCase.close('order-1');
 
-      expect(repository.updateStatus).toHaveBeenCalledWith(
+      expect(repository.update).toHaveBeenCalledWith(
         'order-1',
-        ServiceOrderStatus.CLOSED,
+        expect.objectContaining({
+          status: ServiceOrderStatus.CLOSED,
+          closedAt: expect.any(Date),
+        }),
       );
-      expect(repository.setClosedAt).toHaveBeenCalled();
     });
 
     it('should throw if order not found', async () => {

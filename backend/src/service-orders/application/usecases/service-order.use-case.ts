@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ServiceOrdersRepositoryInterface } from '@service-orders/domain/contracts/service-orders-repository.interface';
 import { ServiceOrderQueryServiceInterface } from '@service-orders/application/contracts/service-order-query-service.interface';
 // TODO: Descomente quando customer-management module estiver pronto
@@ -73,7 +73,10 @@ export class ServiceOrderUseCase {
     try {
       const change = order.startService();
 
-      const updated = await this.repository.updateStatus(id, change.newStatus);
+      const updated = await this.repository.update(
+        id,
+        ServiceOrderMapper.toPersistence(order),
+      );
       await this.repository.createStatusHistory({
         serviceOrderId: id,
         previousStatus: change.previousStatus,
@@ -98,7 +101,10 @@ export class ServiceOrderUseCase {
     try {
       const change = order.finish(mechanicId);
 
-      const updated = await this.repository.updateStatus(id, change.newStatus);
+      const updated = await this.repository.update(
+        id,
+        ServiceOrderMapper.toPersistence(order),
+      );
       await this.repository.createStatusHistory({
         serviceOrderId: id,
         previousStatus: change.previousStatus,
@@ -124,7 +130,10 @@ export class ServiceOrderUseCase {
     try {
       const change = order.deliverVehicle();
 
-      const updated = await this.repository.updateStatus(id, change.newStatus);
+      const updated = await this.repository.update(
+        id,
+        ServiceOrderMapper.toPersistence(order),
+      );
       await this.repository.createStatusHistory({
         serviceOrderId: id,
         previousStatus: change.previousStatus,
@@ -149,8 +158,10 @@ export class ServiceOrderUseCase {
     try {
       const change = order.close();
 
-      await this.repository.setClosedAt(id, new Date());
-      const updated = await this.repository.updateStatus(id, change.newStatus);
+      const updated = await this.repository.update(id, {
+        ...ServiceOrderMapper.toPersistence(order),
+        closedAt: new Date(),
+      });
       await this.repository.createStatusHistory({
         serviceOrderId: id,
         previousStatus: change.previousStatus,

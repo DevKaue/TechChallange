@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ServiceOrdersRepositoryInterface } from '@service-orders/domain/contracts/service-orders-repository.interface';
 // TODO: Descomente quando access-identity module estiver pronto
 // import { USER_REPOSITORY } from '@service-orders/domain/acls/user-repository.interface';
@@ -43,12 +43,16 @@ export class MechanicUseCase {
       );
     }
 
-    const updated = await this.repository.assignMechanic(id, dto.mechanicId);
+    const updated = await this.repository.update(
+      id,
+      ServiceOrderMapper.toPersistence(order),
+    );
     return plainToInstance(ServiceOrderResponseDto, updated, {
       excludeExtraneousValues: true,
     });
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async updateMechanicAvailability(mechanicId: string, available: boolean) {
     // TODO: Descomente quando access-identity module estiver pronto
     // await this.userRepository.updateAvailability(mechanicId, available);

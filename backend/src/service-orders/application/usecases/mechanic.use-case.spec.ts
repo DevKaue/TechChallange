@@ -50,7 +50,7 @@ describe('MechanicUseCase', () => {
           provide: ServiceOrdersRepositoryInterface,
           useValue: {
             findById: jest.fn(),
-            assignMechanic: jest.fn(),
+            update: jest.fn(),
           },
         },
       ],
@@ -69,7 +69,7 @@ describe('MechanicUseCase', () => {
       //   role: UserRole.MECHANIC,
       // });
       repository.findById.mockResolvedValue(mockOrder);
-      repository.assignMechanic.mockResolvedValue({
+      repository.update.mockResolvedValue({
         ...mockOrder,
         mechanicId: 'user-1',
       });
@@ -78,9 +78,9 @@ describe('MechanicUseCase', () => {
         mechanicId: 'user-1',
       });
 
-      expect(repository.assignMechanic).toHaveBeenCalledWith(
+      expect(repository.update).toHaveBeenCalledWith(
         'order-1',
-        'user-1',
+        expect.objectContaining({ mechanicId: 'user-1' }),
       );
       expect(result).toBeDefined();
     });

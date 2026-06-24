@@ -44,7 +44,10 @@ export class EstimateUseCase {
           status: EstimateStatus.PENDING,
           totalAmount: 0,
         }),
-        this.repository.updateStatus(orderId, change.newStatus),
+        this.repository.update(
+          orderId,
+          ServiceOrderMapper.toPersistence(order),
+        ),
       ]);
 
       await this.repository.createStatusHistory({
@@ -68,7 +71,7 @@ export class EstimateUseCase {
   async addEstimateItem(estimateId: string, dto: AddEstimateItemDto) {
     // TODO: Descomente quando parts module estiver pronto
     let unitPriceMoney: Money | null = null;
-    let description = '';
+    const description = '';
 
     // if (dto.itemType === 'SERVICE') {
     //   const service = await this.serviceCatalogRepository.findById(
@@ -125,7 +128,10 @@ export class EstimateUseCase {
       try {
         const change = order.startService();
 
-        await this.repository.updateStatus(order.id, change.newStatus);
+        await this.repository.update(
+          order.id,
+          ServiceOrderMapper.toPersistence(order),
+        );
         await this.repository.createStatusHistory({
           serviceOrderId: order.id,
           previousStatus: change.previousStatus,
@@ -159,7 +165,10 @@ export class EstimateUseCase {
     try {
       const change = order.rejectEstimate();
 
-      const updated = await this.repository.updateStatus(id, change.newStatus);
+      const updated = await this.repository.update(
+        id,
+        ServiceOrderMapper.toPersistence(order),
+      );
 
       await this.repository.createStatusHistory({
         serviceOrderId: id,

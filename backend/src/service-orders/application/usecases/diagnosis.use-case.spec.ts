@@ -51,7 +51,7 @@ describe('DiagnosisUseCase', () => {
           provide: ServiceOrdersRepositoryInterface,
           useValue: {
             findById: jest.fn(),
-            updateStatus: jest.fn(),
+            update: jest.fn(),
             createStatusHistory: jest.fn(),
           },
         },
@@ -65,7 +65,7 @@ describe('DiagnosisUseCase', () => {
   describe('startDiagnosis', () => {
     it('should move to IN_DIAGNOSIS', async () => {
       repository.findById.mockResolvedValue(mockOrder);
-      repository.updateStatus.mockResolvedValue({
+      repository.update.mockResolvedValue({
         ...mockOrder,
         status: ServiceOrderStatus.IN_DIAGNOSIS,
       });
@@ -75,9 +75,9 @@ describe('DiagnosisUseCase', () => {
         diagnosis: 'Checking engine',
       });
 
-      expect(repository.updateStatus).toHaveBeenCalledWith(
+      expect(repository.update).toHaveBeenCalledWith(
         'order-1',
-        ServiceOrderStatus.IN_DIAGNOSIS,
+        expect.objectContaining({ status: ServiceOrderStatus.IN_DIAGNOSIS }),
       );
       expect(result).toBeDefined();
     });

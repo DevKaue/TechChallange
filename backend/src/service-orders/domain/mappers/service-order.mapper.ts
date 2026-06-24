@@ -9,6 +9,12 @@ type PersistenceServiceOrder = {
   mechanic: { id: string; name: string } | null;
 };
 
+type ServiceOrderUpdateData = {
+  status?: ServiceOrderStatus;
+  mechanicId?: string | null;
+  closedAt?: Date | null;
+};
+
 export class ServiceOrderMapper {
   static toDomain(data: PersistenceServiceOrder): ServiceOrder {
     let mechanic: MechanicAssignment | null = null;
@@ -27,7 +33,10 @@ export class ServiceOrderMapper {
     });
   }
 
-  static toPersistence(order: ServiceOrder): { status: string } {
-    return { status: order.status };
+  static toPersistence(order: ServiceOrder): ServiceOrderUpdateData {
+    return {
+      status: order.status,
+      mechanicId: order.mechanicId,
+    };
   }
 }

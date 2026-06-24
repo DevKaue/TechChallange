@@ -19,7 +19,10 @@ export class DiagnosisUseCase {
     try {
       const change = order.startDiagnosis();
 
-      const updated = await this.repository.updateStatus(id, change.newStatus);
+      const updated = await this.repository.update(
+        id,
+        ServiceOrderMapper.toPersistence(order),
+      );
       await this.repository.createStatusHistory({
         serviceOrderId: id,
         previousStatus: change.previousStatus,

@@ -1,4 +1,12 @@
-import { Controller, Patch, Body, Param, UseGuards, UseFilters, Req } from '@nestjs/common';
+import {
+  Controller,
+  Patch,
+  Body,
+  Param,
+  UseGuards,
+  UseFilters,
+  Req,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '@/access-identity/presentation/guards/jwt-auth.guard';
 import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import type { AuthenticatedRequest } from '@/access-identity/presentation/authenticated-request';

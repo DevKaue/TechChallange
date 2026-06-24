@@ -52,7 +52,7 @@ describe('EstimateUseCase', () => {
           provide: ServiceOrdersRepositoryInterface,
           useValue: {
             findById: jest.fn(),
-            updateStatus: jest.fn(),
+            update: jest.fn(),
             createStatusHistory: jest.fn(),
             createEstimate: jest.fn(),
             addEstimateItem: jest.fn(),
@@ -86,7 +86,7 @@ describe('EstimateUseCase', () => {
         items: [],
       } as any;
       repository.createEstimate.mockResolvedValue(mockEstimate);
-      repository.updateStatus.mockResolvedValue({
+      repository.update.mockResolvedValue({
         ...mockOrder,
         status: ServiceOrderStatus.WAITING_APPROVAL,
       });
@@ -191,7 +191,7 @@ describe('EstimateUseCase', () => {
         ...mockOrder,
         status: ServiceOrderStatus.WAITING_APPROVAL,
       });
-      repository.updateStatus.mockResolvedValue({
+      repository.update.mockResolvedValue({
         ...mockOrder,
         status: ServiceOrderStatus.IN_EXECUTION,
       });
@@ -201,9 +201,9 @@ describe('EstimateUseCase', () => {
         status: EstimateStatus.APPROVED,
       });
 
-      expect(repository.updateStatus).toHaveBeenCalledWith(
+      expect(repository.update).toHaveBeenCalledWith(
         'order-1',
-        ServiceOrderStatus.IN_EXECUTION,
+        expect.objectContaining({ status: ServiceOrderStatus.IN_EXECUTION }),
       );
       expect(result).toHaveProperty('status', EstimateStatus.APPROVED);
     });
@@ -227,7 +227,7 @@ describe('EstimateUseCase', () => {
         status: EstimateStatus.REJECTED,
       });
 
-      expect(repository.updateStatus).not.toHaveBeenCalled();
+      expect(repository.update).not.toHaveBeenCalled();
       expect(result).toHaveProperty('status', EstimateStatus.REJECTED);
     });
 
@@ -288,7 +288,7 @@ describe('EstimateUseCase', () => {
         status: ServiceOrderStatus.WAITING_APPROVAL,
       };
       repository.findById.mockResolvedValue(order);
-      repository.updateStatus.mockResolvedValue({
+      repository.update.mockResolvedValue({
         ...order,
         status: ServiceOrderStatus.DELIVERED,
       });
@@ -298,9 +298,9 @@ describe('EstimateUseCase', () => {
         reason: 'Too expensive',
       });
 
-      expect(repository.updateStatus).toHaveBeenCalledWith(
+      expect(repository.update).toHaveBeenCalledWith(
         'order-1',
-        ServiceOrderStatus.DELIVERED,
+        expect.objectContaining({ status: ServiceOrderStatus.DELIVERED }),
       );
       expect(repository.createStatusHistory).toHaveBeenCalledWith(
         expect.objectContaining({ notes: 'Too expensive' }),
