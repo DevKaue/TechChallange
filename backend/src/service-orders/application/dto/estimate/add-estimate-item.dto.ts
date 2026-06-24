@@ -17,7 +17,7 @@ export class AddEstimateItemDto {
   itemType: ServiceOrderItemType;
 
   @ApiProperty({
-    description: 'Reference ID in the service catalog or parts table',
+    description: 'Reference ID in the service catalog or materials table',
   })
   @IsString()
   @IsNotEmpty()

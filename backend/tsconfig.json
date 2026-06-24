@@ -18,7 +18,7 @@
       "@/*": ["src/*"],
       "@access-identity/*": ["src/access-identity/*"],
       "@customer-management/*": ["src/customer-management/*"],
-      "@parts/*": ["src/parts/*"],
+      "@materials/*": ["src/materials/*"],
       "@service-orders/*": ["src/service-orders/*"],
       "@common/*": ["src/common/*"]
     },

@@ -1,7 +1,7 @@
 import { Module, OnModuleInit } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { PartsModule } from './parts/infra/parts.module';
+import { MaterialsModule } from './materials/infra/materials.module';
 import { CustomerManagementModule } from './customer-management/infra/customer-management.module';
 //import { ServiceCatalogModule } from './service-catalog/service-catalog.module';
 import { PrismaModule } from './prisma/prisma.module';
@@ -11,7 +11,7 @@ import { validateEnv } from './common/config/env';
 
 @Module({
   imports: [
-    PartsModule,
+    MaterialsModule,
     CustomerManagementModule,
     //ServiceCatalogModule,
     PrismaModule,

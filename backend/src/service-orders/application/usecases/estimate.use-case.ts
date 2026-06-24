@@ -23,7 +23,8 @@ import { UpdateEstimateStatusDto } from '@service-orders/application/dto/estimat
 import { RejectEstimateDto } from '@service-orders/application/dto/estimate/reject-estimate.dto';
 import { ServiceOrderResponseDto } from '@service-orders/application/dto/service-order/service-order-response.dto';
 import { plainToInstance } from 'class-transformer';
-import InsufficientPartStockException from '@parts/domain/exceptions/insufficient-part-stock.exception';
+import InsufficientMaterialStockException from '@materials/domain/exceptions/insufficient-material-stock.exception';
+import DomainException from '@materials/domain/exceptions/domain.exception';
 
 @Injectable()
 export class EstimateUseCase {
@@ -91,10 +92,6 @@ export class EstimateUseCase {
         unitPriceMoney = Money.fromFloat(0);
       }
     } else {
-      if (!Number.isInteger(dto.quantity)) {
-        throw new BadRequestException('Part quantity must be an integer');
-      }
-
       const part = await this.partRepository.findById(dto.referenceId);
 
       if (!part) {
@@ -113,8 +110,12 @@ export class EstimateUseCase {
       try {
         await this.partRepository.decrementStock(part.id, dto.quantity);
       } catch (error: unknown) {
-        if (error instanceof InsufficientPartStockException) {
+        if (error instanceof InsufficientMaterialStockException) {
           throw new ConflictException(error.message);
+        }
+
+        if (error instanceof DomainException) {
+          throw new BadRequestException(error.message);
         }
 
         throw error;
