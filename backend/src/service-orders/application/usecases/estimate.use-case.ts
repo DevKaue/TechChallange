@@ -1,10 +1,14 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  Inject,
+  Optional,
+} from '@nestjs/common';
 import { ServiceOrdersRepositoryInterface } from '@service-orders/domain/contracts/service-orders-repository.interface';
-// TODO: Descomente quando parts module estiver pronto
-// import { PART_REPOSITORY } from '@service-orders/domain/acls/part-repository.interface';
-// import type { PartRepository } from '@service-orders/domain/acls/part-repository.interface';
-// import { SERVICE_CATALOG_REPOSITORY } from '@service-orders/domain/acls/service-catalog-repository.interface';
-// import type { ServiceCatalogRepository } from '@service-orders/domain/acls/service-catalog-repository.interface';
+import { PART_REPOSITORY } from '@service-orders/domain/acls/part-repository.interface';
+import type { PartRepository } from '@service-orders/domain/acls/part-repository.interface';
+import { SERVICE_CATALOG_REPOSITORY } from '@service-orders/domain/acls/service-catalog-repository.interface';
+import type { ServiceCatalogRepository } from '@service-orders/domain/acls/service-catalog-repository.interface';
 import { ServiceOrderMapper } from '@service-orders/domain/mappers/service-order.mapper';
 import { Money } from '@service-orders/domain/value-objects/money.value-object';
 import { EstimateStatus } from '@service-orders/domain/enums/estimate-status.enum';
@@ -19,15 +23,17 @@ import { ServiceOrderResponseDto } from '@service-orders/application/dto/service
 import { plainToInstance } from 'class-transformer';
 import { ServiceOrderNotFoundException } from '@service-orders/application/exceptions/service-order-not-found.exception';
 import { InvalidStatusTransitionException } from '@service-orders/application/exceptions/invalid-status-transition.exception';
+import InsufficientMaterialStockException from '@materials/domain/exceptions/insufficient-material-stock.exception';
+import DomainException from '@materials/domain/exceptions/domain.exception';
 
 @Injectable()
 export class EstimateUseCase {
   constructor(
     private readonly repository: ServiceOrdersRepositoryInterface,
-    // TODO: Descomente quando parts module estiver pronto
-    // @Inject(PART_REPOSITORY) private readonly partRepository: PartRepository,
-    // @Inject(SERVICE_CATALOG_REPOSITORY)
-    // private readonly serviceCatalogRepository: ServiceCatalogRepository,
+    @Inject(PART_REPOSITORY) private readonly partRepository: PartRepository,
+    @Optional()
+    @Inject(SERVICE_CATALOG_REPOSITORY)
+    private readonly serviceCatalogRepository?: ServiceCatalogRepository,
   ) {}
 
   async createEstimate(orderId: string) {
@@ -69,30 +75,54 @@ export class EstimateUseCase {
   }
 
   async addEstimateItem(estimateId: string, dto: AddEstimateItemDto) {
-    // TODO: Descomente quando parts module estiver pronto
     let unitPriceMoney: Money | null = null;
     const description = '';
+    let description = dto.description ?? '';
 
-    // if (dto.itemType === 'SERVICE') {
-    //   const service = await this.serviceCatalogRepository.findById(
-    //     dto.referenceId,
-    //   );
-    //   if (!service) throw new NotFoundException('Service not found in catalog');
-    //   unitPriceMoney = Money.fromFloat(service.price);
-    // } else {
-    //   const part = await this.partRepository.findById(dto.referenceId);
-    //   if (!part) throw new NotFoundException('Part not found');
-    //   if (part.stockQuantity < dto.quantity) {
-    //     throw new ConflictException(
-    //       `Insufficient stock for part ${part.name}. Available: ${part.stockQuantity}`,
-    //     );
-    //   }
-    //   unitPriceMoney = Money.fromFloat(part.price);
-    //   description = part.name;
-    //   await this.partRepository.decrementStock(part.id, dto.quantity);
-    // }
+    if (dto.itemType === 'SERVICE') {
+      if (this.serviceCatalogRepository) {
+        const service = await this.serviceCatalogRepository.findById(
+          dto.referenceId,
+        );
 
-    unitPriceMoney = Money.fromFloat(0);
+        if (!service) {
+          throw new NotFoundException('Service not found in catalog');
+        }
+
+        unitPriceMoney = Money.fromFloat(service.price);
+      } else {
+        unitPriceMoney = Money.fromFloat(0);
+      }
+    } else {
+      const part = await this.partRepository.findById(dto.referenceId);
+
+      if (!part) {
+        throw new NotFoundException('Part not found');
+      }
+
+      if (part.stockQuantity < dto.quantity) {
+        throw new ConflictException(
+          `Insufficient stock for part ${part.name}. Available: ${part.stockQuantity}`,
+        );
+      }
+
+      unitPriceMoney = Money.fromFloat(part.price);
+      description = dto.description ?? part.name;
+
+      try {
+        await this.partRepository.decrementStock(part.id, dto.quantity);
+      } catch (error: unknown) {
+        if (error instanceof InsufficientMaterialStockException) {
+          throw new ConflictException(error.message);
+        }
+
+        if (error instanceof DomainException) {
+          throw new BadRequestException(error.message);
+        }
+
+        throw error;
+      }
+    }
 
     const totalPriceMoney = unitPriceMoney.multiply(dto.quantity);
 
