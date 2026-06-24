@@ -12,18 +12,35 @@ export default class PrismaCustomerRepository implements CustomerRepositoryInter
     constructor(private readonly prisma: PrismaService) {}
     
     async findById(id: string): Promise<Customer | null> {
-        // Implement the logic to find a customer by ID in the database
-        // Return the customer object if found, otherwise return null
-        return null; // Placeholder implementation
+        const customerData = await this.prisma.customer.findFirst({
+            where: {
+                id: id,
+                deletedAt: null,
+            },
+        });
+
+        if (!customerData) {
+            return null;
+        }
+
+        return CustomerFactory.create({
+            id: customerData.id,
+            documentType: customerData.documentType,
+            documentNumber: customerData.document,
+            name: customerData.name,
+            email: customerData.email ?? undefined,
+            phone: customerData.phone ?? undefined,
+            createdAt: customerData.createdAt,
+            updatedAt: customerData.updatedAt,
+        });
     }
 
     async findByDocument(document: Document): Promise<Customer | null> {
-        const customerData = await this.prisma.customer.findUnique({
+        const customerData = await this.prisma.customer.findFirst({
             where: {
-                uq_customer_document: {
-                    document: document.value,
-                    documentType: document.type,
-                },
+                document: document.value,
+                documentType: document.type,
+                deletedAt: null,
             },
         });
 

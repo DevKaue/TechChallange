@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["partialIndexes"]
 }
 
 datasource db {
@@ -59,7 +60,7 @@ model Customer {
 
 model Vehicle {
   id            String         @id @default(uuid()) @map("id")
-  plate         String         @unique @map("plate")
+  plate         String         @map("plate") // O @unique foi removido daqui
   brand         String         @map("brand")
   model         String         @map("model")
   year          Int            @map("year")
@@ -70,6 +71,7 @@ model Vehicle {
   updatedAt     DateTime       @updatedAt @map("updated_at")
   deletedAt     DateTime?      @map("deleted_at")
 
+  @@unique([plate], map: "vehicles_plate_active_unique_idx", where: { deletedAt: null })
   @@map("vehicles")
 }
 

@@ -9,6 +9,7 @@ export type CustomerProps = {
     email?: Email;
     createdAt?: Date;
     updatedAt?: Date;
+    deletedAt?: Date;
 };
 
 export default class Customer {
@@ -19,15 +20,18 @@ export default class Customer {
     private _email?: Email;
     private _createdAt: Date;
     private _updatedAt: Date;
+    private _deletedAt?: Date;
 
-    constructor({ id, document, name, phone, email, createdAt, updatedAt }: CustomerProps) {
+    constructor({ id, document, name, phone, email, createdAt, updatedAt, deletedAt }: CustomerProps) {
         this._id = id;
         this._document = document;
         this._name = name;
         this._phone = phone;
         this._email = email;
+        this._deletedAt = deletedAt;
         this._createdAt = createdAt ?? new Date();
         this._updatedAt = updatedAt ?? new Date();
+
     }
 
     // Getters
@@ -57,5 +61,14 @@ export default class Customer {
 
     public get updatedAt(): Date {
         return this._updatedAt;
+    }
+
+    public get deletedAt(): Date | undefined {
+        return this._deletedAt;
+    }
+
+    // Methods
+    public softDelete(): void {
+        this._deletedAt = new Date();
     }
 }

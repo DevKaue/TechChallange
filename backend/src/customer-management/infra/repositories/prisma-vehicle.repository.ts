@@ -76,5 +76,17 @@ export default class PrismaVehicleRepository implements VehicleRepositoryInterfa
   }
 
   async delete(vehicle: Vehicle): Promise<void> {
+    if (!vehicle.deletedAt) {
+      throw new Error('Vehicle must be soft deleted before calling repository delete method');
+    }
+
+    await this.prisma.vehicle.update({
+      where: {
+        id: vehicle.id,
+      },
+      data: {
+        deletedAt: vehicle.deletedAt,
+      },
+    });
   }
 }

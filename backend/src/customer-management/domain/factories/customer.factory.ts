@@ -14,6 +14,7 @@ export default class CustomerFactory {
     phone?: string;
     createdAt?: Date;
     updatedAt?: Date;
+    deletedAt?: Date;
   }): Customer {
 
     const document = new Document(props.documentType as DocumentType, props.documentNumber);
@@ -27,6 +28,7 @@ export default class CustomerFactory {
         email: email,
         createdAt: props.createdAt,
         updatedAt: props.updatedAt,
+        deletedAt: props.deletedAt
     });
   }
 }
