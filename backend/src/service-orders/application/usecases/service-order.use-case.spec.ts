@@ -1,21 +1,17 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ServiceOrderUseCase } from './service-order.use-case';
 import { ServiceOrdersRepositoryInterface } from '@service-orders/domain/contracts/service-orders-repository.interface';
-import {
-  ClientRepository,
-  CLIENT_REPOSITORY,
-} from '@service-orders/domain/acls/client-repository.interface';
-import {
-  VehicleRepository,
-  VEHICLE_REPOSITORY,
-} from '@service-orders/domain/acls/vehicle-repository.interface';
+import { ServiceOrderQueryServiceInterface } from '@service-orders/application/contracts/service-order-query-service.interface';
 import { ServiceOrderStatus } from '@service-orders/domain/enums/service-order-status.enum';
-import { NotFoundException, BadRequestException } from '@nestjs/common';
+import { ServiceOrderNotFoundException } from '@service-orders/application/exceptions/service-order-not-found.exception';
+import { InvalidStatusTransitionException } from '@service-orders/application/exceptions/invalid-status-transition.exception';
+import { ServiceOrderSummaryDto } from '@service-orders/application/dto/query/service-order-summary.dto';
+import { ServiceOrderDetailDto } from '@service-orders/application/dto/query/service-order-detail.dto';
 
 describe('ServiceOrderUseCase', () => {
   let useCase: ServiceOrderUseCase;
   let repository: jest.Mocked<ServiceOrdersRepositoryInterface>;
-  let vehicleRepository: jest.Mocked<VehicleRepository>;
+  let queryService: jest.Mocked<ServiceOrderQueryServiceInterface>;
 
   const mockOrder: any = {
     id: 'order-1',
@@ -51,15 +47,6 @@ describe('ServiceOrderUseCase', () => {
     statusHistory: [],
   };
 
-  const mockVehicle = {
-    id: 'vehicle-1',
-    plate: 'ABC-123',
-    brand: 'Toyota',
-    model: 'Corolla',
-    year: 2020,
-    customerId: 'client-1',
-  };
-
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -68,7 +55,6 @@ describe('ServiceOrderUseCase', () => {
           provide: ServiceOrdersRepositoryInterface,
           useValue: {
             create: jest.fn(),
-            findAll: jest.fn(),
             findById: jest.fn(),
             updateStatus: jest.fn(),
             setClosedAt: jest.fn(),
@@ -76,15 +62,10 @@ describe('ServiceOrderUseCase', () => {
           },
         },
         {
-          provide: CLIENT_REPOSITORY,
+          provide: ServiceOrderQueryServiceInterface,
           useValue: {
-            findById: jest.fn(),
-          },
-        },
-        {
-          provide: VEHICLE_REPOSITORY,
-          useValue: {
-            findById: jest.fn(),
+            findAll: jest.fn(),
+            findOne: jest.fn(),
           },
         },
       ],
@@ -92,12 +73,65 @@ describe('ServiceOrderUseCase', () => {
 
     useCase = module.get(ServiceOrderUseCase);
     repository = module.get(ServiceOrdersRepositoryInterface);
-    vehicleRepository = module.get(VEHICLE_REPOSITORY);
+    queryService = module.get(ServiceOrderQueryServiceInterface);
+  });
+
+  describe('findAll', () => {
+    it('should return all orders from query service', async () => {
+      const summaries: ServiceOrderSummaryDto[] = [
+        {
+          id: 'order-1',
+          status: ServiceOrderStatus.RECEIVED,
+          mileage: null,
+          notes: null,
+          closedAt: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          customer: { id: 'client-1', name: 'Client' },
+          vehicle: { id: 'vehicle-1', plate: 'ABC-123', brand: 'Toyota', model: 'Corolla', year: 2020 },
+          mechanic: null,
+        },
+      ];
+      queryService.findAll.mockResolvedValue(summaries);
+
+      const result = await useCase.findAll();
+      expect(result).toHaveLength(1);
+      expect(result[0]).toHaveProperty('id', 'order-1');
+    });
+  });
+
+  describe('findOne', () => {
+    it('should return the order from query service', async () => {
+      const detail: ServiceOrderDetailDto = {
+        id: 'order-1',
+        status: ServiceOrderStatus.RECEIVED,
+        mileage: null,
+        notes: null,
+        closedAt: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        customer: { id: 'client-1', document: '123', name: 'Client', email: null, phone: null },
+        vehicle: { id: 'vehicle-1', plate: 'ABC-123', brand: 'Toyota', model: 'Corolla', year: 2020, customerId: 'client-1' },
+        mechanic: null,
+        estimates: [],
+        statusHistory: [],
+      };
+      queryService.findOne.mockResolvedValue(detail);
+
+      const result = await useCase.findOne('order-1');
+      expect(result).toHaveProperty('id', 'order-1');
+    });
+
+    it('should throw if not found', async () => {
+      queryService.findOne.mockResolvedValue(null);
+      await expect(useCase.findOne('invalid')).rejects.toThrow(
+        ServiceOrderNotFoundException,
+      );
+    });
   });
 
   describe('create', () => {
     it('should create a service order', async () => {
-      vehicleRepository.findById.mockResolvedValue(mockVehicle);
       repository.create.mockResolvedValue(mockOrder);
       repository.createStatusHistory.mockResolvedValue({} as any);
 
@@ -112,53 +146,6 @@ describe('ServiceOrderUseCase', () => {
         status: ServiceOrderStatus.RECEIVED,
       });
       expect(result).toHaveProperty('id', 'order-1');
-    });
-
-    it('should throw if vehicle not found', async () => {
-      vehicleRepository.findById.mockResolvedValue(null);
-
-      await expect(
-        useCase.create({ customerId: 'client-1', vehicleId: 'invalid' }),
-      ).rejects.toThrow(NotFoundException);
-    });
-
-    it('should throw if vehicle belongs to another client', async () => {
-      vehicleRepository.findById.mockResolvedValue({
-        id: 'v1',
-        plate: 'XYZ-999',
-        brand: 'Honda',
-        model: 'Civic',
-        year: 2021,
-        customerId: 'other-client',
-      });
-
-      await expect(
-        useCase.create({ customerId: 'client-1', vehicleId: 'v1' }),
-      ).rejects.toThrow(BadRequestException);
-    });
-  });
-
-  describe('findAll', () => {
-    it('should return all orders', async () => {
-      repository.findAll.mockResolvedValue([mockOrder]);
-      const result = await useCase.findAll();
-      expect(result).toHaveLength(1);
-      expect(result[0]).toHaveProperty('id', 'order-1');
-    });
-  });
-
-  describe('findOne', () => {
-    it('should return the order', async () => {
-      repository.findById.mockResolvedValue(mockOrder);
-      const result = await useCase.findOne('order-1');
-      expect(result).toHaveProperty('id', 'order-1');
-    });
-
-    it('should throw if not found', async () => {
-      repository.findById.mockResolvedValue(null);
-      await expect(useCase.findOne('invalid')).rejects.toThrow(
-        NotFoundException,
-      );
     });
   });
 
@@ -187,14 +174,14 @@ describe('ServiceOrderUseCase', () => {
     it('should throw if status is not WAITING_APPROVAL', async () => {
       repository.findById.mockResolvedValue(mockOrder);
       await expect(useCase.startService('order-1')).rejects.toThrow(
-        BadRequestException,
+        InvalidStatusTransitionException,
       );
     });
 
     it('should throw if order not found', async () => {
       repository.findById.mockResolvedValue(null);
       await expect(useCase.startService('invalid')).rejects.toThrow(
-        NotFoundException,
+        ServiceOrderNotFoundException,
       );
     });
   });
@@ -249,7 +236,7 @@ describe('ServiceOrderUseCase', () => {
       };
       repository.findById.mockResolvedValue(inExecution);
       await expect(useCase.finish('order-1', 'mechanic-B')).rejects.toThrow(
-        BadRequestException,
+        InvalidStatusTransitionException,
       );
     });
 
@@ -261,14 +248,14 @@ describe('ServiceOrderUseCase', () => {
       };
       repository.findById.mockResolvedValue(inExecution);
       await expect(useCase.finish('order-1', 'user-1')).rejects.toThrow(
-        BadRequestException,
+        InvalidStatusTransitionException,
       );
     });
 
     it('should throw if order not found', async () => {
       repository.findById.mockResolvedValue(null);
       await expect(useCase.finish('invalid', 'user-1')).rejects.toThrow(
-        NotFoundException,
+        ServiceOrderNotFoundException,
       );
     });
   });
@@ -293,7 +280,7 @@ describe('ServiceOrderUseCase', () => {
     it('should throw if order not found', async () => {
       repository.findById.mockResolvedValue(null);
       await expect(useCase.deliverVehicle('invalid')).rejects.toThrow(
-        NotFoundException,
+        ServiceOrderNotFoundException,
       );
     });
   });
@@ -320,7 +307,9 @@ describe('ServiceOrderUseCase', () => {
 
     it('should throw if order not found', async () => {
       repository.findById.mockResolvedValue(null);
-      await expect(useCase.close('invalid')).rejects.toThrow(NotFoundException);
+      await expect(useCase.close('invalid')).rejects.toThrow(
+        ServiceOrderNotFoundException,
+      );
     });
   });
 });

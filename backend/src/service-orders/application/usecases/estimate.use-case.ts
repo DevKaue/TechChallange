@@ -1,9 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-  ConflictException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ServiceOrdersRepositoryInterface } from '@service-orders/domain/contracts/service-orders-repository.interface';
 // TODO: Descomente quando parts module estiver pronto
 // import { PART_REPOSITORY } from '@service-orders/domain/acls/part-repository.interface';
@@ -22,6 +17,8 @@ import { UpdateEstimateStatusDto } from '@service-orders/application/dto/estimat
 import { RejectEstimateDto } from '@service-orders/application/dto/estimate/reject-estimate.dto';
 import { ServiceOrderResponseDto } from '@service-orders/application/dto/service-order/service-order-response.dto';
 import { plainToInstance } from 'class-transformer';
+import { ServiceOrderNotFoundException } from '@service-orders/application/exceptions/service-order-not-found.exception';
+import { InvalidStatusTransitionException } from '@service-orders/application/exceptions/invalid-status-transition.exception';
 
 @Injectable()
 export class EstimateUseCase {
@@ -35,8 +32,7 @@ export class EstimateUseCase {
 
   async createEstimate(orderId: string) {
     const data = await this.repository.findById(orderId);
-    if (!data)
-      throw new NotFoundException(`Service order ${orderId} not found`);
+    if (!data) throw new ServiceOrderNotFoundException(orderId);
 
     const order = ServiceOrderMapper.toDomain(data);
     try {
@@ -63,10 +59,9 @@ export class EstimateUseCase {
         excludeExtraneousValues: true,
       });
     } catch (error: unknown) {
-      if (error instanceof Error) {
-        throw new BadRequestException(error.message);
-      }
-      throw error;
+      throw new InvalidStatusTransitionException(
+        error instanceof Error ? error.message : 'Unexpected error',
+      );
     }
   }
 
@@ -122,7 +117,9 @@ export class EstimateUseCase {
       );
 
       const data = await this.repository.findById(estimate.serviceOrderId);
-      if (!data) throw new NotFoundException('Service order not found');
+      if (!data) {
+        throw new ServiceOrderNotFoundException('Service order not found');
+      }
 
       const order = ServiceOrderMapper.toDomain(data);
       try {
@@ -135,10 +132,9 @@ export class EstimateUseCase {
           newStatus: change.newStatus,
         });
       } catch (error: unknown) {
-        if (error instanceof Error) {
-          throw new BadRequestException(error.message);
-        }
-        throw error;
+        throw new InvalidStatusTransitionException(
+          error instanceof Error ? error.message : 'Unexpected error',
+        );
       }
 
       return plainToInstance(EstimateResponseDto, estimate, {
@@ -157,7 +153,7 @@ export class EstimateUseCase {
 
   async rejectEstimate(id: string, dto: RejectEstimateDto) {
     const data = await this.repository.findById(id);
-    if (!data) throw new NotFoundException(`Service order ${id} not found`);
+    if (!data) throw new ServiceOrderNotFoundException(id);
 
     const order = ServiceOrderMapper.toDomain(data);
     try {
@@ -176,10 +172,9 @@ export class EstimateUseCase {
         excludeExtraneousValues: true,
       });
     } catch (error: unknown) {
-      if (error instanceof Error) {
-        throw new BadRequestException(error.message);
-      }
-      throw error;
+      throw new InvalidStatusTransitionException(
+        error instanceof Error ? error.message : 'Unexpected error',
+      );
     }
   }
 }

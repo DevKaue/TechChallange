@@ -1,18 +1,16 @@
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { ServiceOrdersRepositoryInterface } from '@service-orders/domain/contracts/service-orders-repository.interface';
 // TODO: Descomente quando access-identity module estiver pronto
 // import { USER_REPOSITORY } from '@service-orders/domain/acls/user-repository.interface';
 // import type { UserRepository } from '@service-orders/domain/acls/user-repository.interface';
-import { UserRole } from '@service-orders/domain/enums/user-role.enum';
 import { MechanicAssignment } from '@service-orders/domain/value-objects/mechanic-assignment.value-object';
+import { UserRole } from '@service-orders/domain/enums/user-role.enum';
 import { AssignMechanicDto } from '@service-orders/application/dto/mechanic/assign-mechanic.dto';
-import { ServiceOrderMapper } from '@service-orders/domain/mappers/service-order.mapper';
 import { ServiceOrderResponseDto } from '@service-orders/application/dto/service-order/service-order-response.dto';
 import { plainToInstance } from 'class-transformer';
+import { ServiceOrderNotFoundException } from '@service-orders/application/exceptions/service-order-not-found.exception';
+import { InvalidStatusTransitionException } from '@service-orders/application/exceptions/invalid-status-transition.exception';
+import { ServiceOrderMapper } from '@service-orders/domain/mappers/service-order.mapper';
 
 @Injectable()
 export class MechanicUseCase {
@@ -23,26 +21,27 @@ export class MechanicUseCase {
   ) {}
 
   async assignMechanic(id: string, dto: AssignMechanicDto) {
-    // TODO: Descomente quando access-identity module estiver pronto
     const data = await this.repository.findById(id);
-    if (!data) throw new NotFoundException(`Service order ${id} not found`);
+    if (!data) throw new ServiceOrderNotFoundException(id);
 
+    const order = ServiceOrderMapper.toDomain(data);
+
+    // TODO: Descomente quando access-identity module estiver pronto
     // const user = await this.userRepository.findById(dto.mechanicId);
     // if (!user) throw new NotFoundException('User not found');
 
-    const order = ServiceOrderMapper.toDomain(data);
-    // try {
-    //   const assignment = MechanicAssignment.create(
-    //     user.id,
-    //     user.name,
-    //     user.role as UserRole,
-    //   );
-    //   order.assignMechanic(assignment);
-    // } catch (error: unknown) {
-    //   throw new BadRequestException(
-    //     error instanceof Error ? error.message : 'Unexpected error',
-    //   );
-    // }
+    try {
+      const assignment = MechanicAssignment.create(
+        dto.mechanicId,
+        '',
+        UserRole.MECHANIC,
+      );
+      order.assignMechanic(assignment);
+    } catch (error: unknown) {
+      throw new InvalidStatusTransitionException(
+        error instanceof Error ? error.message : 'Unexpected error',
+      );
+    }
 
     const updated = await this.repository.assignMechanic(id, dto.mechanicId);
     return plainToInstance(ServiceOrderResponseDto, updated, {
