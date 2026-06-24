@@ -1,5 +1,5 @@
-import { Controller, Post, Body, Param, Get, UseFilters, Delete } from '@nestjs/common';
-import { ApiTags, ApiCreatedResponse, ApiBadRequestResponse, ApiBody, ApiConflictResponse, ApiOkResponse, ApiNotFoundResponse, ApiParam } from '@nestjs/swagger';
+import { Controller, Post, Body, Param, Get, UseFilters, Delete, HttpCode, HttpStatus } from '@nestjs/common';
+import { ApiTags, ApiCreatedResponse, ApiBadRequestResponse, ApiNoContentResponse, ApiBody, ApiConflictResponse, ApiOkResponse, ApiNotFoundResponse, ApiParam } from '@nestjs/swagger';
 import { CreateVehicleUseCase } from '@customer-management/application/usecases/create-vehicle.usecase';
 import FindVehicleByIdUseCase from '@customer-management/application/usecases/find-vehicle-by-id.usecase';
 import DeleteVehicleUseCase from '@customer-management/application/usecases/delete-vehicle.usecase';
@@ -71,8 +71,9 @@ export class VehicleController {
   }
 
   @Delete('vehicles/:id')
+  @HttpCode(HttpStatus.NO_CONTENT) 
   @ApiParam({ name: 'id', description: 'ID do veículo', type: String })
-  @ApiOkResponse({ 
+  @ApiNoContentResponse({ 
     description: 'Veículo excluído com sucesso'
   })
   @ApiNotFoundResponse({ 
