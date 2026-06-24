@@ -9,13 +9,36 @@ import VehicleRepositoryInterface from '@customer-management/domain/contracts/ve
 export default class PrismaVehicleRepository implements VehicleRepositoryInterface {
   constructor(private readonly prisma: PrismaService) {}
 
-  async find(id: string): Promise<Vehicle | null> {
-    return null;
+  async findById(id: string): Promise<Vehicle | null> {
+    const vehicleData = await this.prisma.vehicle.findFirst({
+      where: {
+        id: id,
+        deletedAt: null,
+      },
+    });
+
+    if (!vehicleData) {
+      return null;
+    }
+
+    return VehicleFactory.create({
+      id: vehicleData.id,
+      licensePlate: vehicleData.plate,
+      brand: vehicleData.brand,
+      model: vehicleData.model,
+      year: vehicleData.year,
+      customerId: vehicleData.customerId,
+      createdAt: vehicleData.createdAt,
+      updatedAt: vehicleData.updatedAt,
+    });
   }
 
   async findByLicensePlate(licensePlate: LicensePlate): Promise<Vehicle | null> {
-    const vehicleData = await this.prisma.vehicle.findUnique({
-      where: { plate: licensePlate.value },
+    const vehicleData = await this.prisma.vehicle.findFirst({
+      where: { 
+        plate: licensePlate.value,
+        deletedAt: null,
+      },
     });
 
     if (!vehicleData) {
@@ -52,6 +75,18 @@ export default class PrismaVehicleRepository implements VehicleRepositoryInterfa
   async update(vehicle: Vehicle): Promise<void> {
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(vehicle: Vehicle): Promise<void> {
+    if (!vehicle.deletedAt) {
+      throw new Error('Vehicle must be soft deleted before calling repository delete method');
+    }
+
+    await this.prisma.vehicle.update({
+      where: {
+        id: vehicle.id,
+      },
+      data: {
+        deletedAt: vehicle.deletedAt,
+      },
+    });
   }
 }
