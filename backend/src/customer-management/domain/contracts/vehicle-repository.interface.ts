@@ -6,5 +6,5 @@ export default abstract class VehicleRepositoryInterface {
     abstract findByLicensePlate(licensePlate: LicensePlate): Promise<Vehicle | null>;
     abstract create(vehicle: Vehicle): Promise<void>;
     abstract update(vehicle: Vehicle): Promise<void>;
-    abstract delete(vehicle: Vehicle): Promise<void>;
+    abstract archive(vehicle: Vehicle): Promise<void>;
 }

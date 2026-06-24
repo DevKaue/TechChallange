@@ -16,6 +16,6 @@ export default class DeleteVehicleUseCase {
 
     vehicle.softDelete();
 
-    await this.vehicleRepository.delete(vehicle);
+    await this.vehicleRepository.archive(vehicle);
   }
 }
