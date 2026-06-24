@@ -1,7 +1,7 @@
 import { Module, OnModuleInit } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { PartsModule } from './parts/parts.module';
+import { PartsModule } from './parts/infra/parts.module';
 import { CustomerManagementModule } from './customer-management/infra/customer-management.module';
 //import { ServiceCatalogModule } from './service-catalog/service-catalog.module';
 import { PrismaModule } from './prisma/prisma.module';

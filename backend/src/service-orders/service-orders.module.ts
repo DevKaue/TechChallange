@@ -11,6 +11,7 @@ import { DiagnosisUseCase } from './application/usecases/diagnosis.use-case';
 import { MetricsUseCase } from './application/usecases/metrics.use-case';
 import { ServiceOrdersRepositoryInterface } from './domain/contracts/service-orders-repository.interface';
 import { PrismaServiceOrdersRepository } from './infra/repositories/prisma-service-orders.repository';
+import { PartsModule } from '../parts/infra/parts.module';
 // import { CLIENT_REPOSITORY } from './domain/acls/client-repository.interface';
 // import { VEHICLE_REPOSITORY } from './domain/acls/vehicle-repository.interface';
 // import { USER_REPOSITORY } from './domain/acls/user-repository.interface';
@@ -18,6 +19,7 @@ import { PrismaServiceOrdersRepository } from './infra/repositories/prisma-servi
 // import { SERVICE_CATALOG_REPOSITORY } from './domain/acls/service-catalog-repository.interface';
 
 @Module({
+  imports: [PartsModule],
   controllers: [
     ServiceOrderController,
     EstimateController,
