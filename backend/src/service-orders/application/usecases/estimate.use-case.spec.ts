@@ -1,9 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { EstimateUseCase } from './estimate.use-case';
 import { ServiceOrdersRepositoryInterface } from '@service-orders/domain/contracts/service-orders-repository.interface';
+import { PART_REPOSITORY } from '@service-orders/domain/acls/part-repository.interface';
+import { SERVICE_CATALOG_REPOSITORY } from '@service-orders/domain/acls/service-catalog-repository.interface';
 import { ServiceOrderStatus } from '@service-orders/domain/enums/service-order-status.enum';
 import { EstimateStatus } from '@service-orders/domain/enums/estimate-status.enum';
 import { ServiceOrderNotFoundException } from '@service-orders/application/exceptions/service-order-not-found.exception';
+import { ServiceCatalogNotFoundException } from '@service-orders/application/exceptions/service-catalog-not-found.exception';
+import { PartNotFoundException } from '@service-orders/application/exceptions/part-not-found.exception';
 import { InvalidStatusTransitionException } from '@service-orders/application/exceptions/invalid-status-transition.exception';
 
 describe('EstimateUseCase', () => {
@@ -59,6 +63,14 @@ describe('EstimateUseCase', () => {
             updateEstimateStatus: jest.fn(),
           },
         },
+        {
+          provide: PART_REPOSITORY,
+          useValue: { findById: jest.fn(), decrementStock: jest.fn() },
+        },
+        {
+          provide: SERVICE_CATALOG_REPOSITORY,
+          useValue: { findById: jest.fn() },
+        },
       ],
     }).compile();
 
@@ -112,63 +124,175 @@ describe('EstimateUseCase', () => {
 
   describe('addEstimateItem', () => {
     it('should add an item', async () => {
-      repository.addEstimateItem.mockResolvedValue({
-        id: 'item-1',
-        estimateId: 'est-1',
-        itemType: 'SERVICE',
-        referenceId: 'svc-1',
-        description: 'Troca de oleo',
-        quantity: 1,
-        unitPrice: 0,
-        totalPrice: 0,
-        notes: null,
-      } as any);
+      const mockServiceCatalogRepo = {
+        findById: jest.fn().mockResolvedValue({
+          id: 'svc-1',
+          name: 'Troca de oleo',
+          price: 150,
+          description: 'Troca de oleo completa',
+        }),
+      };
 
-      const result = await useCase.addEstimateItem('est-1', {
+      const module = await Test.createTestingModule({
+        providers: [
+          EstimateUseCase,
+          {
+            provide: ServiceOrdersRepositoryInterface,
+            useValue: {
+              findById: jest.fn(),
+              update: jest.fn(),
+              createStatusHistory: jest.fn(),
+              createEstimate: jest.fn(),
+              addEstimateItem: jest.fn().mockResolvedValue({
+                id: 'item-1',
+                estimateId: 'est-1',
+                itemType: 'SERVICE',
+                referenceId: 'svc-1',
+                description: 'Troca de oleo',
+                quantity: 1,
+                unitPrice: 150,
+                totalPrice: 150,
+                notes: null,
+              }),
+              updateEstimateStatus: jest.fn(),
+            },
+          },
+          { provide: PART_REPOSITORY, useValue: {} },
+          {
+            provide: SERVICE_CATALOG_REPOSITORY,
+            useValue: mockServiceCatalogRepo,
+          },
+        ],
+      }).compile();
+
+      const uc = module.get(EstimateUseCase);
+      const repo = module.get(ServiceOrdersRepositoryInterface);
+
+      const result = await uc.addEstimateItem('est-1', {
         itemType: 'SERVICE',
         referenceId: 'svc-1',
         description: 'Troca de oleo',
         quantity: 1,
       });
 
-      expect(repository.addEstimateItem).toHaveBeenCalledWith(
-        expect.objectContaining({ unitPrice: 0, totalPrice: 0 }),
+      expect(repo.addEstimateItem).toHaveBeenCalledWith(
+        expect.objectContaining({ unitPrice: 150, totalPrice: 150 }),
       );
       expect(result).toHaveProperty('id', 'item-1');
     });
 
-    // TODO: Descomente quando parts module estiver pronto
-    it.skip('should throw if service not found in catalog', async () => {
-      // serviceCatalogRepository.findById.mockResolvedValue(null);
+    it('should throw if service not found in catalog', async () => {
+      const mockPartRepo = {
+        findById: jest.fn(),
+        decrementStock: jest.fn(),
+      };
+      const module = await Test.createTestingModule({
+        providers: [
+          EstimateUseCase,
+          {
+            provide: ServiceOrdersRepositoryInterface,
+            useValue: {
+              findById: jest.fn(),
+              update: jest.fn(),
+              createStatusHistory: jest.fn(),
+              createEstimate: jest.fn(),
+              addEstimateItem: jest.fn(),
+              updateEstimateStatus: jest.fn(),
+            },
+          },
+          { provide: PART_REPOSITORY, useValue: mockPartRepo },
+          {
+            provide: SERVICE_CATALOG_REPOSITORY,
+            useValue: { findById: jest.fn().mockResolvedValue(null) },
+          },
+        ],
+      }).compile();
+
+      const uc = module.get(EstimateUseCase);
       await expect(
-        useCase.addEstimateItem('est-1', {
-          itemType: 'SERVICE' as any,
+        uc.addEstimateItem('est-1', {
+          itemType: 'SERVICE',
           referenceId: 'invalid',
           quantity: 1,
         }),
-      ).rejects.toThrow(ServiceOrderNotFoundException);
+      ).rejects.toThrow(ServiceCatalogNotFoundException);
     });
 
-    // TODO: Descomente quando parts module estiver pronto
-    it.skip('should throw if part stock is insufficient', async () => {
+    it('should throw if part stock is insufficient', async () => {
+      const module = await Test.createTestingModule({
+        providers: [
+          EstimateUseCase,
+          {
+            provide: ServiceOrdersRepositoryInterface,
+            useValue: {
+              findById: jest.fn(),
+              update: jest.fn(),
+              createStatusHistory: jest.fn(),
+              createEstimate: jest.fn(),
+              addEstimateItem: jest.fn(),
+              updateEstimateStatus: jest.fn(),
+            },
+          },
+          {
+            provide: PART_REPOSITORY,
+            useValue: {
+              findById: jest.fn().mockResolvedValue({
+                id: 'part-1',
+                name: 'Oleo',
+                price: 100,
+                stockQuantity: 2,
+              }),
+              decrementStock: jest.fn(),
+            },
+          },
+          { provide: SERVICE_CATALOG_REPOSITORY, useValue: {} },
+        ],
+      }).compile();
+
+      const uc = module.get(EstimateUseCase);
       await expect(
-        useCase.addEstimateItem('est-1', {
-          itemType: 'PART' as any,
+        uc.addEstimateItem('est-1', {
+          itemType: 'PART',
           referenceId: 'part-1',
           quantity: 5,
         }),
-      ).rejects.toThrow(ServiceOrderNotFoundException);
+      ).rejects.toThrow('Insufficient stock');
     });
 
-    // TODO: Descomente quando parts module estiver pronto
-    it.skip('should throw if part not found', async () => {
+    it('should throw if part not found', async () => {
+      const module = await Test.createTestingModule({
+        providers: [
+          EstimateUseCase,
+          {
+            provide: ServiceOrdersRepositoryInterface,
+            useValue: {
+              findById: jest.fn(),
+              update: jest.fn(),
+              createStatusHistory: jest.fn(),
+              createEstimate: jest.fn(),
+              addEstimateItem: jest.fn(),
+              updateEstimateStatus: jest.fn(),
+            },
+          },
+          {
+            provide: PART_REPOSITORY,
+            useValue: {
+              findById: jest.fn().mockResolvedValue(null),
+              decrementStock: jest.fn(),
+            },
+          },
+          { provide: SERVICE_CATALOG_REPOSITORY, useValue: {} },
+        ],
+      }).compile();
+
+      const uc = module.get(EstimateUseCase);
       await expect(
-        useCase.addEstimateItem('est-1', {
-          itemType: 'PART' as any,
+        uc.addEstimateItem('est-1', {
+          itemType: 'PART',
           referenceId: 'invalid',
           quantity: 1,
         }),
-      ).rejects.toThrow(ServiceOrderNotFoundException);
+      ).rejects.toThrow(PartNotFoundException);
     });
   });
 

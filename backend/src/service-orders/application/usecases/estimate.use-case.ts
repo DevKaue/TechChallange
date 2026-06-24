@@ -23,6 +23,9 @@ import { ServiceOrderResponseDto } from '@service-orders/application/dto/service
 import { plainToInstance } from 'class-transformer';
 import { ServiceOrderNotFoundException } from '@service-orders/application/exceptions/service-order-not-found.exception';
 import { InvalidStatusTransitionException } from '@service-orders/application/exceptions/invalid-status-transition.exception';
+import { ServiceCatalogNotFoundException } from '@service-orders/application/exceptions/service-catalog-not-found.exception';
+import { PartNotFoundException } from '@service-orders/application/exceptions/part-not-found.exception';
+import { InvalidMaterialDataException } from '@service-orders/application/exceptions/invalid-material-data.exception';
 import InsufficientMaterialStockException from '@materials/domain/exceptions/insufficient-material-stock.exception';
 import DomainException from '@materials/domain/exceptions/domain.exception';
 
@@ -76,7 +79,7 @@ export class EstimateUseCase {
 
   async addEstimateItem(estimateId: string, dto: AddEstimateItemDto) {
     let unitPriceMoney: Money | null = null;
-    const description = '';
+
     let description = dto.description ?? '';
 
     if (dto.itemType === 'SERVICE') {
@@ -86,7 +89,7 @@ export class EstimateUseCase {
         );
 
         if (!service) {
-          throw new NotFoundException('Service not found in catalog');
+          throw new ServiceCatalogNotFoundException(dto.referenceId);
         }
 
         unitPriceMoney = Money.fromFloat(service.price);
@@ -97,7 +100,7 @@ export class EstimateUseCase {
       const part = await this.partRepository.findById(dto.referenceId);
 
       if (!part) {
-        throw new NotFoundException('Part not found');
+        throw new PartNotFoundException(dto.referenceId);
       }
 
       if (part.stockQuantity < dto.quantity) {
@@ -117,7 +120,7 @@ export class EstimateUseCase {
         }
 
         if (error instanceof DomainException) {
-          throw new BadRequestException(error.message);
+          throw new InvalidMaterialDataException(error.message);
         }
 
         throw error;
