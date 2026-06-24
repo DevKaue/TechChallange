@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   UseGuards,
+  UseFilters,
   Req,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '@/access-identity/presentation/guards/jwt-auth.guard';
@@ -20,9 +21,16 @@ import { ServiceOrderUseCase } from '@service-orders/application/usecases/servic
 import { CreateServiceOrderDto } from '@service-orders/application/dto/service-order/create-service-order.dto';
 import { FinishServiceOrderDto } from '@service-orders/application/dto/service-order/finish-service-order.dto';
 import { ServiceOrderResponseDto } from '@service-orders/application/dto/service-order/service-order-response.dto';
+import { ServiceOrderExceptionFilter } from '@service-orders/presentation/filters/service-order-exception.filter';
+import {
+  ServiceOrderPresenter,
+  ServiceOrderSummaryResponse,
+  ServiceOrderDetailResponse,
+} from '@service-orders/presentation/presenters/service-order.presenter';
 
 @ApiTags('Service Orders')
 @Controller('service-orders')
+@UseFilters(ServiceOrderExceptionFilter)
 export class ServiceOrderController {
   constructor(private readonly useCase: ServiceOrderUseCase) {}
 
@@ -38,14 +46,18 @@ export class ServiceOrderController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOkResponse({ type: ServiceOrderResponseDto, isArray: true })
-  findAll() {
-    return this.useCase.findAll();
+  findAll(): Promise<ServiceOrderSummaryResponse[]> {
+    return this.useCase
+      .findAll()
+      .then((dtos) => ServiceOrderPresenter.presentMany(dtos));
   }
 
   @Get(':id')
   @ApiOkResponse({ type: ServiceOrderResponseDto })
-  findOne(@Param('id') id: string) {
-    return this.useCase.findOne(id);
+  findOne(@Param('id') id: string): Promise<ServiceOrderDetailResponse> {
+    return this.useCase
+      .findOne(id)
+      .then((dto) => ServiceOrderPresenter.presentDetail(dto));
   }
 
   @Patch(':id/start-service')

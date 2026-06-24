@@ -5,7 +5,9 @@ import {
   Body,
   Param,
   UseGuards,
+  UseFilters,
 } from '@nestjs/common';
+import { ServiceOrderExceptionFilter } from '@service-orders/presentation/filters/service-order-exception.filter';
 import { JwtAuthGuard } from '@/access-identity/presentation/guards/jwt-auth.guard';
 import {
   ApiBearerAuth,
@@ -25,6 +27,7 @@ import { ServiceOrderResponseDto } from '@service-orders/application/dto/service
 
 @ApiTags('Service Orders')
 @Controller('service-orders')
+@UseFilters(ServiceOrderExceptionFilter)
 export class EstimateController {
   constructor(private readonly useCase: EstimateUseCase) {}
 
