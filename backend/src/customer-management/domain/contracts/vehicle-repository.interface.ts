@@ -7,4 +7,5 @@ export default abstract class VehicleRepositoryInterface {
     abstract create(vehicle: Vehicle): Promise<void>;
     abstract update(vehicle: Vehicle): Promise<void>;
     abstract archive(vehicle: Vehicle): Promise<void>;
+    abstract archiveAllByCustomerId(customerId: string): Promise<void>;
 }

@@ -2,10 +2,10 @@ import { Controller, Post, Body, Param, Get, UseFilters, Delete, HttpCode, HttpS
 import { ApiTags, ApiCreatedResponse, ApiBadRequestResponse, ApiNoContentResponse, ApiBody, ApiConflictResponse, ApiOkResponse, ApiNotFoundResponse, ApiParam } from '@nestjs/swagger';
 import { CreateVehicleUseCase } from '@customer-management/application/usecases/create-vehicle.usecase';
 import FindVehicleByIdUseCase from '@customer-management/application/usecases/find-vehicle-by-id.usecase';
-import DeleteVehicleUseCase from '@customer-management/application/usecases/delete-vehicle.usecase';
+import ArchiveVehicleUseCase from '@/customer-management/application/usecases/archive-vehicle.usecase';
 import CreateVehicleInputDTO from '@customer-management/application/dtos/create-vehicle-input.dto';
 import FindVehicleByIdInputDTO from '@customer-management/application/dtos/find-vehicle-by-id-input.dto';
-import DeleteVehicleInputDTO from '@customer-management/application/dtos/delete-vehicle-input.dto';
+import ArchiveVehicleInputDTO from '@/customer-management/application/dtos/archive-vehicle-input.dto';
 import { JsonVehiclePresenter, VehicleResponse } from '@customer-management/presentation/presenters/json-vehicle.presenter';
 import { BodyCamelCase } from '@/common/decorators/body-camel-case.decorator';
 import { CreateVehicleSwaggerBody, CreateVehicleSwaggerResponse, CreateVehicleSwaggerConflictResponse } from '@customer-management/presentation/swaggers/create-vehicle.swagger';
@@ -24,7 +24,7 @@ export class VehicleController {
   constructor(
     private readonly createVehicleUseCase: CreateVehicleUseCase,
     private readonly findVehicleByIdUseCase: FindVehicleByIdUseCase,
-    private readonly deleteVehicleUseCase: DeleteVehicleUseCase
+    private readonly archiveVehicleUseCase: ArchiveVehicleUseCase
   ) {}
 
   @Post('customers/:customerId/vehicles')
@@ -81,7 +81,7 @@ export class VehicleController {
     type: VehicleNotFoundSwaggerResponse 
   })
   async delete(@Param('id') id: string): Promise<void> {
-    const input = new DeleteVehicleInputDTO({ id });
-    await this.deleteVehicleUseCase.execute(input);
+    const input = new ArchiveVehicleInputDTO({ id });
+    await this.archiveVehicleUseCase.execute(input);
   }
 }

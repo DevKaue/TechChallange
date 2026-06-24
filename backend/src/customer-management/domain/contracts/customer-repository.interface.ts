@@ -6,5 +6,5 @@ export default abstract class CustomerRepositoryInterface {
     abstract findByDocument(document: Document): Promise<Customer | null>;
     abstract create(customer: Customer): Promise<void>;
     abstract update(customer: Customer): Promise<void>;
-    abstract delete(id: string): Promise<void>;
+    abstract archive(customer: Customer): Promise<void>;
 }
