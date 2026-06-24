@@ -11,6 +11,10 @@ import { DiagnosisUseCase } from './application/usecases/diagnosis.use-case';
 import { MetricsUseCase } from './application/usecases/metrics.use-case';
 import { ServiceOrdersRepositoryInterface } from './domain/contracts/service-orders-repository.interface';
 import { PrismaServiceOrdersRepository } from './infra/repositories/prisma-service-orders.repository';
+import { ServiceOrderQueryServiceInterface } from './application/contracts/service-order-query-service.interface';
+import { PrismaServiceOrderQueryService } from './infra/services/prisma-service-order-query.service';
+import { SERVICE_ORDERS_INTERFACE } from './application/contracts/service-orders-public.interface';
+import { ServiceOrdersFacade } from './infra/integrations/service-orders.facade';
 // import { CLIENT_REPOSITORY } from './domain/acls/client-repository.interface';
 // import { VEHICLE_REPOSITORY } from './domain/acls/vehicle-repository.interface';
 // import { USER_REPOSITORY } from './domain/acls/user-repository.interface';
@@ -34,6 +38,15 @@ import { PrismaServiceOrdersRepository } from './infra/repositories/prisma-servi
     {
       provide: ServiceOrdersRepositoryInterface,
       useClass: PrismaServiceOrdersRepository,
+    },
+    {
+      provide: ServiceOrderQueryServiceInterface,
+      useClass: PrismaServiceOrderQueryService,
+    },
+    ServiceOrdersFacade,
+    {
+      provide: SERVICE_ORDERS_INTERFACE,
+      useExisting: ServiceOrdersFacade,
     },
     /*
      * ================================================================
@@ -97,5 +110,6 @@ import { PrismaServiceOrdersRepository } from './infra/repositories/prisma-servi
      * },
      */
   ],
+  exports: [SERVICE_ORDERS_INTERFACE],
 })
 export class ServiceOrdersModule {}
