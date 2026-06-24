@@ -5,7 +5,7 @@
  *
  * Responsabilidade do contexto parts:
  *   - Implementar esta interface em PrismaServiceCatalogRepository
- *   - Registrar SERVICE_CATALOG_REPOSITORY como provider no PartsModule
+ *   - Registrar SERVICE_CATALOG_REPOSITORY como provider no MaterialsModule
  *   - Exportar o provider para que outros módulos possam injetá-lo
  */
 

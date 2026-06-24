@@ -1,11 +1,13 @@
 /**
- * @context parts
+ * @context materials
  *
- * Contrato que service-orders espera do bounded context parts.
+ * Contrato que service-orders espera do bounded context materials.
+ * O nome PART_REPOSITORY permanece porque o item de orcamento ainda usa
+ * ServiceOrderItemType.PART para referenciar materiais fisicos.
  *
- * Responsabilidade do contexto parts:
- *   - Implementar esta interface em PrismaPartRepository
- *   - Registrar PART_REPOSITORY como provider no PartsModule
+ * Responsabilidade do contexto materials:
+ *   - Implementar esta interface em PrismaMaterialRepository
+ *   - Registrar PART_REPOSITORY como provider no MaterialsModule
  *   - Exportar o provider para que outros módulos possam injetá-lo
  */
 
@@ -19,5 +21,5 @@ export interface PartRepository {
     stockQuantity: number;
   } | null>;
 
-  decrementStock(partId: string, quantity: number): Promise<void>;
+  decrementStock(materialId: string, quantity: number): Promise<void>;
 }

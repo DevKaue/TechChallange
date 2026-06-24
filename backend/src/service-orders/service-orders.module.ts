@@ -11,6 +11,7 @@ import { DiagnosisUseCase } from './application/usecases/diagnosis.use-case';
 import { MetricsUseCase } from './application/usecases/metrics.use-case';
 import { ServiceOrdersRepositoryInterface } from './domain/contracts/service-orders-repository.interface';
 import { PrismaServiceOrdersRepository } from './infra/repositories/prisma-service-orders.repository';
+import { MaterialsModule } from '../materials/infra/materials.module';
 // import { CLIENT_REPOSITORY } from './domain/acls/client-repository.interface';
 // import { VEHICLE_REPOSITORY } from './domain/acls/vehicle-repository.interface';
 // import { USER_REPOSITORY } from './domain/acls/user-repository.interface';
@@ -18,6 +19,7 @@ import { PrismaServiceOrdersRepository } from './infra/repositories/prisma-servi
 // import { SERVICE_CATALOG_REPOSITORY } from './domain/acls/service-catalog-repository.interface';
 
 @Module({
+  imports: [MaterialsModule],
   controllers: [
     ServiceOrderController,
     EstimateController,
@@ -75,25 +77,25 @@ import { PrismaServiceOrdersRepository } from './infra/repositories/prisma-servi
      * },
      *
      * ---------------------------------------------------------------
-     * parts
-     *   - Implementar PrismaPartRepository que implementa PartRepository
+     * materials
+     *   - Implementar PrismaMaterialRepository que implementa PartRepository
      *     (findById + decrementStock)
-     *   - Exportar PART_REPOSITORY no PartsModule
+     *   - Exportar PART_REPOSITORY no MaterialsModule
      * ---------------------------------------------------------------
      * {
      *   provide: PART_REPOSITORY,
-     *   useClass: PrismaPartRepository,    // classe em parts/infra/repositories/
+     *   useClass: PrismaMaterialRepository,    // classe em materials/infra/repositories/
      * },
      *
      * ---------------------------------------------------------------
-     * parts
+     * materials
      *   - Implementar PrismaServiceCatalogRepository que implementa
      *     ServiceCatalogRepository (findById)
-     *   - Exportar SERVICE_CATALOG_REPOSITORY no PartsModule
+     *   - Exportar SERVICE_CATALOG_REPOSITORY no MaterialsModule
      * ---------------------------------------------------------------
      * {
      *   provide: SERVICE_CATALOG_REPOSITORY,
-     *   useClass: PrismaServiceCatalogRepository, // classe em parts/infra/repositories/
+     *   useClass: PrismaServiceCatalogRepository, // classe em materials/infra/repositories/
      * },
      */
   ],

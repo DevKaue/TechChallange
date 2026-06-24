@@ -90,6 +90,7 @@
     },
     "moduleNameMapper": {
       "^@/(.*)$": "<rootDir>/$1",
+      "^@materials/(.*)$": "<rootDir>/materials/$1",
       "^@service-orders/(.*)$": "<rootDir>/service-orders/$1"
     },
     "collectCoverageFrom": [
