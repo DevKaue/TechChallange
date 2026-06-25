@@ -67,6 +67,10 @@ export default class Customer {
         return this._deletedAt;
     }
 
+    public isArchived(): boolean {
+        return this._deletedAt !== undefined;
+    }
+
     // Methods
     public update(props: { name?: string; phone?: string; email?: Email }): void {
         if (props.name !== undefined) {

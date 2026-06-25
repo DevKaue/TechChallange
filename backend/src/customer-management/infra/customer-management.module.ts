@@ -5,7 +5,8 @@ import { VehicleController } from '@customer-management/presentation/controllers
 import CreateCustomerUseCase from '@customer-management/application/usecases/create-customer.usecase';
 import { CreateVehicleUseCase } from '@customer-management/application/usecases/create-vehicle.usecase';
 import FindVehicleByIdUseCase from '@customer-management/application/usecases/find-vehicle-by-id.usecase';
-import DeleteVehicleUseCase from '@customer-management/application/usecases/delete-vehicle.usecase';
+import ArchiveVehicleUseCase from '@/customer-management/application/usecases/archive-vehicle.usecase';
+import ArchiveCustomerUseCase from '@/customer-management/application/usecases/archive-customer.usecase';
 import CustomerManagementFacade from '@customer-management/infra/integrations/customer-management.facade';
 import CustomerManagementInterface from '@/common/contracts/customer-management.interface';
 import { CLIENT_REPOSITORY } from '@service-orders/domain/acls/client-repository.interface';
@@ -20,16 +21,27 @@ import VehicleQueryServiceInterface from '@customer-management/application/contr
 import FindCustomerByIdUseCase from '@customer-management/application/usecases/find-customer-by-id.usecase';
 import ListCustomersUseCase from '@customer-management/application/usecases/list-customers.usecase';
 import UpdateCustomerUseCase from '@customer-management/application/usecases/update-customer.usecase';
-import DeleteCustomerUseCase from '@customer-management/application/usecases/delete-customer.usecase';
 import ListVehiclesUseCase from '@customer-management/application/usecases/list-vehicles.usecase';
 import UpdateVehicleUseCase from '@customer-management/application/usecases/update-vehicle.usecase';
 import PrismaCustomerQueryService from '@customer-management/infra/services/prisma-customer-query.service';
 import PrismaVehicleQueryService from '@customer-management/infra/services/prisma-vehicle-query.service';
 
+import UnitOfWorkServiceInterface from '@customer-management/application/contracts/unit-of-work-service.interface';
+import PrismaUnitOfWorkService from '@customer-management/infra/services/prisma-unit-of-work.service';
+import CustomerRegistrationChecker from '../domain/services/customer-registration-checker.service';
+import VehicleRegistrationChecker from '../domain/services/vehicle-registration-checker.service';
+
 @Module({
   imports: [PrismaModule],
   controllers: [CustomerController, VehicleController],
   providers: [
+    PrismaUnitOfWorkService,
+    CustomerRegistrationChecker,
+    VehicleRegistrationChecker,
+    {
+      provide: UnitOfWorkServiceInterface,
+      useClass: PrismaUnitOfWorkService,
+    },
     {
       provide: CustomerRepositoryInterface,
       useClass: PrismaCustomerRepository,    
@@ -37,10 +49,22 @@ import PrismaVehicleQueryService from '@customer-management/infra/services/prism
 
     {
       provide: CreateCustomerUseCase,
-      useFactory: (repository: CustomerRepositoryInterface) => {
-        return new CreateCustomerUseCase(repository); 
+      useFactory: (repository: CustomerRepositoryInterface, registrationChecker: CustomerRegistrationChecker) => {
+        return new CreateCustomerUseCase(repository, registrationChecker); 
       },
-      inject: [CustomerRepositoryInterface],
+      inject: [CustomerRepositoryInterface, CustomerRegistrationChecker],
+    },
+
+    {
+      provide: ArchiveCustomerUseCase,
+      useFactory: (
+        customerRepository: CustomerRepositoryInterface,
+        vehicleRepository: VehicleRepositoryInterface,
+        unitOfWork: UnitOfWorkServiceInterface,
+      ) => {
+        return new ArchiveCustomerUseCase(customerRepository, vehicleRepository, unitOfWork);
+      },
+      inject: [CustomerRepositoryInterface, VehicleRepositoryInterface, UnitOfWorkServiceInterface],
     },
 
     {
@@ -52,19 +76,20 @@ import PrismaVehicleQueryService from '@customer-management/infra/services/prism
       provide: CreateVehicleUseCase,
       useFactory: (
         vehicleRepository: VehicleRepositoryInterface, 
-        customerRepository: CustomerRepositoryInterface
+        customerRepository: CustomerRepositoryInterface,
+        registrationChecker: VehicleRegistrationChecker
       ) => {
-        return new CreateVehicleUseCase(vehicleRepository, customerRepository);
+        return new CreateVehicleUseCase(vehicleRepository, customerRepository, registrationChecker);
       },
-      inject: [VehicleRepositoryInterface, CustomerRepositoryInterface],
+      inject: [VehicleRepositoryInterface, CustomerRepositoryInterface, VehicleRegistrationChecker],
     },
 
     {
-      provide: DeleteVehicleUseCase,
+      provide: ArchiveVehicleUseCase,
       useFactory: (
         vehicleRepository: VehicleRepositoryInterface
       ) => {
-        return new DeleteVehicleUseCase(vehicleRepository);
+        return new ArchiveVehicleUseCase(vehicleRepository);
       },
       inject: [
         VehicleRepositoryInterface, 
@@ -96,14 +121,6 @@ import PrismaVehicleQueryService from '@customer-management/infra/services/prism
       provide: UpdateCustomerUseCase,
       useFactory: (repository: CustomerRepositoryInterface) => {
         return new UpdateCustomerUseCase(repository);
-      },
-      inject: [CustomerRepositoryInterface],
-    },
-
-    {
-      provide: DeleteCustomerUseCase,
-      useFactory: (repository: CustomerRepositoryInterface) => {
-        return new DeleteCustomerUseCase(repository);
       },
       inject: [CustomerRepositoryInterface],
     },

@@ -19,12 +19,12 @@ import { UserRole } from '@/access-identity/domain/enums/user-role.enum';
 import CreateCustomerInputDTO from '@customer-management/application/dtos/create-customer-input.dto';
 import FindCustomerByIdInputDTO from '@/customer-management/application/dtos/find-customer-by-id-input.dto';
 import UpdateCustomerInputDTO from '@customer-management/application/dtos/update-customer-input.dto';
-import DeleteCustomerInputDTO from '@customer-management/application/dtos/delete-customer-input.dto';
+import ArchiveCustomerInputDTO from '@/customer-management/application/dtos/archive-customer-input.dto';
 import CreateCustomerUseCase from '@customer-management/application/usecases/create-customer.usecase';
 import FindCustomerByIdUseCase from '@/customer-management/application/usecases/find-customer-by-id.usecase';
 import ListCustomersUseCase from '@customer-management/application/usecases/list-customers.usecase';
 import UpdateCustomerUseCase from '@customer-management/application/usecases/update-customer.usecase';
-import DeleteCustomerUseCase from '@customer-management/application/usecases/delete-customer.usecase';
+import ArchiveCustomerUseCase from '@/customer-management/application/usecases/archive-customer.usecase';
 
 import { CustomerExceptionFilter } from '@customer-management/presentation/filters/customer-exception.filter';
 import { CustomerResponse, JsonCustomerPresenter } from '@customer-management/presentation/presenters/json-customer.presenter';
@@ -48,7 +48,7 @@ export class CustomerController {
     private readonly findCustomerByIdUseCase: FindCustomerByIdUseCase,
     private readonly listCustomersUseCase: ListCustomersUseCase,
     private readonly updateCustomerUseCase: UpdateCustomerUseCase,
-    private readonly deleteCustomerUseCase: DeleteCustomerUseCase
+    private readonly archiveCustomerUseCase: ArchiveCustomerUseCase
   ) {}
 
   @Get()
@@ -60,33 +60,33 @@ export class CustomerController {
 
   @Post()
   @ApiBody({ type: CreateCustomerSwaggerBody })
-  @ApiCreatedResponse({ 
+  @ApiCreatedResponse({
     description: 'Cliente cadastrado com sucesso',
     type: CreateCustomerSwaggerResponse,
   })
-  @ApiBadRequestResponse({ 
-    description: 'Dados de entrada inválidos', 
-    type: HttpErrorSwaggerResponse 
+  @ApiBadRequestResponse({
+    description: 'Dados de entrada inválidos',
+    type: HttpErrorSwaggerResponse
   })
-  @ApiConflictResponse({ 
+  @ApiConflictResponse({
     description: 'Documento já cadastrado no sistema',
-    type: CreateCustomerSwaggerConflictResponse 
+    type: CreateCustomerSwaggerConflictResponse
   })
   async create(@BodyCamelCase() input: CreateCustomerInputDTO): Promise<CustomerResponse> {
     const output = await this.createCustomerUseCase.execute(input);
-    
+
     return JsonCustomerPresenter.present(output.customer);
   }
 
   @Get(':id')
   @ApiParam({ name: 'id', description: 'ID do cliente', type: String })
-  @ApiOkResponse({ 
+  @ApiOkResponse({
     description: 'Cliente encontrado com sucesso',
-    type: FindCustomerByIdSwaggerResponse, 
+    type: FindCustomerByIdSwaggerResponse,
   })
-  @ApiNotFoundResponse({ 
-    description: 'Cliente não encontrado', 
-    type: CustomerNotFoundSwaggerResponse 
+  @ApiNotFoundResponse({
+    description: 'Cliente não encontrado',
+    type: CustomerNotFoundSwaggerResponse
   })
   async findById(@Param('id') id: string): Promise<CustomerResponse> {
     const input = new FindCustomerByIdInputDTO({ id });
@@ -124,6 +124,7 @@ export class CustomerController {
     type: CustomerNotFoundSwaggerResponse,
   })
   async delete(@Param('id') id: string): Promise<void> {
-    await this.deleteCustomerUseCase.execute(new DeleteCustomerInputDTO({ id }));
+    const input = new ArchiveCustomerInputDTO({ id });
+    await this.archiveCustomerUseCase.execute(input);
   }
 }

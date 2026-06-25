@@ -6,13 +6,13 @@ import { Roles } from '@/access-identity/presentation/decorators/roles.decorator
 import { UserRole } from '@/access-identity/domain/enums/user-role.enum';
 import { CreateVehicleUseCase } from '@customer-management/application/usecases/create-vehicle.usecase';
 import FindVehicleByIdUseCase from '@customer-management/application/usecases/find-vehicle-by-id.usecase';
-import DeleteVehicleUseCase from '@customer-management/application/usecases/delete-vehicle.usecase';
 import ListVehiclesUseCase from '@customer-management/application/usecases/list-vehicles.usecase';
 import UpdateVehicleUseCase from '@customer-management/application/usecases/update-vehicle.usecase';
+import ArchiveVehicleUseCase from '@/customer-management/application/usecases/archive-vehicle.usecase';
 import CreateVehicleInputDTO from '@customer-management/application/dtos/create-vehicle-input.dto';
 import FindVehicleByIdInputDTO from '@customer-management/application/dtos/find-vehicle-by-id-input.dto';
-import DeleteVehicleInputDTO from '@customer-management/application/dtos/delete-vehicle-input.dto';
 import UpdateVehicleInputDTO from '@customer-management/application/dtos/update-vehicle-input.dto';
+import ArchiveVehicleInputDTO from '@/customer-management/application/dtos/archive-vehicle-input.dto';
 import { JsonVehiclePresenter, VehicleResponse } from '@customer-management/presentation/presenters/json-vehicle.presenter';
 import { BodyCamelCase } from '@/common/decorators/body-camel-case.decorator';
 import { CreateVehicleSwaggerBody, CreateVehicleSwaggerResponse, CreateVehicleSwaggerConflictResponse } from '@customer-management/presentation/swaggers/create-vehicle.swagger';
@@ -34,9 +34,9 @@ export class VehicleController {
   constructor(
     private readonly createVehicleUseCase: CreateVehicleUseCase,
     private readonly findVehicleByIdUseCase: FindVehicleByIdUseCase,
-    private readonly deleteVehicleUseCase: DeleteVehicleUseCase,
     private readonly listVehiclesUseCase: ListVehiclesUseCase,
-    private readonly updateVehicleUseCase: UpdateVehicleUseCase
+    private readonly updateVehicleUseCase: UpdateVehicleUseCase,
+    private readonly archiveVehicleUseCase: ArchiveVehicleUseCase
   ) {}
 
   @Get('vehicles')
@@ -51,43 +51,43 @@ export class VehicleController {
 
   @Post('customers/:customerId/vehicles')
   @ApiBody({ type: CreateVehicleSwaggerBody })
-  @ApiCreatedResponse({ 
+  @ApiCreatedResponse({
     description: 'Veículo cadastrado com sucesso',
     type: CreateVehicleSwaggerResponse,
   })
-  @ApiBadRequestResponse({ 
-    description: 'Dados de entrada inválidos', 
-    type: HttpErrorSwaggerResponse 
+  @ApiBadRequestResponse({
+    description: 'Dados de entrada inválidos',
+    type: HttpErrorSwaggerResponse
   })
-  @ApiConflictResponse({ 
+  @ApiConflictResponse({
     description: 'Placa já cadastrada no sistema',
-    type: CreateVehicleSwaggerConflictResponse 
+    type: CreateVehicleSwaggerConflictResponse
   })
-  @ApiNotFoundResponse({ 
-    description: 'Cliente não encontrado', 
-    type: CustomerNotFoundSwaggerResponse 
+  @ApiNotFoundResponse({
+    description: 'Cliente não encontrado',
+    type: CustomerNotFoundSwaggerResponse
   })
   async create(
     @Param('customerId') customerId: string,
     @BodyCamelCase() input: CreateVehicleInputDTO
   ): Promise<VehicleResponse> {
     const output = await this.createVehicleUseCase.execute({ ...input, customerId });
-    
+
     return JsonVehiclePresenter.present(output.vehicle);
   }
 
   @Get('vehicles/:id')
   @ApiParam({ name: 'id', description: 'ID do veículo', type: String })
-  @ApiOkResponse({ 
+  @ApiOkResponse({
     description: 'Veículo encontrado com sucesso',
-    type: FindVehicleByIdSwaggerResponse, 
+    type: FindVehicleByIdSwaggerResponse,
   })
-  @ApiNotFoundResponse({ 
-    description: 'Veículo não encontrado', 
-    type: VehicleNotFoundSwaggerResponse 
+  @ApiNotFoundResponse({
+    description: 'Veículo não encontrado',
+    type: VehicleNotFoundSwaggerResponse
   })
   async findById(@Param('id') id: string): Promise<VehicleResponse> {
-    const input = new FindVehicleByIdInputDTO({ id }); 
+    const input = new FindVehicleByIdInputDTO({ id });
     const output = await this.findVehicleByIdUseCase.execute(input);
     return JsonVehiclePresenter.present(output.vehicle);
   }
@@ -116,15 +116,15 @@ export class VehicleController {
   @Delete('vehicles/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiParam({ name: 'id', description: 'ID do veículo', type: String })
-  @ApiNoContentResponse({ 
+  @ApiNoContentResponse({
     description: 'Veículo excluído com sucesso'
   })
-  @ApiNotFoundResponse({ 
-    description: 'Veículo não encontrado', 
-    type: VehicleNotFoundSwaggerResponse 
+  @ApiNotFoundResponse({
+    description: 'Veículo não encontrado',
+    type: VehicleNotFoundSwaggerResponse
   })
   async delete(@Param('id') id: string): Promise<void> {
-    const input = new DeleteVehicleInputDTO({ id });
-    await this.deleteVehicleUseCase.execute(input);
+    const input = new ArchiveVehicleInputDTO({ id });
+    await this.archiveVehicleUseCase.execute(input);
   }
 }

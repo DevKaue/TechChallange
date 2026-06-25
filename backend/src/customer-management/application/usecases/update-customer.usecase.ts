@@ -2,7 +2,7 @@ import CustomerRepositoryInterface from '@customer-management/domain/contracts/c
 import Email from '@customer-management/domain/value-objects/email.vo';
 import UpdateCustomerInputDTO from '@customer-management/application/dtos/update-customer-input.dto';
 import CustomerDTO from '@customer-management/application/dtos/customer.dto';
-import CustomerNotFoundException from '@customer-management/application/exceptions/customer-not-found.exception';
+import CustomerNotFoundException from '@customer-management/domain/exceptions/customer-not-found.exception';
 
 export default class UpdateCustomerUseCase {
   constructor(

@@ -7,40 +7,30 @@ import CreateVehicleInputDTO from '@customer-management/application/dtos/create-
 import CreateVehicleOutputDTO from '@customer-management/application/dtos/create-vehicle-output.dto';
 import VehicleDTO from '@customer-management/application/dtos/vehicle.dto';
 
-import VehicleAlreadyExistsException from '@customer-management/application/exceptions/vehicle-already-exists.exception';
-import CustomerNotFoundException from '../exceptions/customer-not-found.exception';
+import VehicleRegistrationChecker from '@/customer-management/domain/services/vehicle-registration-checker.service';
 
 export class CreateVehicleUseCase {
   constructor(
     private readonly vehicleRepository: VehicleRepositoryInterface,
-    private readonly customerRepository: CustomerRepositoryInterface
+    private readonly customerRepository: CustomerRepositoryInterface,
+    private readonly registrationChecker: VehicleRegistrationChecker
   ) {}
 
   async execute(input: CreateVehicleInputDTO): Promise<CreateVehicleOutputDTO> {
     
-    const existingCustomer = await this.customerRepository.findById(
+    const existingCustomer = await this.customerRepository.getById(
       input.customerId
     );
-
-    if (!existingCustomer) {
-      throw new CustomerNotFoundException();
-    }
     
     const vehicle = VehicleFactory.create({
       licensePlate: input.licensePlate,
       brand: input.brand,
       model: input.model,
       year: input.year,
-      customerId: input.customerId,
+      customerId: existingCustomer.id,
     });
 
-    const existingVehicle = await this.vehicleRepository.findByLicensePlate(
-      vehicle.licensePlate
-    );
-
-    if (existingVehicle) {
-      throw new VehicleAlreadyExistsException();
-    }
+    await this.registrationChecker.checkUniqueness(vehicle.licensePlate);
 
     await this.vehicleRepository.create(vehicle);
 

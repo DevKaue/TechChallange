@@ -3,12 +3,13 @@ import { PrismaService } from '@/prisma/prisma.service';
 
 import VehicleQueryServiceInterface from '@customer-management/application/contracts/vehicle-query-service.interface';
 import VehicleDTO from '@customer-management/application/dtos/vehicle.dto';
+import VehicleNotFoundException from '@/customer-management/domain/exceptions/vehicle-not-found.exception';
 
 @Injectable()
 export default class PrismaVehicleQueryService implements VehicleQueryServiceInterface {
     constructor(private readonly prisma: PrismaService) {}
     
-    async findById(props: { id: string }): Promise<VehicleDTO | null> {
+    async getById(props: { id: string }): Promise<VehicleDTO> {
         const vehicle = await this.prisma.vehicle.findFirst({
             where: { 
                 id: props.id,
@@ -29,7 +30,7 @@ export default class PrismaVehicleQueryService implements VehicleQueryServiceInt
             return vehicleDTO;
         }
 
-        return null;
+        throw new VehicleNotFoundException();
     }
 
     async findAll(props?: { customerId?: string }): Promise<VehicleDTO[]> {

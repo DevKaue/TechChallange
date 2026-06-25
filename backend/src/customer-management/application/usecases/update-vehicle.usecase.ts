@@ -3,7 +3,7 @@ import Year from '@customer-management/domain/value-objects/year.vo';
 import LicensePlate from '@customer-management/domain/value-objects/license-plate.vo';
 import UpdateVehicleInputDTO from '@customer-management/application/dtos/update-vehicle-input.dto';
 import VehicleDTO from '@customer-management/application/dtos/vehicle.dto';
-import VehicleNotFoundException from '@customer-management/application/exceptions/vehicle-not-found.exception';
+import VehicleNotFoundException from '@customer-management/domain/exceptions/vehicle-not-found.exception';
 
 export default class UpdateVehicleUseCase {
   constructor(

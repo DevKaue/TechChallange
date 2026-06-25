@@ -2,12 +2,10 @@ import { CreateVehicleUseCase } from '@customer-management/application/usecases/
 import FindVehicleByIdUseCase from '@customer-management/application/usecases/find-vehicle-by-id.usecase';
 import ListVehiclesUseCase from '@customer-management/application/usecases/list-vehicles.usecase';
 import UpdateVehicleUseCase from '@customer-management/application/usecases/update-vehicle.usecase';
-import DeleteVehicleUseCase from '@customer-management/application/usecases/delete-vehicle.usecase';
+import ArchiveVehicleUseCase from '@customer-management/application/usecases/archive-vehicle.usecase';
 import VehicleFactory from '@customer-management/domain/factories/vehicle.factory';
 import CustomerFactory from '@customer-management/domain/factories/customer.factory';
-import VehicleAlreadyExistsException from '@customer-management/application/exceptions/vehicle-already-exists.exception';
-import VehicleNotFoundException from '@customer-management/application/exceptions/vehicle-not-found.exception';
-import CustomerNotFoundException from '@customer-management/application/exceptions/customer-not-found.exception';
+import VehicleNotFoundException from '@customer-management/domain/exceptions/vehicle-not-found.exception';
 
 const buildVehicle = () =>
   VehicleFactory.create({
@@ -29,22 +27,25 @@ const buildCustomer = () =>
 
 const buildVehicleRepo = () => ({
   findById: jest.fn(),
+  getById: jest.fn(),
   findByLicensePlate: jest.fn(),
   create: jest.fn(),
   update: jest.fn(),
-  delete: jest.fn(),
+  archive: jest.fn(),
+  archiveAllByCustomerId: jest.fn(),
 });
 
 const buildCustomerRepo = () => ({
   findById: jest.fn(),
+  getById: jest.fn(),
   findByDocument: jest.fn(),
   create: jest.fn(),
   update: jest.fn(),
-  delete: jest.fn(),
+  archive: jest.fn(),
 });
 
 const buildQueryService = () => ({
-  findById: jest.fn(),
+  getById: jest.fn(),
   findAll: jest.fn(),
 });
 
@@ -57,69 +58,50 @@ const input = {
 };
 
 describe('CreateVehicleUseCase', () => {
-  it('creates a vehicle for an existing customer', async () => {
+  it('creates a vehicle for an existing customer after checking uniqueness', async () => {
     const vehicleRepo = buildVehicleRepo();
     const customerRepo = buildCustomerRepo();
-    customerRepo.findById.mockResolvedValue(buildCustomer());
-    vehicleRepo.findByLicensePlate.mockResolvedValue(null);
+    const checker = { checkUniqueness: jest.fn() };
+    customerRepo.getById.mockResolvedValue(buildCustomer());
     const useCase = new CreateVehicleUseCase(
       vehicleRepo as any,
       customerRepo as any,
+      checker as any,
     );
 
     const output = await useCase.execute(input as any);
+    expect(customerRepo.getById).toHaveBeenCalledWith('customer-1');
+    expect(checker.checkUniqueness).toHaveBeenCalledTimes(1);
     expect(vehicleRepo.create).toHaveBeenCalledTimes(1);
     expect(output.vehicle.licensePlate).toBe('ABC1D23');
   });
 
-  it('throws when customer does not exist', async () => {
+  it('propagates when the customer does not exist', async () => {
     const vehicleRepo = buildVehicleRepo();
     const customerRepo = buildCustomerRepo();
-    customerRepo.findById.mockResolvedValue(null);
+    const checker = { checkUniqueness: jest.fn() };
+    customerRepo.getById.mockRejectedValue(new Error('Customer Not Found.'));
     const useCase = new CreateVehicleUseCase(
       vehicleRepo as any,
       customerRepo as any,
+      checker as any,
     );
 
     await expect(useCase.execute(input as any)).rejects.toThrow(
-      CustomerNotFoundException,
+      'Customer Not Found.',
     );
-  });
-
-  it('throws when plate already exists', async () => {
-    const vehicleRepo = buildVehicleRepo();
-    const customerRepo = buildCustomerRepo();
-    customerRepo.findById.mockResolvedValue(buildCustomer());
-    vehicleRepo.findByLicensePlate.mockResolvedValue(buildVehicle());
-    const useCase = new CreateVehicleUseCase(
-      vehicleRepo as any,
-      customerRepo as any,
-    );
-
-    await expect(useCase.execute(input as any)).rejects.toThrow(
-      VehicleAlreadyExistsException,
-    );
+    expect(vehicleRepo.create).not.toHaveBeenCalled();
   });
 });
 
 describe('FindVehicleByIdUseCase', () => {
   it('returns the vehicle DTO', async () => {
     const query = buildQueryService();
-    query.findById.mockResolvedValue({ id: 'vehicle-1' });
+    query.getById.mockResolvedValue({ id: 'vehicle-1' });
     const useCase = new FindVehicleByIdUseCase(query as any);
 
     const output = await useCase.execute({ id: 'vehicle-1' } as any);
     expect(output.vehicle.id).toBe('vehicle-1');
-  });
-
-  it('throws when not found', async () => {
-    const query = buildQueryService();
-    query.findById.mockResolvedValue(null);
-    const useCase = new FindVehicleByIdUseCase(query as any);
-
-    await expect(useCase.execute({ id: 'x' } as any)).rejects.toThrow(
-      VehicleNotFoundException,
-    );
   });
 });
 
@@ -165,23 +147,13 @@ describe('UpdateVehicleUseCase', () => {
   });
 });
 
-describe('DeleteVehicleUseCase', () => {
-  it('soft deletes an existing vehicle', async () => {
+describe('ArchiveVehicleUseCase', () => {
+  it('archives an existing vehicle', async () => {
     const repo = buildVehicleRepo();
-    repo.findById.mockResolvedValue(buildVehicle());
-    const useCase = new DeleteVehicleUseCase(repo as any);
+    repo.getById.mockResolvedValue(buildVehicle());
+    const useCase = new ArchiveVehicleUseCase(repo as any);
 
     await useCase.execute({ id: 'vehicle-1' } as any);
-    expect(repo.delete).toHaveBeenCalledTimes(1);
-  });
-
-  it('throws when vehicle not found', async () => {
-    const repo = buildVehicleRepo();
-    repo.findById.mockResolvedValue(null);
-    const useCase = new DeleteVehicleUseCase(repo as any);
-
-    await expect(useCase.execute({ id: 'missing' } as any)).rejects.toThrow(
-      VehicleNotFoundException,
-    );
+    expect(repo.archive).toHaveBeenCalledTimes(1);
   });
 });

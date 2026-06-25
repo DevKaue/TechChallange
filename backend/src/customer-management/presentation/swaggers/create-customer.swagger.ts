@@ -21,12 +21,18 @@ export class CreateCustomerSwaggerBody {
 }
 
 export class CreateCustomerSwaggerConflictResponse {
-  @ApiProperty({ example: 409 })
-  status_code!: number;
-
   @ApiProperty({ example: 'Conflict' })
   error!: string;
 
-  @ApiProperty({ example: 'Customer with the same document already exists' })
+  @ApiProperty({ example: 'customer_already_exists|customer_is_archived' })
+  error_code!: string;
+
+  @ApiProperty({ 
+    examples: [
+      'Customer with the same document already exists', 
+      'Customer with document is archived and must be restored.'
+    ],
+    description: 'Mensagem de erro dependendo do estado do cliente' 
+  })
   message!: string;
 }
