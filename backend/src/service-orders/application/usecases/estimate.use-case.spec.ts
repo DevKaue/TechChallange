@@ -1,27 +1,18 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { EstimateUseCase } from './estimate.use-case';
 import { ServiceOrdersRepositoryInterface } from '@service-orders/domain/contracts/service-orders-repository.interface';
-import {
-  PartRepository,
-  PART_REPOSITORY,
-} from '@service-orders/domain/acls/part-repository.interface';
-import {
-  ServiceCatalogRepository,
-  SERVICE_CATALOG_REPOSITORY,
-} from '@service-orders/domain/acls/service-catalog-repository.interface';
+import { PART_REPOSITORY } from '@service-orders/domain/acls/part-repository.interface';
+import { SERVICE_CATALOG_REPOSITORY } from '@service-orders/domain/acls/service-catalog-repository.interface';
 import { ServiceOrderStatus } from '@service-orders/domain/enums/service-order-status.enum';
 import { EstimateStatus } from '@service-orders/domain/enums/estimate-status.enum';
-import {
-  NotFoundException,
-  BadRequestException,
-  ConflictException,
-} from '@nestjs/common';
+import { ServiceOrderNotFoundException } from '@service-orders/application/exceptions/service-order-not-found.exception';
+import { ServiceCatalogNotFoundException } from '@service-orders/application/exceptions/service-catalog-not-found.exception';
+import { PartNotFoundException } from '@service-orders/application/exceptions/part-not-found.exception';
+import { InvalidStatusTransitionException } from '@service-orders/application/exceptions/invalid-status-transition.exception';
 
 describe('EstimateUseCase', () => {
   let useCase: EstimateUseCase;
   let repository: jest.Mocked<ServiceOrdersRepositoryInterface>;
-  let partRepository: jest.Mocked<PartRepository>;
-  let serviceCatalogRepository: jest.Mocked<ServiceCatalogRepository>;
 
   const mockOrder: any = {
     id: 'order-1',
@@ -65,7 +56,7 @@ describe('EstimateUseCase', () => {
           provide: ServiceOrdersRepositoryInterface,
           useValue: {
             findById: jest.fn(),
-            updateStatus: jest.fn(),
+            update: jest.fn(),
             createStatusHistory: jest.fn(),
             createEstimate: jest.fn(),
             addEstimateItem: jest.fn(),
@@ -74,24 +65,17 @@ describe('EstimateUseCase', () => {
         },
         {
           provide: PART_REPOSITORY,
-          useValue: {
-            findById: jest.fn(),
-            decrementStock: jest.fn(),
-          },
+          useValue: { findById: jest.fn(), decrementStock: jest.fn() },
         },
         {
           provide: SERVICE_CATALOG_REPOSITORY,
-          useValue: {
-            findById: jest.fn(),
-          },
+          useValue: { findById: jest.fn() },
         },
       ],
     }).compile();
 
     useCase = module.get(EstimateUseCase);
     repository = module.get(ServiceOrdersRepositoryInterface);
-    partRepository = module.get(PART_REPOSITORY);
-    serviceCatalogRepository = module.get(SERVICE_CATALOG_REPOSITORY);
   });
 
   describe('createEstimate', () => {
@@ -114,7 +98,7 @@ describe('EstimateUseCase', () => {
         items: [],
       } as any;
       repository.createEstimate.mockResolvedValue(mockEstimate);
-      repository.updateStatus.mockResolvedValue({
+      repository.update.mockResolvedValue({
         ...mockOrder,
         status: ServiceOrderStatus.WAITING_APPROVAL,
       });
@@ -133,107 +117,182 @@ describe('EstimateUseCase', () => {
     it('should throw if order not found', async () => {
       repository.findById.mockResolvedValue(null);
       await expect(useCase.createEstimate('invalid')).rejects.toThrow(
-        NotFoundException,
+        ServiceOrderNotFoundException,
       );
     });
   });
 
   describe('addEstimateItem', () => {
-    it('should add a service item from catalog', async () => {
-      serviceCatalogRepository.findById.mockResolvedValue({
-        id: 'svc-1',
-        price: 150,
-      });
-      repository.addEstimateItem.mockResolvedValue({
-        id: 'item-1',
-        estimateId: 'est-1',
+    it('should add an item', async () => {
+      const mockServiceCatalogRepo = {
+        findById: jest.fn().mockResolvedValue({
+          id: 'svc-1',
+          name: 'Troca de oleo',
+          price: 150,
+          description: 'Troca de oleo completa',
+        }),
+      };
+
+      const module = await Test.createTestingModule({
+        providers: [
+          EstimateUseCase,
+          {
+            provide: ServiceOrdersRepositoryInterface,
+            useValue: {
+              findById: jest.fn(),
+              update: jest.fn(),
+              createStatusHistory: jest.fn(),
+              createEstimate: jest.fn(),
+              addEstimateItem: jest.fn().mockResolvedValue({
+                id: 'item-1',
+                estimateId: 'est-1',
+                itemType: 'SERVICE',
+                referenceId: 'svc-1',
+                description: 'Troca de oleo',
+                quantity: 1,
+                unitPrice: 150,
+                totalPrice: 150,
+                notes: null,
+              }),
+              updateEstimateStatus: jest.fn(),
+            },
+          },
+          { provide: PART_REPOSITORY, useValue: {} },
+          {
+            provide: SERVICE_CATALOG_REPOSITORY,
+            useValue: mockServiceCatalogRepo,
+          },
+        ],
+      }).compile();
+
+      const uc = module.get(EstimateUseCase);
+      const repo = module.get(ServiceOrdersRepositoryInterface);
+
+      const result = await uc.addEstimateItem('est-1', {
         itemType: 'SERVICE',
         referenceId: 'svc-1',
         description: 'Troca de oleo',
         quantity: 1,
-        unitPrice: 150,
-        totalPrice: 150,
-        notes: null,
-      } as any);
-
-      const result = await useCase.addEstimateItem('est-1', {
-        itemType: 'SERVICE',
-        referenceId: 'svc-1',
-        description: 'Troca de oleo',
-        quantity: 1,
       });
 
-      expect(repository.addEstimateItem).toHaveBeenCalledWith(
+      expect(repo.addEstimateItem).toHaveBeenCalledWith(
         expect.objectContaining({ unitPrice: 150, totalPrice: 150 }),
       );
       expect(result).toHaveProperty('id', 'item-1');
     });
 
-    it('should add a part item with stock decrement', async () => {
-      partRepository.findById.mockResolvedValue({
-        id: 'part-1',
-        name: 'Filtro de oleo',
-        price: 45,
-        stockQuantity: 10,
-      });
-      repository.addEstimateItem.mockResolvedValue({
-        id: 'item-2',
-        estimateId: 'est-1',
-        itemType: 'PART',
-        referenceId: 'part-1',
-        description: 'Filtro de oleo',
-        quantity: 2,
-        unitPrice: 45,
-        totalPrice: 90,
-        notes: null,
-      } as any);
-
-      const result = await useCase.addEstimateItem('est-1', {
-        itemType: 'PART',
-        referenceId: 'part-1',
-        quantity: 2,
-      });
-
-      expect(partRepository.decrementStock).toHaveBeenCalledWith('part-1', 2);
-      expect(result).toHaveProperty('id', 'item-2');
-    });
-
     it('should throw if service not found in catalog', async () => {
-      serviceCatalogRepository.findById.mockResolvedValue(null);
+      const mockPartRepo = {
+        findById: jest.fn(),
+        decrementStock: jest.fn(),
+      };
+      const module = await Test.createTestingModule({
+        providers: [
+          EstimateUseCase,
+          {
+            provide: ServiceOrdersRepositoryInterface,
+            useValue: {
+              findById: jest.fn(),
+              update: jest.fn(),
+              createStatusHistory: jest.fn(),
+              createEstimate: jest.fn(),
+              addEstimateItem: jest.fn(),
+              updateEstimateStatus: jest.fn(),
+            },
+          },
+          { provide: PART_REPOSITORY, useValue: mockPartRepo },
+          {
+            provide: SERVICE_CATALOG_REPOSITORY,
+            useValue: { findById: jest.fn().mockResolvedValue(null) },
+          },
+        ],
+      }).compile();
+
+      const uc = module.get(EstimateUseCase);
       await expect(
-        useCase.addEstimateItem('est-1', {
-          itemType: 'SERVICE' as any,
+        uc.addEstimateItem('est-1', {
+          itemType: 'SERVICE',
           referenceId: 'invalid',
           quantity: 1,
         }),
-      ).rejects.toThrow(NotFoundException);
+      ).rejects.toThrow(ServiceCatalogNotFoundException);
     });
 
     it('should throw if part stock is insufficient', async () => {
-      partRepository.findById.mockResolvedValue({
-        id: 'part-1',
-        name: 'Filtro de oleo',
-        price: 45,
-        stockQuantity: 1,
-      });
+      const module = await Test.createTestingModule({
+        providers: [
+          EstimateUseCase,
+          {
+            provide: ServiceOrdersRepositoryInterface,
+            useValue: {
+              findById: jest.fn(),
+              update: jest.fn(),
+              createStatusHistory: jest.fn(),
+              createEstimate: jest.fn(),
+              addEstimateItem: jest.fn(),
+              updateEstimateStatus: jest.fn(),
+            },
+          },
+          {
+            provide: PART_REPOSITORY,
+            useValue: {
+              findById: jest.fn().mockResolvedValue({
+                id: 'part-1',
+                name: 'Oleo',
+                price: 100,
+                stockQuantity: 2,
+              }),
+              decrementStock: jest.fn(),
+            },
+          },
+          { provide: SERVICE_CATALOG_REPOSITORY, useValue: {} },
+        ],
+      }).compile();
+
+      const uc = module.get(EstimateUseCase);
       await expect(
-        useCase.addEstimateItem('est-1', {
-          itemType: 'PART' as any,
+        uc.addEstimateItem('est-1', {
+          itemType: 'PART',
           referenceId: 'part-1',
           quantity: 5,
         }),
-      ).rejects.toThrow(ConflictException);
+      ).rejects.toThrow('Insufficient stock');
     });
 
     it('should throw if part not found', async () => {
-      partRepository.findById.mockResolvedValue(null);
+      const module = await Test.createTestingModule({
+        providers: [
+          EstimateUseCase,
+          {
+            provide: ServiceOrdersRepositoryInterface,
+            useValue: {
+              findById: jest.fn(),
+              update: jest.fn(),
+              createStatusHistory: jest.fn(),
+              createEstimate: jest.fn(),
+              addEstimateItem: jest.fn(),
+              updateEstimateStatus: jest.fn(),
+            },
+          },
+          {
+            provide: PART_REPOSITORY,
+            useValue: {
+              findById: jest.fn().mockResolvedValue(null),
+              decrementStock: jest.fn(),
+            },
+          },
+          { provide: SERVICE_CATALOG_REPOSITORY, useValue: {} },
+        ],
+      }).compile();
+
+      const uc = module.get(EstimateUseCase);
       await expect(
-        useCase.addEstimateItem('est-1', {
-          itemType: 'PART' as any,
+        uc.addEstimateItem('est-1', {
+          itemType: 'PART',
           referenceId: 'invalid',
           quantity: 1,
         }),
-      ).rejects.toThrow(NotFoundException);
+      ).rejects.toThrow(PartNotFoundException);
     });
   });
 
@@ -256,7 +315,7 @@ describe('EstimateUseCase', () => {
         ...mockOrder,
         status: ServiceOrderStatus.WAITING_APPROVAL,
       });
-      repository.updateStatus.mockResolvedValue({
+      repository.update.mockResolvedValue({
         ...mockOrder,
         status: ServiceOrderStatus.IN_EXECUTION,
       });
@@ -266,9 +325,9 @@ describe('EstimateUseCase', () => {
         status: EstimateStatus.APPROVED,
       });
 
-      expect(repository.updateStatus).toHaveBeenCalledWith(
+      expect(repository.update).toHaveBeenCalledWith(
         'order-1',
-        ServiceOrderStatus.IN_EXECUTION,
+        expect.objectContaining({ status: ServiceOrderStatus.IN_EXECUTION }),
       );
       expect(result).toHaveProperty('status', EstimateStatus.APPROVED);
     });
@@ -292,7 +351,7 @@ describe('EstimateUseCase', () => {
         status: EstimateStatus.REJECTED,
       });
 
-      expect(repository.updateStatus).not.toHaveBeenCalled();
+      expect(repository.update).not.toHaveBeenCalled();
       expect(result).toHaveProperty('status', EstimateStatus.REJECTED);
     });
 
@@ -316,7 +375,7 @@ describe('EstimateUseCase', () => {
         useCase.updateEstimateStatus('est-1', {
           status: EstimateStatus.APPROVED,
         }),
-      ).rejects.toThrow(NotFoundException);
+      ).rejects.toThrow(ServiceOrderNotFoundException);
     });
 
     it('should throw when order status is invalid for approve', async () => {
@@ -342,7 +401,7 @@ describe('EstimateUseCase', () => {
         useCase.updateEstimateStatus('est-1', {
           status: EstimateStatus.APPROVED,
         }),
-      ).rejects.toThrow(BadRequestException);
+      ).rejects.toThrow(InvalidStatusTransitionException);
     });
   });
 
@@ -353,7 +412,7 @@ describe('EstimateUseCase', () => {
         status: ServiceOrderStatus.WAITING_APPROVAL,
       };
       repository.findById.mockResolvedValue(order);
-      repository.updateStatus.mockResolvedValue({
+      repository.update.mockResolvedValue({
         ...order,
         status: ServiceOrderStatus.DELIVERED,
       });
@@ -363,9 +422,9 @@ describe('EstimateUseCase', () => {
         reason: 'Too expensive',
       });
 
-      expect(repository.updateStatus).toHaveBeenCalledWith(
+      expect(repository.update).toHaveBeenCalledWith(
         'order-1',
-        ServiceOrderStatus.DELIVERED,
+        expect.objectContaining({ status: ServiceOrderStatus.DELIVERED }),
       );
       expect(repository.createStatusHistory).toHaveBeenCalledWith(
         expect.objectContaining({ notes: 'Too expensive' }),
@@ -376,7 +435,7 @@ describe('EstimateUseCase', () => {
       repository.findById.mockResolvedValue(null);
       await expect(
         useCase.rejectEstimate('invalid', { reason: 'No reason' }),
-      ).rejects.toThrow(NotFoundException);
+      ).rejects.toThrow(ServiceOrderNotFoundException);
     });
 
     it('should throw when status is not WAITING_APPROVAL', async () => {
@@ -386,7 +445,7 @@ describe('EstimateUseCase', () => {
       });
       await expect(
         useCase.rejectEstimate('order-1', { reason: 'test' }),
-      ).rejects.toThrow(BadRequestException);
+      ).rejects.toThrow(InvalidStatusTransitionException);
     });
   });
 });

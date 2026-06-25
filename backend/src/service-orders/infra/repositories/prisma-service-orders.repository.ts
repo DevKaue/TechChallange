@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@/prisma/prisma.service';
-import { ServiceOrdersRepositoryInterface } from '@service-orders/domain/contracts/service-orders-repository.interface';
+import {
+  ServiceOrdersRepositoryInterface,
+  ServiceOrderUpdateData,
+} from '@service-orders/domain/contracts/service-orders-repository.interface';
 import {
   ServiceOrderStatus,
   EstimateStatus,
@@ -40,22 +43,8 @@ export class PrismaServiceOrdersRepository extends ServiceOrdersRepositoryInterf
     });
   }
 
-  async updateStatus(id: string, status: ServiceOrderStatus) {
-    return this.prisma.serviceOrder.update({ where: { id }, data: { status } });
-  }
-
-  async assignMechanic(id: string, mechanicId: string) {
-    return this.prisma.serviceOrder.update({
-      where: { id },
-      data: { mechanicId },
-    });
-  }
-
-  async setClosedAt(id: string, date: Date) {
-    return this.prisma.serviceOrder.update({
-      where: { id },
-      data: { closedAt: date },
-    });
+  async update(id: string, data: ServiceOrderUpdateData) {
+    return this.prisma.serviceOrder.update({ where: { id }, data });
   }
 
   async createStatusHistory(data: {
@@ -96,14 +85,6 @@ export class PrismaServiceOrdersRepository extends ServiceOrdersRepositoryInterf
     return this.prisma.estimate.update({
       where: { id },
       data: { status, ...(approvedAt ? { approvedAt } : {}) },
-    });
-  }
-
-  async transaction<T>(
-    fn: (tx: ServiceOrdersRepositoryInterface) => Promise<T>,
-  ): Promise<T> {
-    return this.prisma.$transaction(async () => {
-      return fn(this);
     });
   }
 

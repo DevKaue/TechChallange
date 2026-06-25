@@ -2,7 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { DiagnosisUseCase } from './diagnosis.use-case';
 import { ServiceOrdersRepositoryInterface } from '@service-orders/domain/contracts/service-orders-repository.interface';
 import { ServiceOrderStatus } from '@service-orders/domain/enums/service-order-status.enum';
-import { NotFoundException, BadRequestException } from '@nestjs/common';
+import { ServiceOrderNotFoundException } from '@service-orders/application/exceptions/service-order-not-found.exception';
+import { InvalidStatusTransitionException } from '@service-orders/application/exceptions/invalid-status-transition.exception';
 
 describe('DiagnosisUseCase', () => {
   let useCase: DiagnosisUseCase;
@@ -50,7 +51,7 @@ describe('DiagnosisUseCase', () => {
           provide: ServiceOrdersRepositoryInterface,
           useValue: {
             findById: jest.fn(),
-            updateStatus: jest.fn(),
+            update: jest.fn(),
             createStatusHistory: jest.fn(),
           },
         },
@@ -64,7 +65,7 @@ describe('DiagnosisUseCase', () => {
   describe('startDiagnosis', () => {
     it('should move to IN_DIAGNOSIS', async () => {
       repository.findById.mockResolvedValue(mockOrder);
-      repository.updateStatus.mockResolvedValue({
+      repository.update.mockResolvedValue({
         ...mockOrder,
         status: ServiceOrderStatus.IN_DIAGNOSIS,
       });
@@ -74,9 +75,9 @@ describe('DiagnosisUseCase', () => {
         diagnosis: 'Checking engine',
       });
 
-      expect(repository.updateStatus).toHaveBeenCalledWith(
+      expect(repository.update).toHaveBeenCalledWith(
         'order-1',
-        ServiceOrderStatus.IN_DIAGNOSIS,
+        expect.objectContaining({ status: ServiceOrderStatus.IN_DIAGNOSIS }),
       );
       expect(result).toBeDefined();
     });
@@ -86,7 +87,7 @@ describe('DiagnosisUseCase', () => {
 
       await expect(
         useCase.startDiagnosis('invalid', { diagnosis: 'test' }),
-      ).rejects.toThrow(NotFoundException);
+      ).rejects.toThrow(ServiceOrderNotFoundException);
     });
 
     it('should throw when status is invalid', async () => {
@@ -97,7 +98,7 @@ describe('DiagnosisUseCase', () => {
 
       await expect(
         useCase.startDiagnosis('order-1', { diagnosis: 'test' }),
-      ).rejects.toThrow(BadRequestException);
+      ).rejects.toThrow(InvalidStatusTransitionException);
     });
   });
 });

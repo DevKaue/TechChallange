@@ -41,6 +41,12 @@ type ServiceOrderWithRelations = ServiceOrder & {
   statusHistory: ServiceOrderStatusHistory[];
 };
 
+export type ServiceOrderUpdateData = {
+  status?: ServiceOrderStatus;
+  mechanicId?: string | null;
+  closedAt?: Date | null;
+};
+
 export abstract class ServiceOrdersRepositoryInterface {
   abstract create(data: {
     customerId: string;
@@ -52,9 +58,9 @@ export abstract class ServiceOrdersRepositoryInterface {
 
   abstract findById(id: string): Promise<ServiceOrderWithRelations | null>;
 
-  abstract updateStatus(
+  abstract update(
     id: string,
-    status: ServiceOrderStatus,
+    data: ServiceOrderUpdateData,
   ): Promise<ServiceOrder>;
 
   abstract createStatusHistory(data: {
@@ -90,17 +96,4 @@ export abstract class ServiceOrdersRepositoryInterface {
   abstract findExecutionTimes(): Promise<
     Array<{ startTime: Date; endTime: Date }>
   >;
-
-  abstract assignMechanic(
-    id: string,
-    mechanicId: string,
-  ): Promise<ServiceOrder>;
-
-  abstract setClosedAt(id: string, date: Date): Promise<ServiceOrder>;
-
-  abstract transaction<T>(
-    fn: (
-      tx: Omit<ServiceOrdersRepositoryInterface, 'transaction'>,
-    ) => Promise<T>,
-  ): Promise<T>;
 }

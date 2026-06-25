@@ -1,13 +1,11 @@
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ServiceOrdersRepositoryInterface } from '@service-orders/domain/contracts/service-orders-repository.interface';
 import { ServiceOrderMapper } from '@service-orders/domain/mappers/service-order.mapper';
 import { StartDiagnosisDto } from '@service-orders/application/dto/diagnosis/start-diagnosis.dto';
 import { ServiceOrderResponseDto } from '@service-orders/application/dto/service-order/service-order-response.dto';
 import { plainToInstance } from 'class-transformer';
+import { ServiceOrderNotFoundException } from '@service-orders/application/exceptions/service-order-not-found.exception';
+import { InvalidStatusTransitionException } from '@service-orders/application/exceptions/invalid-status-transition.exception';
 
 @Injectable()
 export class DiagnosisUseCase {
@@ -15,13 +13,16 @@ export class DiagnosisUseCase {
 
   async startDiagnosis(id: string, dto: StartDiagnosisDto) {
     const data = await this.repository.findById(id);
-    if (!data) throw new NotFoundException(`Service order ${id} not found`);
+    if (!data) throw new ServiceOrderNotFoundException(id);
 
     const order = ServiceOrderMapper.toDomain(data);
     try {
       const change = order.startDiagnosis();
 
-      const updated = await this.repository.updateStatus(id, change.newStatus);
+      const updated = await this.repository.update(
+        id,
+        ServiceOrderMapper.toPersistence(order),
+      );
       await this.repository.createStatusHistory({
         serviceOrderId: id,
         previousStatus: change.previousStatus,
@@ -33,10 +34,9 @@ export class DiagnosisUseCase {
         excludeExtraneousValues: true,
       });
     } catch (error: unknown) {
-      if (error instanceof Error) {
-        throw new BadRequestException(error.message);
-      }
-      throw error;
+      throw new InvalidStatusTransitionException(
+        error instanceof Error ? error.message : 'Unexpected error',
+      );
     }
   }
 }
