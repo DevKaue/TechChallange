@@ -1,5 +1,5 @@
 import { UnauthorizedException } from '@nestjs/common';
-import { UserRole } from '@prisma/client';
+import { UserRole } from '../../domain/enums/user-role.enum';
 import { AccessIdentityRepository } from '../../domain/contracts/access-identity-repository.interface';
 import { InternalUser } from '../../domain/entities/internal-user.entity';
 import { ValidateAuthenticatedUserUseCase } from './validate-authenticated-user.usecase';

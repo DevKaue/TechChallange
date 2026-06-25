@@ -14,6 +14,7 @@ import {
   ApiBearerAuth,
   ApiCreatedResponse,
   ApiOkResponse,
+  ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
 import type { AuthenticatedRequest } from '@/access-identity/presentation/authenticated-request';
@@ -37,6 +38,7 @@ export class ServiceOrderController {
   @Post()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
+  @ApiOperation({ summary: 'Cria uma ordem de serviço' })
   @ApiCreatedResponse({ type: ServiceOrderResponseDto })
   create(@Body() dto: CreateServiceOrderDto) {
     return this.useCase.create(dto);
@@ -45,6 +47,7 @@ export class ServiceOrderController {
   @Get()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
+  @ApiOperation({ summary: 'Lista as ordens de serviço' })
   @ApiOkResponse({ type: ServiceOrderResponseDto, isArray: true })
   findAll(): Promise<ServiceOrderSummaryResponse[]> {
     return this.useCase
@@ -53,6 +56,9 @@ export class ServiceOrderController {
   }
 
   @Get(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Detalha uma OS com histórico de status' })
   @ApiOkResponse({ type: ServiceOrderResponseDto })
   findOne(@Param('id') id: string): Promise<ServiceOrderDetailResponse> {
     return this.useCase
@@ -63,6 +69,7 @@ export class ServiceOrderController {
   @Patch(':id/start-service')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
+  @ApiOperation({ summary: 'Inicia a execução do serviço' })
   startService(@Param('id') id: string) {
     return this.useCase.startService(id);
   }
@@ -70,18 +77,20 @@ export class ServiceOrderController {
   @Patch(':id/finish')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
+  @ApiOperation({ summary: 'Finaliza o serviço (apenas o mecânico atribuído)' })
   @ApiOkResponse({ type: ServiceOrderResponseDto })
   finish(
     @Param('id') id: string,
     @Body() dto: FinishServiceOrderDto,
     @Req() req: AuthenticatedRequest,
   ) {
-    return this.useCase.finish(id, req.user.id, dto.notes);
+    return this.useCase.finish(id, req.user.userId, dto.notes);
   }
 
   @Patch(':id/deliver')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
+  @ApiOperation({ summary: 'Registra a entrega do veículo' })
   @ApiOkResponse({ type: ServiceOrderResponseDto })
   deliverVehicle(@Param('id') id: string) {
     return this.useCase.deliverVehicle(id);
@@ -90,6 +99,7 @@ export class ServiceOrderController {
   @Patch(':id/close')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
+  @ApiOperation({ summary: 'Encerra a ordem de serviço' })
   @ApiOkResponse({ type: ServiceOrderResponseDto })
   close(@Param('id') id: string) {
     return this.useCase.close(id);

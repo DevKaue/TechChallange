@@ -1,5 +1,10 @@
-import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
-import { UserRole } from '@prisma/client';
+import {
+  ForbiddenException,
+  Inject,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { UserRole } from '../../domain/enums/user-role.enum';
 import { ACCESS_IDENTITY_REPOSITORY } from '../../domain/contracts/access-identity-repository.interface';
 import type { AccessIdentityRepository } from '../../domain/contracts/access-identity-repository.interface';
 import { PASSWORD_HASHER } from '../../domain/contracts/password-hasher.interface';
@@ -37,7 +42,10 @@ export class LoginUseCase {
     private readonly tokenService: TokenService,
   ) {}
 
-  async execute(input: LoginUseCaseInput): Promise<LoginUseCaseOutput> {
+  async execute(
+    input: LoginUseCaseInput,
+    requiredRole?: UserRole,
+  ): Promise<LoginUseCaseOutput> {
     const email = input.email.trim().toLowerCase();
     const user = await this.accessIdentityRepository.findByEmail(email);
 
@@ -52,6 +60,10 @@ export class LoginUseCase {
 
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials');
+    }
+
+    if (requiredRole && user.role !== requiredRole) {
+      throw new ForbiddenException('Insufficient role for admin access');
     }
 
     return {

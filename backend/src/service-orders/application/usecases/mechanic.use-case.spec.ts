@@ -3,10 +3,13 @@ import { MechanicUseCase } from './mechanic.use-case';
 import { ServiceOrdersRepositoryInterface } from '@service-orders/domain/contracts/service-orders-repository.interface';
 import { ServiceOrderStatus } from '@service-orders/domain/enums/service-order-status.enum';
 import { ServiceOrderNotFoundException } from '@service-orders/application/exceptions/service-order-not-found.exception';
+import { USER_REPOSITORY } from '@service-orders/domain/acls/user-repository.interface';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 
 describe('MechanicUseCase', () => {
   let useCase: MechanicUseCase;
   let repository: jest.Mocked<ServiceOrdersRepositoryInterface>;
+  let userRepository: { findById: jest.Mock; updateAvailability: jest.Mock };
 
   const mockOrder: any = {
     id: 'order-1',
@@ -53,21 +56,29 @@ describe('MechanicUseCase', () => {
             update: jest.fn(),
           },
         },
+        {
+          provide: USER_REPOSITORY,
+          useValue: {
+            findById: jest.fn(),
+            updateAvailability: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
     useCase = module.get(MechanicUseCase);
     repository = module.get(ServiceOrdersRepositoryInterface);
+    userRepository = module.get(USER_REPOSITORY);
   });
 
   describe('assignMechanic', () => {
     it('should assign mechanic', async () => {
-      // TODO: Descomente quando access-identity module estiver pronto
-      // userRepository.findById.mockResolvedValue({
-      //   id: 'user-1',
-      //   name: 'John',
-      //   role: UserRole.MECHANIC,
-      // });
+      userRepository.findById.mockResolvedValue({
+        id: 'user-1',
+        name: 'John',
+        email: 'john@oficina.test',
+        role: 'MECHANIC',
+      });
       repository.findById.mockResolvedValue(mockOrder);
       repository.update.mockResolvedValue({
         ...mockOrder,
@@ -90,6 +101,37 @@ describe('MechanicUseCase', () => {
       await expect(
         useCase.assignMechanic('invalid', { mechanicId: 'user-1' }),
       ).rejects.toThrow(ServiceOrderNotFoundException);
+    });
+
+    it('should throw if user not found', async () => {
+      repository.findById.mockResolvedValue(mockOrder);
+      userRepository.findById.mockResolvedValue(null);
+      await expect(
+        useCase.assignMechanic('order-1', { mechanicId: 'ghost' }),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('should throw if user is not a mechanic', async () => {
+      repository.findById.mockResolvedValue(mockOrder);
+      userRepository.findById.mockResolvedValue({
+        id: 'user-2',
+        name: 'Anne',
+        email: 'anne@oficina.test',
+        role: 'ATTENDANT',
+      });
+      await expect(
+        useCase.assignMechanic('order-1', { mechanicId: 'user-2' }),
+      ).rejects.toThrow(BadRequestException);
+    });
+  });
+
+  describe('updateMechanicAvailability', () => {
+    it('should delegate to the user repository', async () => {
+      await useCase.updateMechanicAvailability('user-1', false);
+      expect(userRepository.updateAvailability).toHaveBeenCalledWith(
+        'user-1',
+        false,
+      );
     });
   });
 });

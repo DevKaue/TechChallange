@@ -99,6 +99,17 @@ export default class PrismaMaterialRepository
     }
   }
 
+  async incrementStock(materialId: string, quantity: number): Promise<void> {
+    await this.prisma.material.updateMany({
+      where: { id: materialId },
+      data: {
+        stockQuantity: {
+          increment: quantity,
+        },
+      },
+    });
+  }
+
   private toDomain(material: PrismaMaterialModel): Material {
     return MaterialFactory.create({
       id: material.id,

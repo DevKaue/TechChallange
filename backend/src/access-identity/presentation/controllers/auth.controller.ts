@@ -6,6 +6,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { LoginUseCase } from '../../application/usecases/login.usecase';
+import { UserRole } from '../../domain/enums/user-role.enum';
 import { LoginDto } from '../dto/login.dto';
 import {
   AuthenticatedUserDto,
@@ -28,7 +29,8 @@ export class AuthController {
   @Post('login-admin')
   @ApiCreatedResponse({ type: LoginResponseDto })
   loginAdmin(@Body() loginDto: LoginDto) {
-    return this.loginUseCase.execute(loginDto);
+    // Login administrativo exige papel ATTENDANT (atendente/admin da oficina).
+    return this.loginUseCase.execute(loginDto, UserRole.ATTENDANT);
   }
 
   @Get('me')

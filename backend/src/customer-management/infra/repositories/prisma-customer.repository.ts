@@ -100,7 +100,15 @@ export default class PrismaCustomerRepository implements CustomerRepositoryInter
     }
 
     async update(customer: Customer): Promise<void> {
-        // Implement the logic to update a customer in the database
+        await this.uow.client.customer.update({
+            where: { id: customer.id },
+            data: {
+                name: customer.name,
+                email: customer.email?.value ?? null,
+                phone: customer.phone ?? null,
+                updatedAt: customer.updatedAt,
+            },
+        });
     }
 
     async archive(customer: Customer): Promise<void> {

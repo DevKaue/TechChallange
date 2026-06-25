@@ -69,7 +69,9 @@ export class ServiceOrder {
       );
     }
     const previous = this._status;
-    this._status = ServiceOrderStatus.DELIVERED;
+    // Rejeição volta a OS para diagnóstico, permitindo novo orçamento.
+    // (DELIVERED é um estado terminal de entrega do veículo, não de rejeição.)
+    this._status = ServiceOrderStatus.IN_DIAGNOSIS;
     return new StatusChange(previous, this._status);
   }
 

@@ -1,4 +1,4 @@
-import { UserRole } from '@prisma/client';
+import { UserRole } from '../../domain/enums/user-role.enum';
 import { ValidateAuthenticatedUserUseCase } from '../../application/usecases/validate-authenticated-user.usecase';
 import { AuthenticatedUser } from '../../domain/entities/authenticated-user.entity';
 import { JwtStrategy } from './jwt.strategy';

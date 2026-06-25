@@ -22,4 +22,6 @@ export interface PartRepository {
   } | null>;
 
   decrementStock(materialId: string, quantity: number): Promise<void>;
+
+  incrementStock(materialId: string, quantity: number): Promise<void>;
 }

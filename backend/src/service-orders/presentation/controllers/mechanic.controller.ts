@@ -8,7 +8,12 @@ import {
   Req,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '@/access-identity/presentation/guards/jwt-auth.guard';
-import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import type { AuthenticatedRequest } from '@/access-identity/presentation/authenticated-request';
 import { MechanicUseCase } from '@service-orders/application/usecases/mechanic.use-case';
 import { AssignMechanicDto } from '@service-orders/application/dto/mechanic/assign-mechanic.dto';
@@ -25,6 +30,7 @@ export class MechanicController {
   @Patch(':id/mechanic')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
+  @ApiOperation({ summary: 'Atribui um mecânico à OS' })
   @ApiOkResponse({ type: ServiceOrderResponseDto })
   assignMechanic(@Param('id') id: string, @Body() dto: AssignMechanicDto) {
     return this.useCase.assignMechanic(id, dto);
@@ -33,10 +39,14 @@ export class MechanicController {
   @Patch('me/availability')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
+  @ApiOperation({ summary: 'Atualiza a disponibilidade do mecânico logado' })
   updateMechanicAvailability(
     @Req() req: AuthenticatedRequest,
     @Body() dto: UpdateMechanicAvailabilityDto,
   ) {
-    return this.useCase.updateMechanicAvailability(req.user.id, dto.available);
+    return this.useCase.updateMechanicAvailability(
+      req.user.userId,
+      dto.available,
+    );
   }
 }

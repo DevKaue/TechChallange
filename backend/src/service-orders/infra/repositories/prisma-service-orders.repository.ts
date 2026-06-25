@@ -88,6 +88,18 @@ export class PrismaServiceOrdersRepository extends ServiceOrdersRepositoryInterf
     });
   }
 
+  async recalcEstimateTotal(estimateId: string) {
+    const aggregate = await this.prisma.estimateItem.aggregate({
+      where: { estimateId },
+      _sum: { totalPrice: true },
+    });
+
+    return this.prisma.estimate.update({
+      where: { id: estimateId },
+      data: { totalAmount: aggregate._sum.totalPrice ?? 0 },
+    });
+  }
+
   async findExecutionTimes() {
     const history = await this.prisma.serviceOrderStatusHistory.findMany({
       where: {

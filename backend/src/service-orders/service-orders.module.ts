@@ -16,14 +16,17 @@ import { PrismaServiceOrderQueryService } from './infra/services/prisma-service-
 import { SERVICE_ORDERS_INTERFACE } from './application/contracts/service-orders-public.interface';
 import { ServiceOrdersFacade } from './infra/integrations/service-orders.facade';
 import { MaterialsModule } from '../materials/infra/materials.module';
-// import { CLIENT_REPOSITORY } from './domain/acls/client-repository.interface';
-// import { VEHICLE_REPOSITORY } from './domain/acls/vehicle-repository.interface';
-// import { USER_REPOSITORY } from './domain/acls/user-repository.interface';
-// import { PART_REPOSITORY } from './domain/acls/part-repository.interface';
-// import { SERVICE_CATALOG_REPOSITORY } from './domain/acls/service-catalog-repository.interface';
+import { ServiceCatalogModule } from '../service-catalog/infra/service-catalog.module';
+import { CustomerManagementModule } from '../customer-management/infra/customer-management.module';
+import { AccessIdentityModule } from '../access-identity/access-identity.module';
 
 @Module({
-  imports: [MaterialsModule],
+  imports: [
+    MaterialsModule,
+    ServiceCatalogModule,
+    CustomerManagementModule,
+    AccessIdentityModule,
+  ],
   controllers: [
     ServiceOrderController,
     EstimateController,
@@ -50,67 +53,8 @@ import { MaterialsModule } from '../materials/infra/materials.module';
       provide: SERVICE_ORDERS_INTERFACE,
       useExisting: ServiceOrdersFacade,
     },
-    /*
-     * ================================================================
-     * Providers abaixo serão implementados pelos bounded contexts
-     * responsáveis. Enquanto não estiverem prontos, comente-os para
-     * evitar erro de bootstrap.
-     * ================================================================
-     *
-     * ---------------------------------------------------------------
-     * customer-management
-     *   - Implementar PrismaClientRepository que implementa ClientRepository
-     *   - Criar CustomerManagementModule exportando CLIENT_REPOSITORY
-     *   - Importar CustomerManagementModule aqui ou registrar o provider abaixo
-     * ---------------------------------------------------------------
-     * {
-     *   provide: CLIENT_REPOSITORY,
-     *   useClass: PrismaClientRepository,   // classe em customer-management/infra/repositories/
-     * },
-     *
-     * ---------------------------------------------------------------
-     * customer-management
-     *   - Implementar PrismaVehicleRepository que implementa VehicleRepository
-     *   - Criar CustomerManagementModule exportando VEHICLE_REPOSITORY
-     * ---------------------------------------------------------------
-     * {
-     *   provide: VEHICLE_REPOSITORY,
-     *   useClass: PrismaVehicleRepository,  // classe em customer-management/infra/repositories/
-     * },
-     *
-     * ---------------------------------------------------------------
-     * access-identity
-     *   - Implementar PrismaUserRepository que implementa UserRepository
-     *     (findById com name/email/role + updateAvailability)
-     *   - Exportar USER_REPOSITORY no AccessIdentityModule
-     * ---------------------------------------------------------------
-     * {
-     *   provide: USER_REPOSITORY,
-     *   useClass: PrismaUserRepository,     // classe em access-identity/infra/repositories/
-     * },
-     *
-     * ---------------------------------------------------------------
-     * materials
-     *   - Implementar PrismaMaterialRepository que implementa PartRepository
-     *     (findById + decrementStock)
-     *   - Exportar PART_REPOSITORY no MaterialsModule
-     * ---------------------------------------------------------------
-     * {
-     *   provide: PART_REPOSITORY,
-     *   useClass: PrismaMaterialRepository,    // classe em materials/infra/repositories/
-     * },
-     *
-     * ---------------------------------------------------------------
-     * materials
-     *   - Implementar PrismaServiceCatalogRepository que implementa
-     *     ServiceCatalogRepository (findById)
-     *   - Exportar SERVICE_CATALOG_REPOSITORY no MaterialsModule
-     * ---------------------------------------------------------------
-     * {
-     *   provide: SERVICE_CATALOG_REPOSITORY,
-     *   useClass: PrismaServiceCatalogRepository, // classe em materials/infra/repositories/
-     * },
-     */
+    // ACLs cross-context (CLIENT/VEHICLE/USER/PART/SERVICE_CATALOG) são providos
+    // e exportados pelos módulos donos e chegam aqui via os imports acima.
   ],
   exports: [SERVICE_ORDERS_INTERFACE],
 })

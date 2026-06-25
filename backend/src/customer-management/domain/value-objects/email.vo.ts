@@ -1,9 +1,11 @@
+import DomainException from '@customer-management/domain/exceptions/domain.exception';
+
 export default class Email {
   public readonly value: string;
 
   constructor(value: string) {
     if (!this.isValid(value)) {
-      throw new Error('Invalid email format.');
+      throw new DomainException('Invalid email format.');
     }
     this.value = value;
   }

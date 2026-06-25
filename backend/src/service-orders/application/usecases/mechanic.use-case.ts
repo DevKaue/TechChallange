@@ -1,8 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { ServiceOrdersRepositoryInterface } from '@service-orders/domain/contracts/service-orders-repository.interface';
-// TODO: Descomente quando access-identity module estiver pronto
-// import { USER_REPOSITORY } from '@service-orders/domain/acls/user-repository.interface';
-// import type { UserRepository } from '@service-orders/domain/acls/user-repository.interface';
+import { USER_REPOSITORY } from '@service-orders/domain/acls/user-repository.interface';
+import type { UserRepository } from '@service-orders/domain/acls/user-repository.interface';
 import { MechanicAssignment } from '@service-orders/domain/value-objects/mechanic-assignment.value-object';
 import { UserRole } from '@service-orders/domain/enums/user-role.enum';
 import { AssignMechanicDto } from '@service-orders/application/dto/mechanic/assign-mechanic.dto';
@@ -16,8 +20,7 @@ import { ServiceOrderMapper } from '@service-orders/domain/mappers/service-order
 export class MechanicUseCase {
   constructor(
     private readonly repository: ServiceOrdersRepositoryInterface,
-    // TODO: Descomente quando access-identity module estiver pronto
-    // @Inject(USER_REPOSITORY) private readonly userRepository: UserRepository,
+    @Inject(USER_REPOSITORY) private readonly userRepository: UserRepository,
   ) {}
 
   async assignMechanic(id: string, dto: AssignMechanicDto) {
@@ -26,14 +29,18 @@ export class MechanicUseCase {
 
     const order = ServiceOrderMapper.toDomain(data);
 
-    // TODO: Descomente quando access-identity module estiver pronto
-    // const user = await this.userRepository.findById(dto.mechanicId);
-    // if (!user) throw new NotFoundException('User not found');
+    const user = await this.userRepository.findById(dto.mechanicId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    if (user.role !== UserRole.MECHANIC) {
+      throw new BadRequestException('User is not a mechanic');
+    }
 
     try {
       const assignment = MechanicAssignment.create(
-        dto.mechanicId,
-        '',
+        user.id,
+        user.name,
         UserRole.MECHANIC,
       );
       order.assignMechanic(assignment);
@@ -52,9 +59,7 @@ export class MechanicUseCase {
     });
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async updateMechanicAvailability(mechanicId: string, available: boolean) {
-    // TODO: Descomente quando access-identity module estiver pronto
-    // await this.userRepository.updateAvailability(mechanicId, available);
+    await this.userRepository.updateAvailability(mechanicId, available);
   }
 }

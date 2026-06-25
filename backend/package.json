@@ -92,12 +92,89 @@
     "moduleNameMapper": {
       "^@/(.*)$": "<rootDir>/$1",
       "^@materials/(.*)$": "<rootDir>/materials/$1",
-      "^@service-orders/(.*)$": "<rootDir>/service-orders/$1"
+      "^@service-orders/(.*)$": "<rootDir>/service-orders/$1",
+      "^@service-catalog/(.*)$": "<rootDir>/service-catalog/$1",
+      "^@customer-management/(.*)$": "<rootDir>/customer-management/$1",
+      "^@access-identity/(.*)$": "<rootDir>/access-identity/$1",
+      "^@common/(.*)$": "<rootDir>/common/$1"
     },
     "collectCoverageFrom": [
-      "**/*.(t|j)s"
+      "**/*.(t|j)s",
+      "!**/*.spec.ts",
+      "!**/*.module.ts",
+      "!main.ts",
+      "!**/*.dto.ts",
+      "!**/dtos/**",
+      "!**/dto/**",
+      "!**/*.interface.ts",
+      "!**/contracts/**",
+      "!**/acls/**",
+      "!**/*.swagger.ts",
+      "!**/swaggers/**"
     ],
     "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "coverageThreshold": {
+      "src/customer-management/domain/": {
+        "statements": 80,
+        "branches": 70,
+        "functions": 80,
+        "lines": 80
+      },
+      "src/customer-management/application/usecases/": {
+        "statements": 80,
+        "branches": 70,
+        "functions": 80,
+        "lines": 80
+      },
+      "src/access-identity/domain/": {
+        "statements": 80,
+        "branches": 70,
+        "functions": 80,
+        "lines": 80
+      },
+      "src/access-identity/application/": {
+        "statements": 80,
+        "branches": 70,
+        "functions": 80,
+        "lines": 80
+      },
+      "src/service-orders/domain/": {
+        "statements": 80,
+        "branches": 70,
+        "functions": 80,
+        "lines": 80
+      },
+      "src/service-orders/application/usecases/": {
+        "statements": 80,
+        "branches": 60,
+        "functions": 80,
+        "lines": 80
+      },
+      "src/materials/domain/": {
+        "statements": 80,
+        "branches": 60,
+        "functions": 80,
+        "lines": 80
+      },
+      "src/materials/application/usecases/": {
+        "statements": 80,
+        "branches": 50,
+        "functions": 80,
+        "lines": 80
+      },
+      "src/service-catalog/domain/": {
+        "statements": 80,
+        "branches": 70,
+        "functions": 80,
+        "lines": 80
+      },
+      "src/service-catalog/application/usecases/": {
+        "statements": 80,
+        "branches": 70,
+        "functions": 80,
+        "lines": 80
+      }
+    }
   }
 }

@@ -91,7 +91,7 @@ describe('ServiceOrder', () => {
   });
 
   describe('rejectEstimate', () => {
-    it('should transition from WAITING_APPROVAL to DELIVERED', () => {
+    it('should transition from WAITING_APPROVAL back to IN_DIAGNOSIS', () => {
       const props = {
         ...defaultProps,
         status: ServiceOrderStatus.WAITING_APPROVAL,
@@ -100,9 +100,9 @@ describe('ServiceOrder', () => {
       const change = order.rejectEstimate();
       expect(change).toEqual({
         previousStatus: ServiceOrderStatus.WAITING_APPROVAL,
-        newStatus: ServiceOrderStatus.DELIVERED,
+        newStatus: ServiceOrderStatus.IN_DIAGNOSIS,
       });
-      expect(order.status).toBe(ServiceOrderStatus.DELIVERED);
+      expect(order.status).toBe(ServiceOrderStatus.IN_DIAGNOSIS);
     });
 
     it('should throw when status is not WAITING_APPROVAL', () => {

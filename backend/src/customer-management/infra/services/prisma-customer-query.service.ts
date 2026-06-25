@@ -32,4 +32,22 @@ export default class PrismaCustomerQueryService implements CustomerQueryServiceI
 
         throw new CustomerNotFoundException();
     }
+
+    async findAll(): Promise<CustomerDTO[]> {
+        const customers = await this.prisma.customer.findMany({
+            where: { deletedAt: null },
+            orderBy: { name: 'asc' },
+        });
+
+        return customers.map((customerData) => ({
+            id: customerData.id,
+            documentType: customerData.documentType,
+            documentNumber: customerData.document,
+            name: customerData.name,
+            email: customerData.email ?? undefined,
+            phone: customerData.phone ?? undefined,
+            createdAt: customerData.createdAt,
+            updatedAt: customerData.updatedAt,
+        }));
+    }
 }

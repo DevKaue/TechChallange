@@ -8,7 +8,7 @@ import {
   IsUUID,
   Min,
 } from 'class-validator';
-import { ServiceOrderItemType } from '@prisma/client';
+import { ServiceOrderItemType } from '@service-orders/domain/enums/service-order-item-type.enum';
 
 export class AddEstimateItemDto {
   @ApiProperty({ enum: ServiceOrderItemType, description: 'SERVICE or PART' })

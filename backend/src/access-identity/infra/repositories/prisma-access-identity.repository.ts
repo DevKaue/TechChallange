@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@/prisma/prisma.service';
 import { AccessIdentityRepository } from '../../domain/contracts/access-identity-repository.interface';
 import { InternalUser } from '../../domain/entities/internal-user.entity';
+import { UserRole } from '../../domain/enums/user-role.enum';
 
 @Injectable()
 export class PrismaAccessIdentityRepository implements AccessIdentityRepository {
@@ -23,7 +24,7 @@ export class PrismaAccessIdentityRepository implements AccessIdentityRepository 
       return null;
     }
 
-    return new InternalUser(user);
+    return new InternalUser({ ...user, role: user.role as UserRole });
   }
 
   async findById(id: string): Promise<InternalUser | null> {
@@ -36,6 +37,6 @@ export class PrismaAccessIdentityRepository implements AccessIdentityRepository 
       return null;
     }
 
-    return new InternalUser(user);
+    return new InternalUser({ ...user, role: user.role as UserRole });
   }
 }
