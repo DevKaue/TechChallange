@@ -18,11 +18,11 @@ export class CreateVehicleSwaggerBody {
 }
 
 export class CreateVehicleSwaggerConflictResponse {
-  @ApiProperty({ example: 409 })
-  status_code!: number;
-
   @ApiProperty({ example: 'Conflict' })
   error!: string;
+
+  @ApiProperty({ example: 'vehicle_already_exists' })
+  error_code!: string;
 
   @ApiProperty({ example: 'Vehicle with this license plate already exists' })
   message!: string;

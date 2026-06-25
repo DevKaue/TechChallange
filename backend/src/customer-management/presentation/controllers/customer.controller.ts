@@ -1,9 +1,10 @@
-import { Controller, Get, Param, Post, UseFilters } from '@nestjs/common';
+import { Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, UseFilters } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiBody,
   ApiConflictResponse,
   ApiCreatedResponse,
+  ApiNoContentResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiParam,
@@ -12,8 +13,10 @@ import {
 
 import CreateCustomerInputDTO from '@customer-management/application/dtos/create-customer-input.dto';
 import FindCustomerByIdInputDTO from '@/customer-management/application/dtos/find-customer-by-id-input.dto';
+import ArchiveCustomerInputDTO from '@/customer-management/application/dtos/archive-customer-input.dto';
 import CreateCustomerUseCase from '@customer-management/application/usecases/create-customer.usecase';
 import FindCustomerByIdUseCase from '@/customer-management/application/usecases/find-customer-by-id.usecase';
+import ArchiveCustomerUseCase from '@/customer-management/application/usecases/archive-customer.usecase';
 
 import { CustomerExceptionFilter } from '@customer-management/presentation/filters/customer-exception.filter';
 import { CustomerResponse, JsonCustomerPresenter } from '@customer-management/presentation/presenters/json-customer.presenter';
@@ -31,7 +34,8 @@ import { BodyCamelCase } from '@/common/decorators/body-camel-case.decorator';
 export class CustomerController {
   constructor(
     private readonly createCustomerUseCase: CreateCustomerUseCase,
-    private readonly findCustomerByIdUseCase: FindCustomerByIdUseCase
+    private readonly findCustomerByIdUseCase: FindCustomerByIdUseCase,
+    private readonly archiveCustomerUseCase: ArchiveCustomerUseCase,
   ) {}
 
   @Post()
@@ -68,5 +72,20 @@ export class CustomerController {
     const input = new FindCustomerByIdInputDTO({ id }); 
     const output = await this.findCustomerByIdUseCase.execute(input);
     return JsonCustomerPresenter.present(output.customer);
+  }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiParam({ name: 'id', description: 'ID do cliente', type: String })
+  @ApiNoContentResponse({
+    description: 'Cliente excluído com sucesso'
+  })
+  @ApiNotFoundResponse({
+    description: 'Cliente não encontrado',
+    type: CustomerNotFoundSwaggerResponse
+  })
+  async delete(@Param('id') id: string): Promise<void> {
+    const input = new ArchiveCustomerInputDTO({ id });
+    await this.archiveCustomerUseCase.execute(input);
   }
 }

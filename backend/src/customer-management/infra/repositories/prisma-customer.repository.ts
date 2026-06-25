@@ -1,18 +1,41 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '@/prisma/prisma.service';
 import Customer from  "@customer-management/domain/entities/customer.entity";
 import CustomerFactory from '@customer-management/domain/factories/customer.factory';
 import Document from "@customer-management/domain/value-objects/document.vo";
-import Email from "@customer-management/domain/value-objects/email.vo";
 import CustomerRepositoryInterface from "@customer-management/domain/contracts/customer-repository.interface";
-import { create } from 'domain';
+import PrismaUnitOfWorkService from '@customer-management/infra/services/prisma-unit-of-work.service';
+import CustomerNotFoundException from '@/customer-management/domain/exceptions/customer-not-found.exception';
 
 @Injectable()
 export default class PrismaCustomerRepository implements CustomerRepositoryInterface {
-    constructor(private readonly prisma: PrismaService) {}
+    constructor(private readonly uow: PrismaUnitOfWorkService) {}
     
+    async getById(id: string): Promise<Customer> {
+        const customerData = await this.uow.client.customer.findFirst({
+            where: {
+                id: id,
+                deletedAt: null,
+            },
+        });
+
+        if (!customerData) {
+            throw new CustomerNotFoundException();
+        }
+
+        return CustomerFactory.create({
+            id: customerData.id,
+            documentType: customerData.documentType,
+            documentNumber: customerData.document,
+            name: customerData.name,
+            email: customerData.email ?? undefined,
+            phone: customerData.phone ?? undefined,
+            createdAt: customerData.createdAt,
+            updatedAt: customerData.updatedAt,
+        });
+    }
+
     async findById(id: string): Promise<Customer | null> {
-        const customerData = await this.prisma.customer.findFirst({
+        const customerData = await this.uow.client.customer.findFirst({
             where: {
                 id: id,
                 deletedAt: null,
@@ -35,12 +58,12 @@ export default class PrismaCustomerRepository implements CustomerRepositoryInter
         });
     }
 
-    async findByDocument(document: Document): Promise<Customer | null> {
-        const customerData = await this.prisma.customer.findFirst({
+    async findByDocument(document: Document, options?: { includeDeleted?: boolean }): Promise<Customer | null> {
+        const customerData = await this.uow.client.customer.findFirst({
             where: {
                 document: document.value,
                 documentType: document.type,
-                deletedAt: null,
+                ...(options?.includeDeleted ? {} : { deletedAt: null }),
             },
         });
 
@@ -57,11 +80,12 @@ export default class PrismaCustomerRepository implements CustomerRepositoryInter
             phone: customerData.phone ?? undefined,
             createdAt: customerData.createdAt,
             updatedAt: customerData.updatedAt,
+            deletedAt: customerData.deletedAt ?? undefined,
         });
     }
 
     async create(customer: Customer): Promise<void> {
-        await this.prisma.customer.create({
+        await this.uow.client.customer.create({
             data: {
                 id: customer.id,
                 document: customer.document.value,
@@ -79,7 +103,18 @@ export default class PrismaCustomerRepository implements CustomerRepositoryInter
         // Implement the logic to update a customer in the database
     }
 
-    async delete(id: string): Promise<void> {
-        // Implement the logic to delete a customer from the database by ID
+    async archive(customer: Customer): Promise<void> {
+        if (!customer.deletedAt) {
+            throw new Error('Customer must be soft deleted before calling repository delete method');
+        }
+
+        await this.uow.client.customer.update({
+            where: {
+                id: customer.id,
+            },
+            data: {
+                deletedAt: customer.deletedAt,
+            },
+        });
     }
 }

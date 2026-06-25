@@ -24,7 +24,7 @@ services:
       target: development
     container_name: techchallenge_api
     restart: unless-stopped
-    command: sh -c "npm run prisma:migrate:dev -- --name init || npm run prisma:migrate:deploy && npm run start:dev"
+    command: sh -c "npm run prisma:generate && npm run prisma:migrate:dev -- --name init || npm run prisma:migrate:deploy && npm run start:dev"
     ports:
       - '3000:3000'
     environment:
