@@ -22,12 +22,16 @@ import PrismaVehicleQueryService from '@customer-management/infra/services/prism
 
 import UnitOfWorkServiceInterface from '@customer-management/application/contracts/unit-of-work-service.interface';
 import PrismaUnitOfWorkService from '@customer-management/infra/services/prisma-unit-of-work.service';
+import CustomerRegistrationChecker from '../domain/services/customer-registration-checker.service';
+import VehicleRegistrationChecker from '../domain/services/vehicle-registration-checker.service';
 
 @Module({
   imports: [PrismaModule],
   controllers: [CustomerController, VehicleController],
   providers: [
     PrismaUnitOfWorkService,
+    CustomerRegistrationChecker,
+    VehicleRegistrationChecker,
     {
       provide: UnitOfWorkServiceInterface,
       useClass: PrismaUnitOfWorkService,
@@ -39,10 +43,10 @@ import PrismaUnitOfWorkService from '@customer-management/infra/services/prisma-
 
     {
       provide: CreateCustomerUseCase,
-      useFactory: (repository: CustomerRepositoryInterface) => {
-        return new CreateCustomerUseCase(repository); 
+      useFactory: (repository: CustomerRepositoryInterface, registrationChecker: CustomerRegistrationChecker) => {
+        return new CreateCustomerUseCase(repository, registrationChecker); 
       },
-      inject: [CustomerRepositoryInterface],
+      inject: [CustomerRepositoryInterface, CustomerRegistrationChecker],
     },
 
     {
@@ -66,11 +70,12 @@ import PrismaUnitOfWorkService from '@customer-management/infra/services/prisma-
       provide: CreateVehicleUseCase,
       useFactory: (
         vehicleRepository: VehicleRepositoryInterface, 
-        customerRepository: CustomerRepositoryInterface
+        customerRepository: CustomerRepositoryInterface,
+        registrationChecker: VehicleRegistrationChecker
       ) => {
-        return new CreateVehicleUseCase(vehicleRepository, customerRepository);
+        return new CreateVehicleUseCase(vehicleRepository, customerRepository, registrationChecker);
       },
-      inject: [VehicleRepositoryInterface, CustomerRepositoryInterface],
+      inject: [VehicleRepositoryInterface, CustomerRepositoryInterface, VehicleRegistrationChecker],
     },
 
     {

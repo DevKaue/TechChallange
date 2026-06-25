@@ -3,7 +3,7 @@ import VehicleQueryServiceInterface from '@customer-management/application/contr
 import FindVehicleByIdInputDTO from '@customer-management/application/dtos/find-vehicle-by-id-input.dto';
 import FindVehicleByIdOutputDTO from '@customer-management/application/dtos/find-vehicle-by-id-output.dto';
 
-import VehicleNotFoundException from '@customer-management/application/exceptions/vehicle-not-found.exception';
+import VehicleNotFoundException from '@/customer-management/domain/exceptions/vehicle-not-found.exception';
 
 export default class FindVehicleByIdUseCase {
     constructor(
@@ -11,11 +11,8 @@ export default class FindVehicleByIdUseCase {
     ) {}
 
     async execute(input: FindVehicleByIdInputDTO): Promise<FindVehicleByIdOutputDTO> {
-        const vehicle = await this.vehicleQueryService.findById({ id: input.id });
-        if (!vehicle) {
-            throw new VehicleNotFoundException();
-        }
-
+        const vehicle = await this.vehicleQueryService.getById({ id: input.id });
+        
         const output: FindVehicleByIdOutputDTO = {
             vehicle,
         };

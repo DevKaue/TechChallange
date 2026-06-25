@@ -4,10 +4,35 @@ import VehicleFactory from '@customer-management/domain/factories/vehicle.factor
 import LicensePlate from '@customer-management/domain/value-objects/license-plate.vo';
 import VehicleRepositoryInterface from '@customer-management/domain/contracts/vehicle-repository.interface';
 import PrismaUnitOfWorkService from '@customer-management/infra/services/prisma-unit-of-work.service';
+import VehicleNotFoundException from '@/customer-management/domain/exceptions/vehicle-not-found.exception';
 
 @Injectable()
 export default class PrismaVehicleRepository implements VehicleRepositoryInterface {
   constructor(private readonly uow: PrismaUnitOfWorkService) {}
+
+  async getById(id: string): Promise<Vehicle> {
+    const vehicleData = await this.uow.client.vehicle.findFirst({
+      where: {
+        id: id,
+        deletedAt: null,
+      },
+    });
+
+    if (!vehicleData) {
+      throw new VehicleNotFoundException();
+    }
+
+    return VehicleFactory.create({
+      id: vehicleData.id,
+      licensePlate: vehicleData.plate,
+      brand: vehicleData.brand,
+      model: vehicleData.model,
+      year: vehicleData.year,
+      customerId: vehicleData.customerId,
+      createdAt: vehicleData.createdAt,
+      updatedAt: vehicleData.updatedAt,
+    });
+  }
 
   async findById(id: string): Promise<Vehicle | null> {
     const vehicleData = await this.uow.client.vehicle.findFirst({

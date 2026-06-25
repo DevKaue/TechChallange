@@ -4,11 +4,36 @@ import CustomerFactory from '@customer-management/domain/factories/customer.fact
 import Document from "@customer-management/domain/value-objects/document.vo";
 import CustomerRepositoryInterface from "@customer-management/domain/contracts/customer-repository.interface";
 import PrismaUnitOfWorkService from '@customer-management/infra/services/prisma-unit-of-work.service';
+import CustomerNotFoundException from '@/customer-management/domain/exceptions/customer-not-found.exception';
 
 @Injectable()
 export default class PrismaCustomerRepository implements CustomerRepositoryInterface {
     constructor(private readonly uow: PrismaUnitOfWorkService) {}
     
+    async getById(id: string): Promise<Customer> {
+        const customerData = await this.uow.client.customer.findFirst({
+            where: {
+                id: id,
+                deletedAt: null,
+            },
+        });
+
+        if (!customerData) {
+            throw new CustomerNotFoundException();
+        }
+
+        return CustomerFactory.create({
+            id: customerData.id,
+            documentType: customerData.documentType,
+            documentNumber: customerData.document,
+            name: customerData.name,
+            email: customerData.email ?? undefined,
+            phone: customerData.phone ?? undefined,
+            createdAt: customerData.createdAt,
+            updatedAt: customerData.updatedAt,
+        });
+    }
+
     async findById(id: string): Promise<Customer | null> {
         const customerData = await this.uow.client.customer.findFirst({
             where: {
@@ -33,12 +58,12 @@ export default class PrismaCustomerRepository implements CustomerRepositoryInter
         });
     }
 
-    async findByDocument(document: Document): Promise<Customer | null> {
+    async findByDocument(document: Document, options?: { includeDeleted?: boolean }): Promise<Customer | null> {
         const customerData = await this.uow.client.customer.findFirst({
             where: {
                 document: document.value,
                 documentType: document.type,
-                deletedAt: null,
+                ...(options?.includeDeleted ? {} : { deletedAt: null }),
             },
         });
 
@@ -55,6 +80,7 @@ export default class PrismaCustomerRepository implements CustomerRepositoryInter
             phone: customerData.phone ?? undefined,
             createdAt: customerData.createdAt,
             updatedAt: customerData.updatedAt,
+            deletedAt: customerData.deletedAt ?? undefined,
         });
     }
 

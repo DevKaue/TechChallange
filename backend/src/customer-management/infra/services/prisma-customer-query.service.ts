@@ -3,12 +3,13 @@ import { PrismaService } from '@/prisma/prisma.service';
 
 import CustomerQueryServiceInterface from '@customer-management/application/contracts/customer-query-service.interface';
 import CustomerDTO from '@customer-management/application/dtos/customer.dto';
+import CustomerNotFoundException from '@/customer-management/domain/exceptions/customer-not-found.exception';
 
 @Injectable()
 export default class PrismaCustomerQueryService implements CustomerQueryServiceInterface {
     constructor(private readonly prisma: PrismaService) {}
     
-    async findById(props: { id: string }): Promise<CustomerDTO | null> {
+    async getById(props: { id: string }): Promise<CustomerDTO> {
         const customerData = await this.prisma.customer.findFirst({
             where: {
                 id: props.id,
@@ -29,6 +30,6 @@ export default class PrismaCustomerQueryService implements CustomerQueryServiceI
             return customerDTO;
         }
 
-        return null;
+        throw new CustomerNotFoundException();
     }
 }

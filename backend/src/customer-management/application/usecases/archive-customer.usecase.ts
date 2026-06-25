@@ -2,7 +2,7 @@ import CustomerRepositoryInterface from '@customer-management/domain/contracts/c
 import VehicleRepositoryInterface from '@customer-management/domain/contracts/vehicle-repository.interface';
 import UnitOfWorkServiceInterface from '@customer-management/application/contracts/unit-of-work-service.interface';
 import ArchiveCustomerInputDTO from '@/customer-management/application/dtos/archive-customer-input.dto';
-import CustomerNotFoundException from '@customer-management/application/exceptions/customer-not-found.exception';
+import CustomerNotFoundException from '@/customer-management/domain/exceptions/customer-not-found.exception';
 
 export default class ArchiveCustomerUseCase {
   constructor(
@@ -13,11 +13,7 @@ export default class ArchiveCustomerUseCase {
 
   async execute(input: ArchiveCustomerInputDTO): Promise<void> {
     await this.unitOfWork.runInTransaction(async () => {
-      const customer = await this.customerRepository.findById(input.id);
-
-      if (!customer) {
-        throw new CustomerNotFoundException();
-      }
+      const customer = await this.customerRepository.getById(input.id);
 
       customer.softDelete();
 

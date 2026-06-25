@@ -5,11 +5,12 @@ import CreateCustomerInputDTO from '@customer-management/application/dtos/create
 import CreateCustomerOutputDTO from '@customer-management/application/dtos/create-customer-output.dto';
 import CustomerDTO from '@customer-management/application/dtos/customer.dto';
 
-import CustomerAlreadyExistsException from '@customer-management/application/exceptions/customer-already-exists.exception';
+import CustomerRegistrationChecker from '@/customer-management/domain/services/customer-registration-checker.service';
 
 export default class CreateCustomerUseCase {
   constructor(
-    private readonly customerRepository: CustomerRepositoryInterface
+    private readonly customerRepository: CustomerRepositoryInterface,
+    private readonly registrationChecker: CustomerRegistrationChecker
   ) {}
 
   async execute(input: CreateCustomerInputDTO): Promise<CreateCustomerOutputDTO> {
@@ -21,13 +22,7 @@ export default class CreateCustomerUseCase {
       phone: input.phone,
     });
 
-    const existingCustomer = await this.customerRepository.findByDocument(
-      customer.document
-    );
-
-    if (existingCustomer) {
-      throw new CustomerAlreadyExistsException();
-    }
+    await this.registrationChecker.checkUniqueness(customer.document);
 
     await this.customerRepository.create(customer);
 

@@ -1,6 +1,6 @@
 import { ExceptionFilter, Catch, ArgumentsHost, HttpStatus } from '@nestjs/common';
-import VehicleAlreadyExistsException from '@customer-management/application/exceptions/vehicle-already-exists.exception';
-import VehicleNotFoundException from '@customer-management/application/exceptions/vehicle-not-found.exception';
+import VehicleAlreadyExistsException from '@/customer-management/domain/exceptions/vehicle-already-exists.exception';
+import VehicleNotFoundException from '@/customer-management/domain/exceptions/vehicle-not-found.exception';
 import DomainException from '@customer-management/domain/exceptions/domain.exception';
 import { Response } from 'express';
 
@@ -21,9 +21,11 @@ export class VehicleExceptionFilter implements ExceptionFilter {
       errorTitle = 'Vehicle Not Found';
     }
 
+    const errorCode = (exception as any).errorCode || null;
+
     response.status(statusCode).json({
-      status_code: statusCode,
       error: errorTitle,
+      ...(errorCode ? { error_code: errorCode } : {}),
       message: exception.message,
     });
   }
