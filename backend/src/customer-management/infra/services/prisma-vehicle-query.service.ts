@@ -9,8 +9,11 @@ export default class PrismaVehicleQueryService implements VehicleQueryServiceInt
     constructor(private readonly prisma: PrismaService) {}
     
     async findById(props: { id: string }): Promise<VehicleDTO | null> {
-        const vehicle = await this.prisma.vehicle.findUnique({
-            where: { id: props.id },
+        const vehicle = await this.prisma.vehicle.findFirst({
+            where: { 
+                id: props.id,
+                deletedAt: null
+            },
         });
         if (vehicle) {
             const vehicleDTO: VehicleDTO = {

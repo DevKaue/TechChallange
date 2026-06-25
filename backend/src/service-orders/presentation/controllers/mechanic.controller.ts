@@ -1,4 +1,12 @@
-import { Controller, Patch, Body, Param, UseGuards, Req } from '@nestjs/common';
+import {
+  Controller,
+  Patch,
+  Body,
+  Param,
+  UseGuards,
+  UseFilters,
+  Req,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '@/access-identity/presentation/guards/jwt-auth.guard';
 import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import type { AuthenticatedRequest } from '@/access-identity/presentation/authenticated-request';
@@ -6,8 +14,10 @@ import { MechanicUseCase } from '@service-orders/application/usecases/mechanic.u
 import { AssignMechanicDto } from '@service-orders/application/dto/mechanic/assign-mechanic.dto';
 import { UpdateMechanicAvailabilityDto } from '@service-orders/application/dto/mechanic/update-mechanic-availability.dto';
 import { ServiceOrderResponseDto } from '@service-orders/application/dto/service-order/service-order-response.dto';
+import { ServiceOrderExceptionFilter } from '@service-orders/presentation/filters/service-order-exception.filter';
 
 @ApiTags('Service Orders')
+@UseFilters(ServiceOrderExceptionFilter)
 @Controller('service-orders')
 export class MechanicController {
   constructor(private readonly useCase: MechanicUseCase) {}

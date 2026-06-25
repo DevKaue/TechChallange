@@ -27,9 +27,9 @@ export class VehicleNotFoundSwaggerResponse {
   @ApiProperty({ example: 404 })
   status_code!: number;
 
-  @ApiProperty({ example: 'Not Found' })
+  @ApiProperty({ example: 'Vehicle Not Found' })
   error!: string;
 
-  @ApiProperty({ example: 'Vehicle not found.' })
+  @ApiProperty({ example: 'Vehicle Not Found' })
   message!: string;
 }

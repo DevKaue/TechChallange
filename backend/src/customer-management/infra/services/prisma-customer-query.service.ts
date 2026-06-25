@@ -9,19 +9,22 @@ export default class PrismaCustomerQueryService implements CustomerQueryServiceI
     constructor(private readonly prisma: PrismaService) {}
     
     async findById(props: { id: string }): Promise<CustomerDTO | null> {
-        const customer = await this.prisma.customer.findUnique({
-            where: { id: props.id },
+        const customerData = await this.prisma.customer.findFirst({
+            where: {
+                id: props.id,
+                deletedAt: null,
+            },
         });
-        if (customer) {
+        if (customerData) {
             const customerDTO: CustomerDTO = {
-                id: customer.id,
-                documentType: customer.documentType,
-                documentNumber: customer.document,
-                name: customer.name,
-                email: customer.email ?? undefined,
-                phone: customer.phone ?? undefined,
-                createdAt: customer.createdAt,
-                updatedAt: customer.updatedAt,
+                id: customerData.id,
+                documentType: customerData.documentType,
+                documentNumber: customerData.document,
+                name: customerData.name,
+                email: customerData.email ?? undefined,
+                phone: customerData.phone ?? undefined,
+                createdAt: customerData.createdAt,
+                updatedAt: customerData.updatedAt,
             };
             return customerDTO;
         }

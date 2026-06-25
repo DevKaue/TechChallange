@@ -27,9 +27,9 @@ export class CustomerNotFoundSwaggerResponse {
   @ApiProperty({ example: 404 })
   status_code!: number;
 
-  @ApiProperty({ example: 'Not Found' })
+  @ApiProperty({ example: 'Customer Not Found' })
   error!: string;
 
-  @ApiProperty({ example: 'Customer not found' })
+  @ApiProperty({ example: 'Customer Not Found' })
   message!: string;
 }

@@ -1,7 +1,5 @@
 import {
   Injectable,
-  NotFoundException,
-  BadRequestException,
   ConflictException,
   Inject,
   Optional,
@@ -23,6 +21,11 @@ import { UpdateEstimateStatusDto } from '@service-orders/application/dto/estimat
 import { RejectEstimateDto } from '@service-orders/application/dto/estimate/reject-estimate.dto';
 import { ServiceOrderResponseDto } from '@service-orders/application/dto/service-order/service-order-response.dto';
 import { plainToInstance } from 'class-transformer';
+import { ServiceOrderNotFoundException } from '@service-orders/application/exceptions/service-order-not-found.exception';
+import { InvalidStatusTransitionException } from '@service-orders/application/exceptions/invalid-status-transition.exception';
+import { ServiceCatalogNotFoundException } from '@service-orders/application/exceptions/service-catalog-not-found.exception';
+import { PartNotFoundException } from '@service-orders/application/exceptions/part-not-found.exception';
+import { InvalidMaterialDataException } from '@service-orders/application/exceptions/invalid-material-data.exception';
 import InsufficientMaterialStockException from '@materials/domain/exceptions/insufficient-material-stock.exception';
 import DomainException from '@materials/domain/exceptions/domain.exception';
 
@@ -38,8 +41,7 @@ export class EstimateUseCase {
 
   async createEstimate(orderId: string) {
     const data = await this.repository.findById(orderId);
-    if (!data)
-      throw new NotFoundException(`Service order ${orderId} not found`);
+    if (!data) throw new ServiceOrderNotFoundException(orderId);
 
     const order = ServiceOrderMapper.toDomain(data);
     try {
@@ -51,7 +53,10 @@ export class EstimateUseCase {
           status: EstimateStatus.PENDING,
           totalAmount: 0,
         }),
-        this.repository.updateStatus(orderId, change.newStatus),
+        this.repository.update(
+          orderId,
+          ServiceOrderMapper.toPersistence(order),
+        ),
       ]);
 
       await this.repository.createStatusHistory({
@@ -66,15 +71,15 @@ export class EstimateUseCase {
         excludeExtraneousValues: true,
       });
     } catch (error: unknown) {
-      if (error instanceof Error) {
-        throw new BadRequestException(error.message);
-      }
-      throw error;
+      throw new InvalidStatusTransitionException(
+        error instanceof Error ? error.message : 'Unexpected error',
+      );
     }
   }
 
   async addEstimateItem(estimateId: string, dto: AddEstimateItemDto) {
     let unitPriceMoney: Money | null = null;
+
     let description = dto.description ?? '';
 
     if (dto.itemType === 'SERVICE') {
@@ -84,7 +89,7 @@ export class EstimateUseCase {
         );
 
         if (!service) {
-          throw new NotFoundException('Service not found in catalog');
+          throw new ServiceCatalogNotFoundException(dto.referenceId);
         }
 
         unitPriceMoney = Money.fromFloat(service.price);
@@ -95,7 +100,7 @@ export class EstimateUseCase {
       const part = await this.partRepository.findById(dto.referenceId);
 
       if (!part) {
-        throw new NotFoundException('Part not found');
+        throw new PartNotFoundException(dto.referenceId);
       }
 
       if (part.stockQuantity < dto.quantity) {
@@ -115,7 +120,7 @@ export class EstimateUseCase {
         }
 
         if (error instanceof DomainException) {
-          throw new BadRequestException(error.message);
+          throw new InvalidMaterialDataException(error.message);
         }
 
         throw error;
@@ -148,23 +153,27 @@ export class EstimateUseCase {
       );
 
       const data = await this.repository.findById(estimate.serviceOrderId);
-      if (!data) throw new NotFoundException('Service order not found');
+      if (!data) {
+        throw new ServiceOrderNotFoundException('Service order not found');
+      }
 
       const order = ServiceOrderMapper.toDomain(data);
       try {
         const change = order.startService();
 
-        await this.repository.updateStatus(order.id, change.newStatus);
+        await this.repository.update(
+          order.id,
+          ServiceOrderMapper.toPersistence(order),
+        );
         await this.repository.createStatusHistory({
           serviceOrderId: order.id,
           previousStatus: change.previousStatus,
           newStatus: change.newStatus,
         });
       } catch (error: unknown) {
-        if (error instanceof Error) {
-          throw new BadRequestException(error.message);
-        }
-        throw error;
+        throw new InvalidStatusTransitionException(
+          error instanceof Error ? error.message : 'Unexpected error',
+        );
       }
 
       return plainToInstance(EstimateResponseDto, estimate, {
@@ -183,13 +192,16 @@ export class EstimateUseCase {
 
   async rejectEstimate(id: string, dto: RejectEstimateDto) {
     const data = await this.repository.findById(id);
-    if (!data) throw new NotFoundException(`Service order ${id} not found`);
+    if (!data) throw new ServiceOrderNotFoundException(id);
 
     const order = ServiceOrderMapper.toDomain(data);
     try {
       const change = order.rejectEstimate();
 
-      const updated = await this.repository.updateStatus(id, change.newStatus);
+      const updated = await this.repository.update(
+        id,
+        ServiceOrderMapper.toPersistence(order),
+      );
 
       await this.repository.createStatusHistory({
         serviceOrderId: id,
@@ -202,10 +214,9 @@ export class EstimateUseCase {
         excludeExtraneousValues: true,
       });
     } catch (error: unknown) {
-      if (error instanceof Error) {
-        throw new BadRequestException(error.message);
-      }
-      throw error;
+      throw new InvalidStatusTransitionException(
+        error instanceof Error ? error.message : 'Unexpected error',
+      );
     }
   }
 }

@@ -1,10 +1,13 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get, UseGuards, UseFilters } from '@nestjs/common';
 import { JwtAuthGuard } from '@/access-identity/presentation/guards/jwt-auth.guard';
 import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { MetricsUseCase } from '@service-orders/application/usecases/metrics.use-case';
 
+import { ServiceOrderExceptionFilter } from '@service-orders/presentation/filters/service-order-exception.filter';
+
 @ApiTags('Service Orders')
 @Controller('service-orders')
+@UseFilters(ServiceOrderExceptionFilter)
 export class MetricsController {
   constructor(private readonly useCase: MetricsUseCase) {}
 

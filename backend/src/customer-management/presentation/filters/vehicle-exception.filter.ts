@@ -15,10 +15,10 @@ export class VehicleExceptionFilter implements ExceptionFilter {
 
     if (exception instanceof VehicleAlreadyExistsException) {
       statusCode = HttpStatus.CONFLICT;
-      errorTitle = 'Conflict';
+      errorTitle = 'Vehicle Already Exists';
     } else if (exception instanceof VehicleNotFoundException) {
       statusCode = HttpStatus.NOT_FOUND;
-      errorTitle = 'Not Found';
+      errorTitle = 'Vehicle Not Found';
     }
 
     response.status(statusCode).json({

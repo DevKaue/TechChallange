@@ -16,10 +16,10 @@ export class CustomerExceptionFilter implements ExceptionFilter {
 
     if (exception instanceof CustomerAlreadyExistsException) {
       statusCode = HttpStatus.CONFLICT;
-      errorTitle = 'Conflict';
+      errorTitle = 'Customer Already Exists';
     }else if (exception instanceof CustomerNotFoundException) {
       statusCode = HttpStatus.NOT_FOUND;
-      errorTitle = 'Not Found';
+      errorTitle = 'Customer Not Found';
     }
 
     response.status(statusCode).json({
