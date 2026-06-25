@@ -1,4 +1,4 @@
-import { UserRole } from '@prisma/client';
+import { UserRole } from '../enums/user-role.enum';
 import { AuthenticatedUser } from './authenticated-user.entity';
 
 type InternalUserProps = {

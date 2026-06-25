@@ -1,12 +1,15 @@
-import {
+// Apenas tipos (apagados na compilação): o domínio não tem dependência de
+// runtime de @prisma/client. As shapes abaixo descrevem o formato de
+// persistência retornado pelos repositórios.
+import type {
   ServiceOrder,
   Estimate,
   EstimateItem,
   ServiceOrderStatusHistory,
-  ServiceOrderItemType,
 } from '@prisma/client';
 import { EstimateStatus } from '@service-orders/domain/enums/estimate-status.enum';
 import { ServiceOrderStatus } from '@service-orders/domain/enums/service-order-status.enum';
+import { ServiceOrderItemType } from '@service-orders/domain/enums/service-order-item-type.enum';
 
 type EstimateWithItems = Estimate & {
   items: EstimateItem[];
@@ -92,6 +95,12 @@ export abstract class ServiceOrdersRepositoryInterface {
     status: EstimateStatus,
     approvedAt?: Date,
   ): Promise<Estimate>;
+
+  /**
+   * Recalcula o totalAmount do orçamento somando o totalPrice de todos os
+   * seus itens e persiste o valor agregado.
+   */
+  abstract recalcEstimateTotal(estimateId: string): Promise<Estimate>;
 
   abstract findExecutionTimes(): Promise<
     Array<{ startTime: Date; endTime: Date }>

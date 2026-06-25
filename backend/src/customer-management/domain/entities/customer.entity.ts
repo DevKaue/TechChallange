@@ -68,6 +68,19 @@ export default class Customer {
     }
 
     // Methods
+    public update(props: { name?: string; phone?: string; email?: Email }): void {
+        if (props.name !== undefined) {
+            this._name = props.name;
+        }
+        if (props.phone !== undefined) {
+            this._phone = props.phone;
+        }
+        if (props.email !== undefined) {
+            this._email = props.email;
+        }
+        this._updatedAt = new Date();
+    }
+
     public softDelete(): void {
         this._deletedAt = new Date();
     }

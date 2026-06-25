@@ -2,6 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ServiceOrderUseCase } from './service-order.use-case';
 import { ServiceOrdersRepositoryInterface } from '@service-orders/domain/contracts/service-orders-repository.interface';
 import { ServiceOrderQueryServiceInterface } from '@service-orders/application/contracts/service-order-query-service.interface';
+import { VEHICLE_REPOSITORY } from '@service-orders/domain/acls/vehicle-repository.interface';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { ServiceOrderStatus } from '@service-orders/domain/enums/service-order-status.enum';
 import { ServiceOrderNotFoundException } from '@service-orders/application/exceptions/service-order-not-found.exception';
 import { InvalidStatusTransitionException } from '@service-orders/application/exceptions/invalid-status-transition.exception';
@@ -12,6 +14,7 @@ describe('ServiceOrderUseCase', () => {
   let useCase: ServiceOrderUseCase;
   let repository: jest.Mocked<ServiceOrdersRepositoryInterface>;
   let queryService: jest.Mocked<ServiceOrderQueryServiceInterface>;
+  let vehicleRepository: { findById: jest.Mock };
 
   const mockOrder: any = {
     id: 'order-1',
@@ -67,12 +70,17 @@ describe('ServiceOrderUseCase', () => {
             findOne: jest.fn(),
           },
         },
+        {
+          provide: VEHICLE_REPOSITORY,
+          useValue: { findById: jest.fn() },
+        },
       ],
     }).compile();
 
     useCase = module.get(ServiceOrderUseCase);
     repository = module.get(ServiceOrdersRepositoryInterface);
     queryService = module.get(ServiceOrderQueryServiceInterface);
+    vehicleRepository = module.get(VEHICLE_REPOSITORY);
   });
 
   describe('findAll', () => {
@@ -149,7 +157,11 @@ describe('ServiceOrderUseCase', () => {
   });
 
   describe('create', () => {
-    it('should create a service order', async () => {
+    it('should create a service order when the vehicle belongs to the client', async () => {
+      vehicleRepository.findById.mockResolvedValue({
+        id: 'vehicle-1',
+        customerId: 'client-1',
+      });
       repository.create.mockResolvedValue(mockOrder);
       repository.createStatusHistory.mockResolvedValue({} as any);
 
@@ -164,6 +176,25 @@ describe('ServiceOrderUseCase', () => {
         status: ServiceOrderStatus.RECEIVED,
       });
       expect(result).toHaveProperty('id', 'order-1');
+    });
+
+    it('should throw when the vehicle does not exist', async () => {
+      vehicleRepository.findById.mockResolvedValue(null);
+      await expect(
+        useCase.create({ customerId: 'client-1', vehicleId: 'x' }),
+      ).rejects.toThrow(NotFoundException);
+      expect(repository.create).not.toHaveBeenCalled();
+    });
+
+    it('should throw when the vehicle does not belong to the client', async () => {
+      vehicleRepository.findById.mockResolvedValue({
+        id: 'vehicle-1',
+        customerId: 'another-client',
+      });
+      await expect(
+        useCase.create({ customerId: 'client-1', vehicleId: 'vehicle-1' }),
+      ).rejects.toThrow(BadRequestException);
+      expect(repository.create).not.toHaveBeenCalled();
     });
   });
 

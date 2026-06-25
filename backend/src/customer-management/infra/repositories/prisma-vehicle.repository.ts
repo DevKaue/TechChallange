@@ -73,6 +73,16 @@ export default class PrismaVehicleRepository implements VehicleRepositoryInterfa
   }
 
   async update(vehicle: Vehicle): Promise<void> {
+    await this.prisma.vehicle.update({
+      where: { id: vehicle.id },
+      data: {
+        plate: vehicle.licensePlate.value,
+        brand: vehicle.brand,
+        model: vehicle.model,
+        year: vehicle.year.value,
+        updatedAt: vehicle.updatedAt,
+      },
+    });
   }
 
   async delete(vehicle: Vehicle): Promise<void> {

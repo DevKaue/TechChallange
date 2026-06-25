@@ -1,4 +1,4 @@
-import { UserRole } from '@prisma/client';
+import { UserRole } from '../enums/user-role.enum';
 
 export class AuthenticatedUser {
   constructor(

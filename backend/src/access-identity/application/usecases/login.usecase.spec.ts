@@ -1,5 +1,5 @@
 import { UnauthorizedException } from '@nestjs/common';
-import { UserRole } from '@prisma/client';
+import { UserRole } from '../../domain/enums/user-role.enum';
 import { AccessIdentityRepository } from '../../domain/contracts/access-identity-repository.interface';
 import { PasswordHasher } from '../../domain/contracts/password-hasher.interface';
 import { TokenService } from '../../domain/contracts/token-service.interface';

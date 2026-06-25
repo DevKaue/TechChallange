@@ -5,7 +5,6 @@ import CustomerFactory from '@customer-management/domain/factories/customer.fact
 import Document from "@customer-management/domain/value-objects/document.vo";
 import Email from "@customer-management/domain/value-objects/email.vo";
 import CustomerRepositoryInterface from "@customer-management/domain/contracts/customer-repository.interface";
-import { create } from 'domain';
 
 @Injectable()
 export default class PrismaCustomerRepository implements CustomerRepositoryInterface {
@@ -76,10 +75,22 @@ export default class PrismaCustomerRepository implements CustomerRepositoryInter
     }
 
     async update(customer: Customer): Promise<void> {
-        // Implement the logic to update a customer in the database
+        await this.prisma.customer.update({
+            where: { id: customer.id },
+            data: {
+                name: customer.name,
+                email: customer.email?.value ?? null,
+                phone: customer.phone ?? null,
+                updatedAt: customer.updatedAt,
+            },
+        });
     }
 
     async delete(id: string): Promise<void> {
-        // Implement the logic to delete a customer from the database by ID
+        // Exclusão lógica (soft delete): preserva histórico do cliente.
+        await this.prisma.customer.update({
+            where: { id },
+            data: { deletedAt: new Date() },
+        });
     }
 }

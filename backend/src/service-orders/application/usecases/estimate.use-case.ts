@@ -139,6 +139,9 @@ export class EstimateUseCase {
       totalPrice: totalPriceMoney.float,
     });
 
+    // Mantém o totalAmount do orçamento agregado a cada item adicionado.
+    await this.repository.recalcEstimateTotal(estimateId);
+
     return plainToInstance(EstimateItemDto, item, {
       excludeExtraneousValues: true,
     });
@@ -202,6 +205,20 @@ export class EstimateUseCase {
         id,
         ServiceOrderMapper.toPersistence(order),
       );
+
+      // Orçamento rejeitado: devolve ao estoque as peças que haviam sido
+      // baixadas ao montar o orçamento (evita vazamento de estoque).
+      const pendingItems = data.estimates
+        .filter((estimate) => estimate.status === EstimateStatus.PENDING)
+        .flatMap((estimate) => estimate.items)
+        .filter((item) => item.itemType === 'PART');
+
+      for (const item of pendingItems) {
+        await this.partRepository.incrementStock(
+          item.referenceId,
+          Number(item.quantity),
+        );
+      }
 
       await this.repository.createStatusHistory({
         serviceOrderId: id,

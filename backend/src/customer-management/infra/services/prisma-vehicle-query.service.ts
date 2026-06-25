@@ -31,4 +31,25 @@ export default class PrismaVehicleQueryService implements VehicleQueryServiceInt
 
         return null;
     }
+
+    async findAll(props?: { customerId?: string }): Promise<VehicleDTO[]> {
+        const vehicles = await this.prisma.vehicle.findMany({
+            where: {
+                deletedAt: null,
+                ...(props?.customerId ? { customerId: props.customerId } : {}),
+            },
+            orderBy: { createdAt: 'desc' },
+        });
+
+        return vehicles.map((vehicle) => ({
+            id: vehicle.id,
+            licensePlate: vehicle.plate,
+            brand: vehicle.brand,
+            model: vehicle.model,
+            year: vehicle.year,
+            customerId: vehicle.customerId,
+            createdAt: vehicle.createdAt,
+            updatedAt: vehicle.updatedAt,
+        }));
+    }
 }

@@ -13,6 +13,7 @@ import { InvalidStatusTransitionException } from '@service-orders/application/ex
 describe('EstimateUseCase', () => {
   let useCase: EstimateUseCase;
   let repository: jest.Mocked<ServiceOrdersRepositoryInterface>;
+  let partRepository: { incrementStock: jest.Mock; decrementStock: jest.Mock; findById: jest.Mock };
 
   const mockOrder: any = {
     id: 'order-1',
@@ -61,11 +62,16 @@ describe('EstimateUseCase', () => {
             createEstimate: jest.fn(),
             addEstimateItem: jest.fn(),
             updateEstimateStatus: jest.fn(),
+            recalcEstimateTotal: jest.fn(),
           },
         },
         {
           provide: PART_REPOSITORY,
-          useValue: { findById: jest.fn(), decrementStock: jest.fn() },
+          useValue: {
+            findById: jest.fn(),
+            decrementStock: jest.fn(),
+            incrementStock: jest.fn(),
+          },
         },
         {
           provide: SERVICE_CATALOG_REPOSITORY,
@@ -76,6 +82,7 @@ describe('EstimateUseCase', () => {
 
     useCase = module.get(EstimateUseCase);
     repository = module.get(ServiceOrdersRepositoryInterface);
+    partRepository = module.get(PART_REPOSITORY);
   });
 
   describe('createEstimate', () => {
@@ -155,6 +162,7 @@ describe('EstimateUseCase', () => {
                 notes: null,
               }),
               updateEstimateStatus: jest.fn(),
+              recalcEstimateTotal: jest.fn(),
             },
           },
           { provide: PART_REPOSITORY, useValue: {} },
@@ -406,7 +414,7 @@ describe('EstimateUseCase', () => {
   });
 
   describe('rejectEstimate', () => {
-    it('should move to DELIVERED with reason', async () => {
+    it('should move back to IN_DIAGNOSIS with reason', async () => {
       const order = {
         ...mockOrder,
         status: ServiceOrderStatus.WAITING_APPROVAL,
@@ -414,7 +422,7 @@ describe('EstimateUseCase', () => {
       repository.findById.mockResolvedValue(order);
       repository.update.mockResolvedValue({
         ...order,
-        status: ServiceOrderStatus.DELIVERED,
+        status: ServiceOrderStatus.IN_DIAGNOSIS,
       });
       repository.createStatusHistory.mockResolvedValue({} as any);
 
@@ -424,11 +432,39 @@ describe('EstimateUseCase', () => {
 
       expect(repository.update).toHaveBeenCalledWith(
         'order-1',
-        expect.objectContaining({ status: ServiceOrderStatus.DELIVERED }),
+        expect.objectContaining({ status: ServiceOrderStatus.IN_DIAGNOSIS }),
       );
       expect(repository.createStatusHistory).toHaveBeenCalledWith(
         expect.objectContaining({ notes: 'Too expensive' }),
       );
+    });
+
+    it('should restock PART items when rejecting', async () => {
+      const order = {
+        ...mockOrder,
+        status: ServiceOrderStatus.WAITING_APPROVAL,
+        estimates: [
+          {
+            id: 'est-1',
+            status: EstimateStatus.PENDING,
+            items: [
+              { itemType: 'PART', referenceId: 'part-1', quantity: 3 },
+              { itemType: 'SERVICE', referenceId: 'svc-1', quantity: 1 },
+            ],
+          },
+        ],
+      };
+      repository.findById.mockResolvedValue(order as any);
+      repository.update.mockResolvedValue({
+        ...order,
+        status: ServiceOrderStatus.IN_DIAGNOSIS,
+      } as any);
+      repository.createStatusHistory.mockResolvedValue({} as any);
+
+      await useCase.rejectEstimate('order-1', { reason: 'Rejected' });
+
+      expect(partRepository.incrementStock).toHaveBeenCalledTimes(1);
+      expect(partRepository.incrementStock).toHaveBeenCalledWith('part-1', 3);
     });
 
     it('should throw if order not found', async () => {

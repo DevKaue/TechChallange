@@ -1,5 +1,5 @@
 import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
-import { UserRole } from '@prisma/client';
+import { UserRole } from '../../domain/enums/user-role.enum';
 import { ACCESS_IDENTITY_REPOSITORY } from '../../domain/contracts/access-identity-repository.interface';
 import type { AccessIdentityRepository } from '../../domain/contracts/access-identity-repository.interface';
 import { AuthenticatedUser } from '../../domain/entities/authenticated-user.entity';

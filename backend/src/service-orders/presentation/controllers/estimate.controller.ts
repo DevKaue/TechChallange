@@ -13,6 +13,7 @@ import {
   ApiBearerAuth,
   ApiCreatedResponse,
   ApiOkResponse,
+  ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
 import { EstimateUseCase } from '@service-orders/application/usecases/estimate.use-case';
@@ -34,6 +35,7 @@ export class EstimateController {
   @Post(':id/estimates')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
+  @ApiOperation({ summary: 'Gera o orçamento da OS e envia para aprovação' })
   @ApiCreatedResponse({ type: EstimateResponseDto })
   createEstimate(@Param('id') id: string) {
     return this.useCase.createEstimate(id);
@@ -42,6 +44,7 @@ export class EstimateController {
   @Post('estimates/:estimateId/items')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
+  @ApiOperation({ summary: 'Adiciona um item (peça/serviço) ao orçamento' })
   @ApiCreatedResponse({ type: EstimateItemDto })
   addEstimateItem(
     @Param('estimateId') estimateId: string,
@@ -53,6 +56,7 @@ export class EstimateController {
   @Patch('estimates/:estimateId/status')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
+  @ApiOperation({ summary: 'Aprova ou rejeita o orçamento' })
   @ApiOkResponse({ type: EstimateResponseDto })
   updateEstimateStatus(
     @Param('estimateId') estimateId: string,
@@ -64,6 +68,7 @@ export class EstimateController {
   @Patch(':id/reject')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
+  @ApiOperation({ summary: 'Rejeita o orçamento e retorna a OS ao diagnóstico' })
   @ApiOkResponse({ type: ServiceOrderResponseDto })
   rejectEstimate(@Param('id') id: string, @Body() dto: RejectEstimateDto) {
     return this.useCase.rejectEstimate(id, dto);

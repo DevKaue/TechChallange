@@ -75,6 +75,27 @@ export default class Vehicle {
     }
 
     // Methods
+    public update(props: {
+        brand?: string;
+        model?: string;
+        year?: Year;
+        licensePlate?: LicensePlate;
+    }): void {
+        if (props.brand !== undefined) {
+            this._brand = props.brand;
+        }
+        if (props.model !== undefined) {
+            this._model = props.model;
+        }
+        if (props.year !== undefined) {
+            this._year = props.year;
+        }
+        if (props.licensePlate !== undefined) {
+            this._licensePlate = props.licensePlate;
+        }
+        this._updatedAt = new Date();
+    }
+
     public softDelete(): void {
         this._deletedAt = new Date();
     }

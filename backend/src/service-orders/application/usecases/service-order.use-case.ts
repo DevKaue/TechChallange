@@ -1,11 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { ServiceOrdersRepositoryInterface } from '@service-orders/domain/contracts/service-orders-repository.interface';
 import { ServiceOrderQueryServiceInterface } from '@service-orders/application/contracts/service-order-query-service.interface';
-// TODO: Descomente quando customer-management module estiver pronto
-// import { CLIENT_REPOSITORY } from '@service-orders/domain/acls/client-repository.interface';
-// import type { ClientRepository } from '@service-orders/domain/acls/client-repository.interface';
-// import { VEHICLE_REPOSITORY } from '@service-orders/domain/acls/vehicle-repository.interface';
-// import type { VehicleRepository } from '@service-orders/domain/acls/vehicle-repository.interface';
+import { VEHICLE_REPOSITORY } from '@service-orders/domain/acls/vehicle-repository.interface';
+import type { VehicleRepository } from '@service-orders/domain/acls/vehicle-repository.interface';
 import { ServiceOrderStatus } from '@service-orders/domain/enums/service-order-status.enum';
 import { ServiceOrderResponseDto } from '@service-orders/application/dto/service-order/service-order-response.dto';
 import { CreateServiceOrderDto } from '@service-orders/application/dto/service-order/create-service-order.dto';
@@ -19,11 +21,8 @@ export class ServiceOrderUseCase {
   constructor(
     private readonly repository: ServiceOrdersRepositoryInterface,
     private readonly queryService: ServiceOrderQueryServiceInterface,
-    // TODO: Descomente quando customer-management module estiver pronto
-    // @Inject(CLIENT_REPOSITORY)
-    // private readonly clientRepository: ClientRepository,
-    // @Inject(VEHICLE_REPOSITORY)
-    // private readonly vehicleRepository: VehicleRepository,
+    @Inject(VEHICLE_REPOSITORY)
+    private readonly vehicleRepository: VehicleRepository,
   ) {}
 
   async findAll() {
@@ -37,16 +36,15 @@ export class ServiceOrderUseCase {
   }
 
   async create(dto: CreateServiceOrderDto) {
-    // TODO: Descomente quando customer-management module estiver pronto
-    // const vehicle = await this.vehicleRepository.findById(dto.vehicleId);
-    // if (!vehicle) {
-    //   throw new NotFoundException('Vehicle not found');
-    // }
-    // if (vehicle.customerId !== dto.customerId) {
-    //   throw new BadRequestException(
-    //     'Vehicle does not belong to the specified client',
-    //   );
-    // }
+    const vehicle = await this.vehicleRepository.findById(dto.vehicleId);
+    if (!vehicle) {
+      throw new NotFoundException('Vehicle not found');
+    }
+    if (vehicle.customerId !== dto.customerId) {
+      throw new BadRequestException(
+        'Vehicle does not belong to the specified client',
+      );
+    }
 
     const order = await this.repository.create({
       customerId: dto.customerId,
