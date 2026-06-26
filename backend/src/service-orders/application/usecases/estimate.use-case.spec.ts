@@ -13,7 +13,11 @@ import { InvalidStatusTransitionException } from '@service-orders/application/ex
 describe('EstimateUseCase', () => {
   let useCase: EstimateUseCase;
   let repository: jest.Mocked<ServiceOrdersRepositoryInterface>;
-  let partRepository: { incrementStock: jest.Mock; decrementStock: jest.Mock; findById: jest.Mock };
+  let partRepository: {
+    incrementStock: jest.Mock;
+    decrementStock: jest.Mock;
+    findById: jest.Mock;
+  };
 
   const mockOrder: any = {
     id: 'order-1',

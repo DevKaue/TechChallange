@@ -137,7 +137,9 @@ describe('ArchiveCustomerUseCase', () => {
     await useCase.execute({ id: 'customer-1' } as any);
 
     expect(unitOfWork.runInTransaction).toHaveBeenCalledTimes(1);
-    expect(vehicleRepo.archiveAllByCustomerId).toHaveBeenCalledWith('customer-1');
+    expect(vehicleRepo.archiveAllByCustomerId).toHaveBeenCalledWith(
+      'customer-1',
+    );
     expect(repo.archive).toHaveBeenCalledTimes(1);
   });
 });

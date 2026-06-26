@@ -34,9 +34,9 @@ describe('ServiceCatalogUseCase', () => {
     const repo = buildRepo();
     const useCase = new ServiceCatalogUseCase(repo as any);
 
-    await expect(
-      useCase.create({ name: 'X', price: -1 }),
-    ).rejects.toThrow(DomainException);
+    await expect(useCase.create({ name: 'X', price: -1 })).rejects.toThrow(
+      DomainException,
+    );
   });
 
   it('lists services', async () => {

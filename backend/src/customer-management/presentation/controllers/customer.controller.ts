@@ -1,4 +1,15 @@
-import { Controller, Get, Param, Post, Patch, Delete, HttpCode, HttpStatus, UseFilters, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  Post,
+  Patch,
+  Delete,
+  HttpCode,
+  HttpStatus,
+  UseFilters,
+  UseGuards,
+} from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
@@ -27,9 +38,16 @@ import UpdateCustomerUseCase from '@customer-management/application/usecases/upd
 import ArchiveCustomerUseCase from '@/customer-management/application/usecases/archive-customer.usecase';
 
 import { CustomerExceptionFilter } from '@customer-management/presentation/filters/customer-exception.filter';
-import { CustomerResponse, JsonCustomerPresenter } from '@customer-management/presentation/presenters/json-customer.presenter';
+import {
+  CustomerResponse,
+  JsonCustomerPresenter,
+} from '@customer-management/presentation/presenters/json-customer.presenter';
 
-import { CreateCustomerSwaggerBody, CreateCustomerSwaggerConflictResponse, CreateCustomerSwaggerResponse } from '@customer-management/presentation/swaggers/create-customer.swagger';
+import {
+  CreateCustomerSwaggerBody,
+  CreateCustomerSwaggerConflictResponse,
+  CreateCustomerSwaggerResponse,
+} from '@customer-management/presentation/swaggers/create-customer.swagger';
 import { CustomerNotFoundSwaggerResponse } from '@/customer-management/presentation/swaggers/customer.swagger';
 import { FindCustomerByIdSwaggerResponse } from '@/customer-management/presentation/swaggers/find-customer-by-id.swagger';
 import { HttpErrorSwaggerResponse } from '@customer-management/presentation/swaggers/http-error.swagger';
@@ -48,7 +66,7 @@ export class CustomerController {
     private readonly findCustomerByIdUseCase: FindCustomerByIdUseCase,
     private readonly listCustomersUseCase: ListCustomersUseCase,
     private readonly updateCustomerUseCase: UpdateCustomerUseCase,
-    private readonly archiveCustomerUseCase: ArchiveCustomerUseCase
+    private readonly archiveCustomerUseCase: ArchiveCustomerUseCase,
   ) {}
 
   @Get()
@@ -66,13 +84,15 @@ export class CustomerController {
   })
   @ApiBadRequestResponse({
     description: 'Dados de entrada inválidos',
-    type: HttpErrorSwaggerResponse
+    type: HttpErrorSwaggerResponse,
   })
   @ApiConflictResponse({
     description: 'Documento já cadastrado no sistema',
-    type: CreateCustomerSwaggerConflictResponse
+    type: CreateCustomerSwaggerConflictResponse,
   })
-  async create(@BodyCamelCase() input: CreateCustomerInputDTO): Promise<CustomerResponse> {
+  async create(
+    @BodyCamelCase() input: CreateCustomerInputDTO,
+  ): Promise<CustomerResponse> {
     const output = await this.createCustomerUseCase.execute(input);
 
     return JsonCustomerPresenter.present(output.customer);
@@ -86,7 +106,7 @@ export class CustomerController {
   })
   @ApiNotFoundResponse({
     description: 'Cliente não encontrado',
-    type: CustomerNotFoundSwaggerResponse
+    type: CustomerNotFoundSwaggerResponse,
   })
   async findById(@Param('id') id: string): Promise<CustomerResponse> {
     const input = new FindCustomerByIdInputDTO({ id });
@@ -107,10 +127,10 @@ export class CustomerController {
   })
   async update(
     @Param('id') id: string,
-    @BodyCamelCase() input: UpdateCustomerInputDTO
+    @BodyCamelCase() input: UpdateCustomerInputDTO,
   ): Promise<CustomerResponse> {
     const customer = await this.updateCustomerUseCase.execute(
-      new UpdateCustomerInputDTO({ ...input, id })
+      new UpdateCustomerInputDTO({ ...input, id }),
     );
     return JsonCustomerPresenter.present(customer);
   }

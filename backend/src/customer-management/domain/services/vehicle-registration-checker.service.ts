@@ -3,17 +3,14 @@ import VehicleAlreadyExistsException from '@customer-management/domain/exception
 import LicensePlate from '@customer-management/domain/value-objects/license-plate.vo';
 
 export default class VehicleRegistrationChecker {
-  constructor(
-    private readonly vehicleRepository: VehicleRepositoryInterface
-  ) {}
-  
+  constructor(private readonly vehicleRepository: VehicleRepositoryInterface) {}
+
   async checkUniqueness(licensePlate: LicensePlate): Promise<void> {
-    const existingVehicle = await this.vehicleRepository.findByLicensePlate(
-        licensePlate
-    );
+    const existingVehicle =
+      await this.vehicleRepository.findByLicensePlate(licensePlate);
 
     if (existingVehicle) {
-        throw new VehicleAlreadyExistsException();
+      throw new VehicleAlreadyExistsException();
     }
   }
 }

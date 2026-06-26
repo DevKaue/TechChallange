@@ -6,9 +6,7 @@ import VehicleDTO from '@customer-management/application/dtos/vehicle.dto';
 import VehicleNotFoundException from '@customer-management/domain/exceptions/vehicle-not-found.exception';
 
 export default class UpdateVehicleUseCase {
-  constructor(
-    private readonly vehicleRepository: VehicleRepositoryInterface,
-  ) {}
+  constructor(private readonly vehicleRepository: VehicleRepositoryInterface) {}
 
   async execute(input: UpdateVehicleInputDTO): Promise<VehicleDTO> {
     const vehicle = await this.vehicleRepository.findById(input.id);

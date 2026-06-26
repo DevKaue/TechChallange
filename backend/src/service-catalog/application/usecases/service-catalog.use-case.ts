@@ -8,9 +8,7 @@ import {
 import ServiceNotFoundException from '@service-catalog/application/exceptions/service-not-found.exception';
 
 export class ServiceCatalogUseCase {
-  constructor(
-    private readonly repository: ServiceCatalogRepositoryInterface,
-  ) {}
+  constructor(private readonly repository: ServiceCatalogRepositoryInterface) {}
 
   async create(input: CreateServiceInputDTO): Promise<ServiceDTO> {
     const service = new Service({

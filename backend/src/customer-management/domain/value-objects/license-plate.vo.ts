@@ -1,13 +1,15 @@
-import InvalidLicensePlateException from "@customer-management/domain/exceptions/invalid-license-plate.exception";
+import InvalidLicensePlateException from '@customer-management/domain/exceptions/invalid-license-plate.exception';
 
 export default class LicensePlate {
   public readonly value: string;
 
   constructor(value: string) {
     if (!this.validate(value)) {
-      throw new InvalidLicensePlateException("Invalid license plate format. Must be Mercosul or traditional Brazilian format.");
+      throw new InvalidLicensePlateException(
+        'Invalid license plate format. Must be Mercosul or traditional Brazilian format.',
+      );
     }
-    this.value = value.replace("-", "").toUpperCase();
+    this.value = value.replace('-', '').toUpperCase();
   }
 
   private validate(value: string): boolean {

@@ -58,9 +58,11 @@ export default class PrismaVehicleRepository implements VehicleRepositoryInterfa
     });
   }
 
-  async findByLicensePlate(licensePlate: LicensePlate): Promise<Vehicle | null> {
+  async findByLicensePlate(
+    licensePlate: LicensePlate,
+  ): Promise<Vehicle | null> {
     const vehicleData = await this.uow.client.vehicle.findFirst({
-      where: { 
+      where: {
         plate: licensePlate.value,
         deletedAt: null,
       },
@@ -112,7 +114,9 @@ export default class PrismaVehicleRepository implements VehicleRepositoryInterfa
 
   async archive(vehicle: Vehicle): Promise<void> {
     if (!vehicle.deletedAt) {
-      throw new Error('Vehicle must be soft deleted before calling repository delete method');
+      throw new Error(
+        'Vehicle must be soft deleted before calling repository delete method',
+      );
     }
 
     await this.uow.client.vehicle.update({

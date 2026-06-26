@@ -5,13 +5,13 @@
  *
  * Responsabilidade do contexto customer-management:
  *   - Implementar esta interface em PrismaClientRepository
- *   - Registrar CLIENT_REPOSITORY como provider no CustomerManagementModule
+ *   - Registrar CUSTOMER_REPOSITORY como provider no CustomerManagementModule
  *   - Exportar o provider para que outros módulos possam injetá-lo
  */
 
-export const CLIENT_REPOSITORY = Symbol('CLIENT_REPOSITORY');
+export const CUSTOMER_REPOSITORY = Symbol('CUSTOMER_REPOSITORY');
 
-export interface ClientRepository {
+export interface CustomerRepository {
   findById(id: string): Promise<{
     id: string;
     document: string;

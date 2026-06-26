@@ -11,11 +11,7 @@ import {
   UseFilters,
   UseGuards,
 } from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiOperation,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '@/access-identity/presentation/guards/jwt-auth.guard';
 import { RolesGuard } from '@/access-identity/presentation/guards/roles.guard';
 import { Roles } from '@/access-identity/presentation/decorators/roles.decorator';

@@ -7,6 +7,9 @@ export class HttpErrorSwaggerResponse {
   @ApiProperty({ description: 'Código do erro', example: 'error_code' })
   error_code!: string;
 
-  @ApiProperty({ description: 'Mensagem detalhada do erro', example: 'Mensagem explicativa aqui' })
+  @ApiProperty({
+    description: 'Mensagem detalhada do erro',
+    example: 'Mensagem explicativa aqui',
+  })
   message!: string;
 }

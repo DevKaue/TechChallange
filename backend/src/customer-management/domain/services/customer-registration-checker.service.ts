@@ -5,13 +5,16 @@ import CustomerIsArchivedException from '@customer-management/domain/exceptions/
 
 export default class CustomerRegistrationChecker {
   constructor(
-    private readonly customerRepository: CustomerRepositoryInterface
+    private readonly customerRepository: CustomerRepositoryInterface,
   ) {}
-  
+
   async checkUniqueness(document: Document): Promise<void> {
-    const existingCustomer = await this.customerRepository.findByDocument(document, {
-      includeDeleted: true,
-    });
+    const existingCustomer = await this.customerRepository.findByDocument(
+      document,
+      {
+        includeDeleted: true,
+      },
+    );
 
     if (existingCustomer) {
       if (existingCustomer.isArchived()) {

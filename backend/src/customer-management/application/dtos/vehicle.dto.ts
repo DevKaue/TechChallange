@@ -1,4 +1,4 @@
-import Vehicle from "@customer-management/domain/entities/vehicle.entity";
+import Vehicle from '@customer-management/domain/entities/vehicle.entity';
 
 export default class VehicleDTO {
   id!: string;
