@@ -11,6 +11,10 @@ describe('HttpExceptionFilter', () => {
   beforeEach(() => {
     filter = new HttpExceptionFilter();
 
+    // Mockar logger para suprimir logs durante testes
+    jest.spyOn(filter['logger'], 'warn').mockImplementation(() => {});
+    jest.spyOn(filter['logger'], 'error').mockImplementation(() => {});
+
     mockResponse = {
       status: jest.fn().mockReturnThis(),
       json: jest.fn().mockReturnThis(),
@@ -27,6 +31,10 @@ describe('HttpExceptionFilter', () => {
         getRequest: () => mockRequest,
       }),
     } as any;
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
   });
 
   it('handles HttpException with object response', () => {
