@@ -1,11 +1,8 @@
-import {
-  BadRequestException,
-  Inject,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { ServiceOrdersRepositoryInterface } from '@service-orders/domain/contracts/service-orders-repository.interface';
 import { ServiceOrderQueryServiceInterface } from '@service-orders/application/contracts/service-order-query-service.interface';
+import { CUSTOMER_REPOSITORY } from '@service-orders/domain/acls/customer-repository.interface';
+import type { CustomerRepository } from '@service-orders/domain/acls/customer-repository.interface';
 import { VEHICLE_REPOSITORY } from '@service-orders/domain/acls/vehicle-repository.interface';
 import type { VehicleRepository } from '@service-orders/domain/acls/vehicle-repository.interface';
 import { ServiceOrderStatus } from '@service-orders/domain/enums/service-order-status.enum';
@@ -13,7 +10,9 @@ import { ServiceOrderResponseDto } from '@service-orders/application/dto/service
 import { CreateServiceOrderDto } from '@service-orders/application/dto/service-order/create-service-order.dto';
 import { plainToInstance } from 'class-transformer';
 import { ServiceOrderMapper } from '@service-orders/domain/mappers/service-order.mapper';
+import { ServiceOrderPersistenceMapper } from '@service-orders/infra/mappers/service-order-to-persistence.mapper';
 import { ServiceOrderNotFoundException } from '@service-orders/application/exceptions/service-order-not-found.exception';
+import { CustomerNotFoundException } from '@service-orders/application/exceptions/customer-not-found.exception';
 import { InvalidStatusTransitionException } from '@service-orders/application/exceptions/invalid-status-transition.exception';
 
 @Injectable()
@@ -21,6 +20,8 @@ export class ServiceOrderUseCase {
   constructor(
     private readonly repository: ServiceOrdersRepositoryInterface,
     private readonly queryService: ServiceOrderQueryServiceInterface,
+    @Inject(CUSTOMER_REPOSITORY)
+    private readonly customerRepository: CustomerRepository,
     @Inject(VEHICLE_REPOSITORY)
     private readonly vehicleRepository: VehicleRepository,
   ) {}
@@ -36,9 +37,12 @@ export class ServiceOrderUseCase {
   }
 
   async create(dto: CreateServiceOrderDto) {
+    const customer = await this.customerRepository.findById(dto.customerId);
+    if (!customer) throw new CustomerNotFoundException(dto.customerId);
+
     const vehicle = await this.vehicleRepository.findById(dto.vehicleId);
     if (!vehicle) {
-      throw new NotFoundException('Vehicle not found');
+      throw new BadRequestException('Vehicle not found');
     }
     if (vehicle.customerId !== dto.customerId) {
       throw new BadRequestException(
@@ -73,7 +77,7 @@ export class ServiceOrderUseCase {
 
       const updated = await this.repository.update(
         id,
-        ServiceOrderMapper.toPersistence(order),
+        ServiceOrderPersistenceMapper.toPersistence(order),
       );
       await this.repository.createStatusHistory({
         serviceOrderId: id,
@@ -101,7 +105,7 @@ export class ServiceOrderUseCase {
 
       const updated = await this.repository.update(
         id,
-        ServiceOrderMapper.toPersistence(order),
+        ServiceOrderPersistenceMapper.toPersistence(order),
       );
       await this.repository.createStatusHistory({
         serviceOrderId: id,
@@ -130,7 +134,7 @@ export class ServiceOrderUseCase {
 
       const updated = await this.repository.update(
         id,
-        ServiceOrderMapper.toPersistence(order),
+        ServiceOrderPersistenceMapper.toPersistence(order),
       );
       await this.repository.createStatusHistory({
         serviceOrderId: id,
@@ -157,7 +161,7 @@ export class ServiceOrderUseCase {
       const change = order.close();
 
       const updated = await this.repository.update(id, {
-        ...ServiceOrderMapper.toPersistence(order),
+        ...ServiceOrderPersistenceMapper.toPersistence(order),
         closedAt: new Date(),
       });
       await this.repository.createStatusHistory({

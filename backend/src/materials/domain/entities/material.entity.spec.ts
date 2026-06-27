@@ -4,7 +4,9 @@ import { StockUnit } from '@materials/domain/enums/stock-unit.enum';
 import DomainException from '@materials/domain/exceptions/domain.exception';
 import InsufficientMaterialStockException from '@materials/domain/exceptions/insufficient-material-stock.exception';
 
-const buildPart = (overrides: Partial<ConstructorParameters<typeof Material>[0]> = {}) =>
+const buildPart = (
+  overrides: Partial<ConstructorParameters<typeof Material>[0]> = {},
+) =>
   new Material({
     id: 'mat-1',
     name: 'Oil Filter',
@@ -15,7 +17,9 @@ const buildPart = (overrides: Partial<ConstructorParameters<typeof Material>[0]>
     ...overrides,
   });
 
-const buildSupply = (overrides: Partial<ConstructorParameters<typeof Material>[0]> = {}) =>
+const buildSupply = (
+  overrides: Partial<ConstructorParameters<typeof Material>[0]> = {},
+) =>
   new Material({
     id: 'mat-2',
     name: 'Engine Oil',

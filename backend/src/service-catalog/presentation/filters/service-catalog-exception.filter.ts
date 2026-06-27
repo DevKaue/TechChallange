@@ -23,8 +23,7 @@ export class ServiceCatalogExceptionFilter implements ExceptionFilter {
 
     response.status(statusCode).json({
       status_code: statusCode,
-      error:
-        statusCode === HttpStatus.NOT_FOUND ? 'Not Found' : 'Bad Request',
+      error: statusCode === HttpStatus.NOT_FOUND ? 'Not Found' : 'Bad Request',
       message: exception.message,
     });
   }

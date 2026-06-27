@@ -28,14 +28,15 @@ describe('Customer entity', () => {
 
   it('updates only provided fields', () => {
     const customer = build();
-    customer.update({ name: 'Jane Doe' });
+    customer.changeName('Jane Doe');
     expect(customer.name).toBe('Jane Doe');
     expect(customer.phone).toBe('11999999999');
   });
 
   it('updates phone and email', () => {
     const customer = build();
-    customer.update({ phone: '11888888888', email: new Email('jane@x.com') });
+    customer.changePhone('11888888888');
+    customer.changeEmail(new Email('jane@x.com'));
     expect(customer.phone).toBe('11888888888');
     expect(customer.email?.value).toBe('jane@x.com');
   });
@@ -70,12 +71,10 @@ describe('Vehicle entity', () => {
 
   it('updates provided fields', () => {
     const vehicle = build();
-    vehicle.update({
-      brand: 'Honda',
-      model: 'Civic',
-      year: new Year(2022),
-      licensePlate: new LicensePlate('XYZ4321'),
-    });
+    vehicle.changeBrand('Honda');
+    vehicle.changeModel('Civic');
+    vehicle.changeYear(new Year(2022));
+    vehicle.changeLicensePlate(new LicensePlate('XYZ4321'));
     expect(vehicle.brand).toBe('Honda');
     expect(vehicle.model).toBe('Civic');
     expect(vehicle.year.value).toBe(2022);

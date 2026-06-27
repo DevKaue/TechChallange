@@ -16,19 +16,21 @@ export default class CustomerFactory {
     updatedAt?: Date;
     deletedAt?: Date;
   }): Customer {
-
-    const document = new Document(props.documentType as DocumentType, props.documentNumber);
+    const document = new Document(
+      props.documentType as DocumentType,
+      props.documentNumber,
+    );
     const email = props.email ? new Email(props.email) : undefined;
 
-    return new Customer({ 
-        id: props.id ?? crypto.randomUUID(), 
-        document: document, 
-        name: props.name, 
-        phone: props.phone, 
-        email: email,
-        createdAt: props.createdAt,
-        updatedAt: props.updatedAt,
-        deletedAt: props.deletedAt
+    return new Customer({
+      id: props.id ?? crypto.randomUUID(),
+      document: document,
+      name: props.name,
+      phone: props.phone,
+      email: email,
+      createdAt: props.createdAt,
+      updatedAt: props.updatedAt,
+      deletedAt: props.deletedAt,
     });
   }
 }

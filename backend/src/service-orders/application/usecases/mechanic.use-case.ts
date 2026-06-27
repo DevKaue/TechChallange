@@ -15,6 +15,7 @@ import { plainToInstance } from 'class-transformer';
 import { ServiceOrderNotFoundException } from '@service-orders/application/exceptions/service-order-not-found.exception';
 import { InvalidStatusTransitionException } from '@service-orders/application/exceptions/invalid-status-transition.exception';
 import { ServiceOrderMapper } from '@service-orders/domain/mappers/service-order.mapper';
+import { ServiceOrderPersistenceMapper } from '@service-orders/infra/mappers/service-order-to-persistence.mapper';
 
 @Injectable()
 export class MechanicUseCase {
@@ -27,13 +28,13 @@ export class MechanicUseCase {
     const data = await this.repository.findById(id);
     if (!data) throw new ServiceOrderNotFoundException(id);
 
-    const order = ServiceOrderMapper.toDomain(data);
+    const serviceOrder = ServiceOrderMapper.toDomain(data);
 
     const user = await this.userRepository.findById(dto.mechanicId);
     if (!user) {
       throw new NotFoundException('User not found');
     }
-    if (user.role !== UserRole.MECHANIC) {
+    if ((user.role as UserRole) !== UserRole.MECHANIC) {
       throw new BadRequestException('User is not a mechanic');
     }
 
@@ -43,7 +44,7 @@ export class MechanicUseCase {
         user.name,
         UserRole.MECHANIC,
       );
-      order.assignMechanic(assignment);
+      serviceOrder.assignMechanic(assignment);
     } catch (error: unknown) {
       throw new InvalidStatusTransitionException(
         error instanceof Error ? error.message : 'Unexpected error',
@@ -52,7 +53,7 @@ export class MechanicUseCase {
 
     const updated = await this.repository.update(
       id,
-      ServiceOrderMapper.toPersistence(order),
+      ServiceOrderPersistenceMapper.toPersistence(serviceOrder),
     );
     return plainToInstance(ServiceOrderResponseDto, updated, {
       excludeExtraneousValues: true,

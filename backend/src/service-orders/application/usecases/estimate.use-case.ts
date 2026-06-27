@@ -10,6 +10,7 @@ import type { PartRepository } from '@service-orders/domain/acls/part-repository
 import { SERVICE_CATALOG_REPOSITORY } from '@service-orders/domain/acls/service-catalog-repository.interface';
 import type { ServiceCatalogRepository } from '@service-orders/domain/acls/service-catalog-repository.interface';
 import { ServiceOrderMapper } from '@service-orders/domain/mappers/service-order.mapper';
+import { ServiceOrderPersistenceMapper } from '@service-orders/infra/mappers/service-order-to-persistence.mapper';
 import { Money } from '@service-orders/domain/value-objects/money.value-object';
 import { EstimateStatus } from '@service-orders/domain/enums/estimate-status.enum';
 import {
@@ -28,6 +29,7 @@ import { PartNotFoundException } from '@service-orders/application/exceptions/pa
 import { InvalidMaterialDataException } from '@service-orders/application/exceptions/invalid-material-data.exception';
 import InsufficientMaterialStockException from '@materials/domain/exceptions/insufficient-material-stock.exception';
 import DomainException from '@materials/domain/exceptions/domain.exception';
+import { ServiceOrderItemType } from '@service-orders/domain/enums/service-order-item-type.enum';
 
 @Injectable()
 export class EstimateUseCase {
@@ -55,7 +57,7 @@ export class EstimateUseCase {
         }),
         this.repository.update(
           orderId,
-          ServiceOrderMapper.toPersistence(order),
+          ServiceOrderPersistenceMapper.toPersistence(order),
         ),
       ]);
 
@@ -82,7 +84,7 @@ export class EstimateUseCase {
 
     let description = dto.description ?? '';
 
-    if (dto.itemType === 'SERVICE') {
+    if (dto.itemType === ServiceOrderItemType.SERVICE) {
       if (this.serviceCatalogRepository) {
         const service = await this.serviceCatalogRepository.findById(
           dto.referenceId,
@@ -166,7 +168,7 @@ export class EstimateUseCase {
 
         await this.repository.update(
           order.id,
-          ServiceOrderMapper.toPersistence(order),
+          ServiceOrderPersistenceMapper.toPersistence(order),
         );
         await this.repository.createStatusHistory({
           serviceOrderId: order.id,
@@ -203,15 +205,22 @@ export class EstimateUseCase {
 
       const updated = await this.repository.update(
         id,
-        ServiceOrderMapper.toPersistence(order),
+        ServiceOrderPersistenceMapper.toPersistence(order),
       );
 
       // Orçamento rejeitado: devolve ao estoque as peças que haviam sido
       // baixadas ao montar o orçamento (evita vazamento de estoque).
       const pendingItems = data.estimates
-        .filter((estimate) => estimate.status === EstimateStatus.PENDING)
+        .filter(
+          (estimate) =>
+            (estimate.status as EstimateStatus) === EstimateStatus.PENDING,
+        )
         .flatMap((estimate) => estimate.items)
-        .filter((item) => item.itemType === 'PART');
+        .filter(
+          (item) =>
+            (item.itemType as ServiceOrderItemType) ===
+            ServiceOrderItemType.PART,
+        );
 
       for (const item of pendingItems) {
         await this.partRepository.incrementStock(

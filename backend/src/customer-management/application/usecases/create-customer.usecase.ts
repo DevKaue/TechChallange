@@ -10,10 +10,12 @@ import CustomerRegistrationChecker from '@/customer-management/domain/services/c
 export default class CreateCustomerUseCase {
   constructor(
     private readonly customerRepository: CustomerRepositoryInterface,
-    private readonly registrationChecker: CustomerRegistrationChecker
+    private readonly registrationChecker: CustomerRegistrationChecker,
   ) {}
 
-  async execute(input: CreateCustomerInputDTO): Promise<CreateCustomerOutputDTO> {
+  async execute(
+    input: CreateCustomerInputDTO,
+  ): Promise<CreateCustomerOutputDTO> {
     const customer = CustomerFactory.create({
       documentType: input.documentType,
       documentNumber: input.documentNumber,

@@ -7,50 +7,50 @@ import VehicleNotFoundException from '@/customer-management/domain/exceptions/ve
 
 @Injectable()
 export default class PrismaVehicleQueryService implements VehicleQueryServiceInterface {
-    constructor(private readonly prisma: PrismaService) {}
-    
-    async getById(props: { id: string }): Promise<VehicleDTO> {
-        const vehicle = await this.prisma.vehicle.findFirst({
-            where: { 
-                id: props.id,
-                deletedAt: null
-            },
-        });
-        if (vehicle) {
-            const vehicleDTO: VehicleDTO = {
-                id: vehicle.id,
-                licensePlate: vehicle.plate,
-                brand: vehicle.brand,
-                model: vehicle.model,
-                year: vehicle.year,
-                customerId: vehicle.customerId,
-                createdAt: vehicle.createdAt,
-                updatedAt: vehicle.updatedAt,
-            };
-            return vehicleDTO;
-        }
+  constructor(private readonly prisma: PrismaService) {}
 
-        throw new VehicleNotFoundException();
+  async getById(props: { id: string }): Promise<VehicleDTO> {
+    const vehicle = await this.prisma.vehicle.findFirst({
+      where: {
+        id: props.id,
+        deletedAt: null,
+      },
+    });
+    if (vehicle) {
+      const vehicleDTO: VehicleDTO = {
+        id: vehicle.id,
+        licensePlate: vehicle.plate,
+        brand: vehicle.brand,
+        model: vehicle.model,
+        year: vehicle.year,
+        customerId: vehicle.customerId,
+        createdAt: vehicle.createdAt,
+        updatedAt: vehicle.updatedAt,
+      };
+      return vehicleDTO;
     }
 
-    async findAll(props?: { customerId?: string }): Promise<VehicleDTO[]> {
-        const vehicles = await this.prisma.vehicle.findMany({
-            where: {
-                deletedAt: null,
-                ...(props?.customerId ? { customerId: props.customerId } : {}),
-            },
-            orderBy: { createdAt: 'desc' },
-        });
+    throw new VehicleNotFoundException();
+  }
 
-        return vehicles.map((vehicle) => ({
-            id: vehicle.id,
-            licensePlate: vehicle.plate,
-            brand: vehicle.brand,
-            model: vehicle.model,
-            year: vehicle.year,
-            customerId: vehicle.customerId,
-            createdAt: vehicle.createdAt,
-            updatedAt: vehicle.updatedAt,
-        }));
-    }
+  async findAll(props?: { customerId?: string }): Promise<VehicleDTO[]> {
+    const vehicles = await this.prisma.vehicle.findMany({
+      where: {
+        deletedAt: null,
+        ...(props?.customerId ? { customerId: props.customerId } : {}),
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return vehicles.map((vehicle) => ({
+      id: vehicle.id,
+      licensePlate: vehicle.plate,
+      brand: vehicle.brand,
+      model: vehicle.model,
+      year: vehicle.year,
+      customerId: vehicle.customerId,
+      createdAt: vehicle.createdAt,
+      updatedAt: vehicle.updatedAt,
+    }));
+  }
 }

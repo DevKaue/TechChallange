@@ -1,7 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 export class VehicleResponseData {
-  @ApiProperty({ example: '123e4567-e89b-12d3-a456-426614174000', description: 'ID do veículo' })
+  @ApiProperty({
+    example: '123e4567-e89b-12d3-a456-426614174000',
+    description: 'ID do veículo',
+  })
   id!: string;
 
   @ApiProperty({ example: 'ABC1234', description: 'Placa do veículo' })

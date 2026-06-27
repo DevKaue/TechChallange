@@ -17,7 +17,7 @@ const buildRepo = () => ({
 describe('ServiceCatalogUseCase', () => {
   it('creates a service', async () => {
     const repo = buildRepo();
-    const useCase = new ServiceCatalogUseCase(repo as any);
+    const useCase = new ServiceCatalogUseCase(repo);
 
     const dto = await useCase.create({
       name: 'Alinhamento',
@@ -32,17 +32,17 @@ describe('ServiceCatalogUseCase', () => {
 
   it('rejects a service with negative price', async () => {
     const repo = buildRepo();
-    const useCase = new ServiceCatalogUseCase(repo as any);
+    const useCase = new ServiceCatalogUseCase(repo);
 
-    await expect(
-      useCase.create({ name: 'X', price: -1 }),
-    ).rejects.toThrow(DomainException);
+    await expect(useCase.create({ name: 'X', price: -1 })).rejects.toThrow(
+      DomainException,
+    );
   });
 
   it('lists services', async () => {
     const repo = buildRepo();
     repo.findAll.mockResolvedValue([buildService()]);
-    const useCase = new ServiceCatalogUseCase(repo as any);
+    const useCase = new ServiceCatalogUseCase(repo);
 
     const result = await useCase.list();
     expect(result).toHaveLength(1);
@@ -52,7 +52,7 @@ describe('ServiceCatalogUseCase', () => {
   it('finds a service by id', async () => {
     const repo = buildRepo();
     repo.findById.mockResolvedValue(buildService());
-    const useCase = new ServiceCatalogUseCase(repo as any);
+    const useCase = new ServiceCatalogUseCase(repo);
 
     const dto = await useCase.findById('svc-1');
     expect(dto.name).toBe('Troca de óleo');
@@ -61,7 +61,7 @@ describe('ServiceCatalogUseCase', () => {
   it('throws when finding a missing service', async () => {
     const repo = buildRepo();
     repo.findById.mockResolvedValue(null);
-    const useCase = new ServiceCatalogUseCase(repo as any);
+    const useCase = new ServiceCatalogUseCase(repo);
 
     await expect(useCase.findById('missing')).rejects.toThrow(
       ServiceNotFoundException,
@@ -71,7 +71,7 @@ describe('ServiceCatalogUseCase', () => {
   it('updates an existing service', async () => {
     const repo = buildRepo();
     repo.findById.mockResolvedValue(buildService());
-    const useCase = new ServiceCatalogUseCase(repo as any);
+    const useCase = new ServiceCatalogUseCase(repo);
 
     const dto = await useCase.update('svc-1', { price: 200 });
     expect(repo.update).toHaveBeenCalledTimes(1);
@@ -81,7 +81,7 @@ describe('ServiceCatalogUseCase', () => {
   it('throws when updating a missing service', async () => {
     const repo = buildRepo();
     repo.findById.mockResolvedValue(null);
-    const useCase = new ServiceCatalogUseCase(repo as any);
+    const useCase = new ServiceCatalogUseCase(repo);
 
     await expect(useCase.update('missing', { price: 1 })).rejects.toThrow(
       ServiceNotFoundException,
@@ -91,7 +91,7 @@ describe('ServiceCatalogUseCase', () => {
   it('deletes an existing service', async () => {
     const repo = buildRepo();
     repo.findById.mockResolvedValue(buildService());
-    const useCase = new ServiceCatalogUseCase(repo as any);
+    const useCase = new ServiceCatalogUseCase(repo);
 
     await useCase.delete('svc-1');
     expect(repo.delete).toHaveBeenCalledWith('svc-1');
@@ -100,7 +100,7 @@ describe('ServiceCatalogUseCase', () => {
   it('throws when deleting a missing service', async () => {
     const repo = buildRepo();
     repo.findById.mockResolvedValue(null);
-    const useCase = new ServiceCatalogUseCase(repo as any);
+    const useCase = new ServiceCatalogUseCase(repo);
 
     await expect(useCase.delete('missing')).rejects.toThrow(
       ServiceNotFoundException,

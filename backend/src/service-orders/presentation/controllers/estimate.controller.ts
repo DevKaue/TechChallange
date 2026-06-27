@@ -68,7 +68,9 @@ export class EstimateController {
   @Patch(':id/reject')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Rejeita o orçamento e retorna a OS ao diagnóstico' })
+  @ApiOperation({
+    summary: 'Rejeita o orçamento e retorna a OS ao diagnóstico',
+  })
   @ApiOkResponse({ type: ServiceOrderResponseDto })
   rejectEstimate(@Param('id') id: string, @Body() dto: RejectEstimateDto) {
     return this.useCase.rejectEstimate(id, dto);

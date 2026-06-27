@@ -26,6 +26,6 @@ export class JsonVehiclePresenter {
   }
 
   static presentMany(vehicles: VehicleDTO[]): VehicleResponse[] {
-    return vehicles.map(vehicle => this.present(vehicle));
+    return vehicles.map((vehicle) => this.present(vehicle));
   }
 }

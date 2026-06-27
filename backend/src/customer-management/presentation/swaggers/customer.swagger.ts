@@ -1,7 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CustomerResponseData {
-  @ApiProperty({ example: '123e4567-e89b-12d3-a456-426614174000', description: 'ID do cliente' })
+  @ApiProperty({
+    example: '123e4567-e89b-12d3-a456-426614174000',
+    description: 'ID do cliente',
+  })
   id!: string;
 
   @ApiProperty({ example: 'CPF' })
@@ -18,7 +21,7 @@ export class CustomerResponseData {
 
   @ApiProperty({ example: 'joao@email.com' })
   email!: string;
-  
+
   @ApiProperty({ example: '2026-03-21T15:00:00.000Z' })
   created_at!: string;
 }

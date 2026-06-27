@@ -1,6 +1,7 @@
 node_modules/
 dist/
 coverage/
+coverage-integration/
 .env
 .env.*
 !.env.example
@@ -11,3 +12,5 @@ npm-debug.log*
 opencode.json.idea/
 .idea/
 opencode.json
+.opencode
+.scannerwork/

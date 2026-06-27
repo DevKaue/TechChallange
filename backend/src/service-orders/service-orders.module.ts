@@ -15,10 +15,10 @@ import { ServiceOrderQueryServiceInterface } from './application/contracts/servi
 import { PrismaServiceOrderQueryService } from './infra/services/prisma-service-order-query.service';
 import { SERVICE_ORDERS_INTERFACE } from './application/contracts/service-orders-public.interface';
 import { ServiceOrdersFacade } from './infra/integrations/service-orders.facade';
-import { MaterialsModule } from '../materials/infra/materials.module';
-import { ServiceCatalogModule } from '../service-catalog/infra/service-catalog.module';
-import { CustomerManagementModule } from '../customer-management/infra/customer-management.module';
-import { AccessIdentityModule } from '../access-identity/access-identity.module';
+import { MaterialsModule } from '@materials/infra/materials.module';
+import { ServiceCatalogModule } from '@service-catalog/infra/service-catalog.module';
+import { CustomerManagementModule } from '@customer-management/infra/customer-management.module';
+import { AccessIdentityModule } from '@access-identity/access-identity.module';
 
 @Module({
   imports: [
@@ -53,7 +53,7 @@ import { AccessIdentityModule } from '../access-identity/access-identity.module'
       provide: SERVICE_ORDERS_INTERFACE,
       useExisting: ServiceOrdersFacade,
     },
-    // ACLs cross-context (CLIENT/VEHICLE/USER/PART/SERVICE_CATALOG) são providos
+    // ACLs cross-context (CUSTOMER/VEHICLE/USER/PART/SERVICE_CATALOG) são providos
     // e exportados pelos módulos donos e chegam aqui via os imports acima.
   ],
   exports: [SERVICE_ORDERS_INTERFACE],

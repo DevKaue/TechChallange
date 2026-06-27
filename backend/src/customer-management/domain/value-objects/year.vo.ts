@@ -1,4 +1,4 @@
-import DomainException from "@customer-management/domain/exceptions/domain.exception";
+import DomainException from '@customer-management/domain/exceptions/domain.exception';
 
 export default class Year {
   public readonly value: number;
@@ -9,8 +9,10 @@ export default class Year {
   }
 
   private validate(year: number): void {
-        if (!Number.isInteger(year) || year < 1000 || year > 9999) {
-            throw new DomainException('Invalid year. Year must be a four-digit integer.');
-        }
+    if (!Number.isInteger(year) || year < 1000 || year > 9999) {
+      throw new DomainException(
+        'Invalid year. Year must be a four-digit integer.',
+      );
     }
+  }
 }

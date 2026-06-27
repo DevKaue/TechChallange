@@ -13,15 +13,14 @@ export class CreateVehicleUseCase {
   constructor(
     private readonly vehicleRepository: VehicleRepositoryInterface,
     private readonly customerRepository: CustomerRepositoryInterface,
-    private readonly registrationChecker: VehicleRegistrationChecker
+    private readonly registrationChecker: VehicleRegistrationChecker,
   ) {}
 
   async execute(input: CreateVehicleInputDTO): Promise<CreateVehicleOutputDTO> {
-    
     const existingCustomer = await this.customerRepository.getById(
-      input.customerId
+      input.customerId,
     );
-    
+
     const vehicle = VehicleFactory.create({
       licensePlate: input.licensePlate,
       brand: input.brand,
@@ -41,4 +40,3 @@ export class CreateVehicleUseCase {
     return output;
   }
 }
-

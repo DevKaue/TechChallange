@@ -1,6 +1,6 @@
 import { CreateVehicleUseCase } from '@customer-management/application/usecases/create-vehicle.usecase';
 import FindVehicleByIdUseCase from '@customer-management/application/usecases/find-vehicle-by-id.usecase';
-import ListVehiclesUseCase from '@customer-management/application/usecases/list-vehicles.usecase';
+import ListVehiclesUseCase from '@customer-management/application/usecases/list-vehicle.usecase';
 import UpdateVehicleUseCase from '@customer-management/application/usecases/update-vehicle.usecase';
 import ArchiveVehicleUseCase from '@customer-management/application/usecases/archive-vehicle.usecase';
 import VehicleFactory from '@customer-management/domain/factories/vehicle.factory';
@@ -64,12 +64,12 @@ describe('CreateVehicleUseCase', () => {
     const checker = { checkUniqueness: jest.fn() };
     customerRepo.getById.mockResolvedValue(buildCustomer());
     const useCase = new CreateVehicleUseCase(
-      vehicleRepo as any,
-      customerRepo as any,
+      vehicleRepo,
+      customerRepo,
       checker as any,
     );
 
-    const output = await useCase.execute(input as any);
+    const output = await useCase.execute(input);
     expect(customerRepo.getById).toHaveBeenCalledWith('customer-1');
     expect(checker.checkUniqueness).toHaveBeenCalledTimes(1);
     expect(vehicleRepo.create).toHaveBeenCalledTimes(1);
@@ -82,8 +82,8 @@ describe('CreateVehicleUseCase', () => {
     const checker = { checkUniqueness: jest.fn() };
     customerRepo.getById.mockRejectedValue(new Error('Customer Not Found.'));
     const useCase = new CreateVehicleUseCase(
-      vehicleRepo as any,
-      customerRepo as any,
+      vehicleRepo,
+      customerRepo,
       checker as any,
     );
 
@@ -98,9 +98,9 @@ describe('FindVehicleByIdUseCase', () => {
   it('returns the vehicle DTO', async () => {
     const query = buildQueryService();
     query.getById.mockResolvedValue({ id: 'vehicle-1' });
-    const useCase = new FindVehicleByIdUseCase(query as any);
+    const useCase = new FindVehicleByIdUseCase(query);
 
-    const output = await useCase.execute({ id: 'vehicle-1' } as any);
+    const output = await useCase.execute({ id: 'vehicle-1' });
     expect(output.vehicle.id).toBe('vehicle-1');
   });
 });
@@ -109,37 +109,38 @@ describe('ListVehiclesUseCase', () => {
   it('lists vehicles, optionally by customer', async () => {
     const query = buildQueryService();
     query.findAll.mockResolvedValue([{ id: 'vehicle-1' }]);
-    const useCase = new ListVehiclesUseCase(query as any);
+    const useCase = new ListVehiclesUseCase(query);
 
     const result = await useCase.execute({ customerId: 'customer-1' });
     expect(query.findAll).toHaveBeenCalledWith({ customerId: 'customer-1' });
-    expect(result).toHaveLength(1);
+    expect(result.vehicles).toHaveLength(1);
   });
 });
 
 describe('UpdateVehicleUseCase', () => {
   it('updates an existing vehicle', async () => {
     const repo = buildVehicleRepo();
-    repo.findById.mockResolvedValue(buildVehicle());
-    const useCase = new UpdateVehicleUseCase(repo as any);
+    repo.getById.mockResolvedValue(buildVehicle());
+    const checker = { checkUniqueness: jest.fn() };
+    const useCase = new UpdateVehicleUseCase(repo, checker as any);
 
     const dto = await useCase.execute({
       id: 'vehicle-1',
       brand: 'Honda',
       year: 2022,
-      licensePlate: 'XYZ4321',
-    } as any);
+      licensePlate: 'ABC1D23',
+    });
 
     expect(repo.update).toHaveBeenCalledTimes(1);
-    expect(dto.brand).toBe('Honda');
-    expect(dto.year).toBe(2022);
-    expect(dto.licensePlate).toBe('XYZ4321');
+    expect(dto.vehicle.brand).toBe('Honda');
+    expect(dto.vehicle.year).toBe(2022);
   });
 
   it('throws when vehicle not found', async () => {
     const repo = buildVehicleRepo();
-    repo.findById.mockResolvedValue(null);
-    const useCase = new UpdateVehicleUseCase(repo as any);
+    repo.getById.mockRejectedValue(new VehicleNotFoundException());
+    const checker = { checkUniqueness: jest.fn() };
+    const useCase = new UpdateVehicleUseCase(repo, checker as any);
 
     await expect(
       useCase.execute({ id: 'missing', brand: 'X' } as any),
@@ -151,9 +152,9 @@ describe('ArchiveVehicleUseCase', () => {
   it('archives an existing vehicle', async () => {
     const repo = buildVehicleRepo();
     repo.getById.mockResolvedValue(buildVehicle());
-    const useCase = new ArchiveVehicleUseCase(repo as any);
+    const useCase = new ArchiveVehicleUseCase(repo);
 
-    await useCase.execute({ id: 'vehicle-1' } as any);
+    await useCase.execute({ id: 'vehicle-1' });
     expect(repo.archive).toHaveBeenCalledTimes(1);
   });
 });

@@ -1,4 +1,9 @@
-import { ExceptionFilter, Catch, ArgumentsHost, HttpStatus } from '@nestjs/common';
+import {
+  ExceptionFilter,
+  Catch,
+  ArgumentsHost,
+  HttpStatus,
+} from '@nestjs/common';
 import VehicleAlreadyExistsException from '@/customer-management/domain/exceptions/vehicle-already-exists.exception';
 import VehicleNotFoundException from '@/customer-management/domain/exceptions/vehicle-not-found.exception';
 import DomainException from '@customer-management/domain/exceptions/domain.exception';
@@ -6,7 +11,13 @@ import { Response } from 'express';
 
 @Catch(VehicleAlreadyExistsException, DomainException, VehicleNotFoundException)
 export class VehicleExceptionFilter implements ExceptionFilter {
-  catch(exception: VehicleAlreadyExistsException | DomainException | VehicleNotFoundException, host: ArgumentsHost) {
+  catch(
+    exception:
+      | VehicleAlreadyExistsException
+      | DomainException
+      | VehicleNotFoundException,
+    host: ArgumentsHost,
+  ) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
 
