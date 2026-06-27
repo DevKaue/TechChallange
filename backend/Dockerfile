@@ -25,6 +25,7 @@ RUN npm ci
 COPY . .
 
 RUN npx prisma generate
+RUN apk add --no-cache bash curl && chmod +x /usr/src/app/scripts/sonar.sh
 
 CMD ["npm", "run", "start:dev"]
 
