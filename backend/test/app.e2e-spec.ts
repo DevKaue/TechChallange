@@ -22,9 +22,7 @@ describe('AppController (e2e)', () => {
       .get('/api/health')
       .expect(200);
 
-    expect(response.body).toEqual(
-      expect.objectContaining({ status: 'ok' }),
-    );
+    expect(response.body).toEqual(expect.objectContaining({ status: 'ok' }));
     expect(response.body).toHaveProperty('uptime');
     expect(response.body).toHaveProperty('timestamp');
   });
