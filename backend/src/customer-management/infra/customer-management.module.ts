@@ -28,10 +28,6 @@ import UnitOfWorkServiceInterface from '@customer-management/application/contrac
 import PrismaUnitOfWorkService from '@customer-management/infra/services/prisma-unit-of-work.service';
 import CustomerRegistrationChecker from '../domain/services/customer-registration-checker.service';
 import VehicleRegistrationChecker from '../domain/services/vehicle-registration-checker.service';
-import { CUSTOMER_REPOSITORY } from '@service-orders/domain/acls/customer-repository.interface';
-import { VEHICLE_REPOSITORY } from '@service-orders/domain/acls/vehicle-repository.interface';
-import { CustomerRepositoryAcl } from '@customer-management/infra/acls/customer-repository.acl';
-import { VehicleRepositoryAcl } from '@customer-management/infra/acls/vehicle-repository.acl';
 
 @Module({
   imports: [PrismaModule],
@@ -40,14 +36,6 @@ import { VehicleRepositoryAcl } from '@customer-management/infra/acls/vehicle-re
     PrismaUnitOfWorkService,
     CustomerRegistrationChecker,
     VehicleRegistrationChecker,
-    {
-      provide: CUSTOMER_REPOSITORY,
-      useClass: CustomerRepositoryAcl,
-    },
-    {
-      provide: VEHICLE_REPOSITORY,
-      useClass: VehicleRepositoryAcl,
-    },
     {
       provide: UnitOfWorkServiceInterface,
       useClass: PrismaUnitOfWorkService,
@@ -213,9 +201,7 @@ import { VehicleRepositoryAcl } from '@customer-management/infra/acls/vehicle-re
     },
   ],
   exports: [
-    CustomerManagementInterface,
-    CUSTOMER_REPOSITORY,
-    VEHICLE_REPOSITORY,
+    CustomerManagementInterface
   ],
 })
 export class CustomerManagementModule {}

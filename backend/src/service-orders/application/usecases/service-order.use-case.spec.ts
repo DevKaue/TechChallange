@@ -2,8 +2,9 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ServiceOrderUseCase } from './service-order.use-case';
 import { ServiceOrdersRepositoryInterface } from '@service-orders/domain/contracts/service-orders-repository.interface';
 import { ServiceOrderQueryServiceInterface } from '@service-orders/application/contracts/service-order-query-service.interface';
-import { CUSTOMER_REPOSITORY } from '@service-orders/domain/acls/customer-repository.interface';
-import { VEHICLE_REPOSITORY } from '@service-orders/domain/acls/vehicle-repository.interface';
+// import { CUSTOMER_REPOSITORY } from '@service-orders/domain/acls/customer-repository.interface';
+// import { VEHICLE_REPOSITORY } from '@service-orders/domain/acls/vehicle-repository.interface';
+import CustomerManagementInterface from '@/common/contracts/customer-management.interface';
 import { BadRequestException } from '@nestjs/common';
 import { ServiceOrderStatus } from '@service-orders/domain/enums/service-order-status.enum';
 import { ServiceOrderNotFoundException } from '@service-orders/application/exceptions/service-order-not-found.exception';
@@ -18,6 +19,7 @@ describe('ServiceOrderUseCase', () => {
   let queryService: jest.Mocked<ServiceOrderQueryServiceInterface>;
   let vehicleRepository: { findById: jest.Mock };
   let customerRepository: { findById: jest.Mock };
+  let customerManagement: jest.Mocked<CustomerManagementInterface>;
 
   const mockOrder: any = {
     id: 'order-1',
@@ -73,13 +75,20 @@ describe('ServiceOrderUseCase', () => {
             findOne: jest.fn(),
           },
         },
+        // {
+        //   provide: VEHICLE_REPOSITORY,
+        //   useValue: { findById: jest.fn() },
+        // },
+        // {
+        //   provide: CUSTOMER_REPOSITORY,
+        //   useValue: { findById: jest.fn() },
+        // },
         {
-          provide: VEHICLE_REPOSITORY,
-          useValue: { findById: jest.fn() },
-        },
-        {
-          provide: CUSTOMER_REPOSITORY,
-          useValue: { findById: jest.fn() },
+          provide: CustomerManagementInterface,
+          useValue: {
+            findCustomerById: jest.fn(),
+            findVehicleById: jest.fn(),
+          },
         },
       ],
     }).compile();
@@ -87,8 +96,9 @@ describe('ServiceOrderUseCase', () => {
     useCase = module.get(ServiceOrderUseCase);
     repository = module.get(ServiceOrdersRepositoryInterface);
     queryService = module.get(ServiceOrderQueryServiceInterface);
-    vehicleRepository = module.get(VEHICLE_REPOSITORY);
-    customerRepository = module.get(CUSTOMER_REPOSITORY);
+    // vehicleRepository = module.get(VEHICLE_REPOSITORY);
+    // customerRepository = module.get(CUSTOMER_REPOSITORY);
+    customerManagement = module.get(CustomerManagementInterface);
   });
 
   describe('findAll', () => {
@@ -166,11 +176,22 @@ describe('ServiceOrderUseCase', () => {
 
   describe('create', () => {
     it('should create a service order when the vehicle belongs to the client', async () => {
-      customerRepository.findById.mockResolvedValue({ id: 'client-1' });
-      vehicleRepository.findById.mockResolvedValue({
+      // customerRepository.findById.mockResolvedValue({ id: 'client-1' });
+      // vehicleRepository.findById.mockResolvedValue({
+      //   id: 'vehicle-1',
+      //   customerId: 'client-1',
+      // });
+      customerManagement.findCustomerById.mockResolvedValue({ id: 'client-1', document: '123', email: null, phone: null, createdAt: new Date(), updatedAt: new Date() } as any);
+      customerManagement.findVehicleById.mockResolvedValue({
         id: 'vehicle-1',
         customerId: 'client-1',
-      });
+        plate: 'ABC-123',
+        brand: 'Toyota',
+        model: 'Corolla',
+        year: 2020,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      } as any);
       repository.create.mockResolvedValue(mockOrder);
       repository.createStatusHistory.mockResolvedValue({} as any);
 
@@ -188,8 +209,10 @@ describe('ServiceOrderUseCase', () => {
     });
 
     it('should throw when the vehicle does not exist', async () => {
-      customerRepository.findById.mockResolvedValue({ id: 'client-1' });
-      vehicleRepository.findById.mockResolvedValue(null);
+      // customerRepository.findById.mockResolvedValue({ id: 'client-1' });
+      // vehicleRepository.findById.mockResolvedValue(null);
+      customerManagement.findCustomerById.mockResolvedValue({ id: 'client-1', document: '123', email: null, phone: null, createdAt: new Date(), updatedAt: new Date() } as any);
+      customerManagement.findVehicleById.mockResolvedValue(null);
       await expect(
         useCase.create({ customerId: 'client-1', vehicleId: 'x' }),
       ).rejects.toThrow(BadRequestException);
@@ -197,7 +220,8 @@ describe('ServiceOrderUseCase', () => {
     });
 
     it('should throw when the customer does not exist', async () => {
-      customerRepository.findById.mockResolvedValue(null);
+      // customerRepository.findById.mockResolvedValue(null);
+      customerManagement.findCustomerById.mockResolvedValue(null);
       await expect(
         useCase.create({ customerId: 'no-client', vehicleId: 'vehicle-1' }),
       ).rejects.toThrow(CustomerNotFoundException);
@@ -205,11 +229,22 @@ describe('ServiceOrderUseCase', () => {
     });
 
     it('should throw when the vehicle does not belong to the client', async () => {
-      customerRepository.findById.mockResolvedValue({ id: 'client-1' });
-      vehicleRepository.findById.mockResolvedValue({
+      // customerRepository.findById.mockResolvedValue({ id: 'client-1' });
+      // vehicleRepository.findById.mockResolvedValue({
+      //   id: 'vehicle-1',
+      //   customerId: 'another-client',
+      // });
+      customerManagement.findCustomerById.mockResolvedValue({ id: 'client-1', document: '123', email: null, phone: null, createdAt: new Date(), updatedAt: new Date() } as any);
+      customerManagement.findVehicleById.mockResolvedValue({
         id: 'vehicle-1',
         customerId: 'another-client',
-      });
+        plate: 'ABC-123',
+        brand: 'Toyota',
+        model: 'Corolla',
+        year: 2020,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      } as any);
       await expect(
         useCase.create({ customerId: 'client-1', vehicleId: 'vehicle-1' }),
       ).rejects.toThrow(BadRequestException);

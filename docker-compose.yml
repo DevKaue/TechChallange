@@ -38,6 +38,7 @@ services:
     volumes:
       - ./backend/src:/usr/src/app/src
       - ./backend/prisma:/usr/src/app/prisma
+      - ./backend/test:/usr/src/app/test
 
   sonar_db:
     image: postgres:15-alpine
