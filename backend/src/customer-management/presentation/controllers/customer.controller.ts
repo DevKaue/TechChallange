@@ -33,7 +33,7 @@ import UpdateCustomerInputDTO from '@customer-management/application/dtos/update
 import ArchiveCustomerInputDTO from '@/customer-management/application/dtos/archive-customer-input.dto';
 import CreateCustomerUseCase from '@customer-management/application/usecases/create-customer.usecase';
 import FindCustomerByIdUseCase from '@/customer-management/application/usecases/find-customer-by-id.usecase';
-import ListCustomersUseCase from '@customer-management/application/usecases/list-customers.usecase';
+import ListCustomerUseCase from '@/customer-management/application/usecases/list-customer.usecase';
 import UpdateCustomerUseCase from '@customer-management/application/usecases/update-customer.usecase';
 import ArchiveCustomerUseCase from '@/customer-management/application/usecases/archive-customer.usecase';
 
@@ -68,7 +68,7 @@ export class CustomerController {
   constructor(
     private readonly createCustomerUseCase: CreateCustomerUseCase,
     private readonly findCustomerByIdUseCase: FindCustomerByIdUseCase,
-    private readonly listCustomersUseCase: ListCustomersUseCase,
+    private readonly listCustomersUseCase: ListCustomerUseCase,
     private readonly updateCustomerUseCase: UpdateCustomerUseCase,
     private readonly archiveCustomerUseCase: ArchiveCustomerUseCase,
   ) {}
@@ -76,8 +76,8 @@ export class CustomerController {
   @Get()
   @ApiOkResponse({ description: 'Lista de clientes' })
   async list(): Promise<CustomerResponse[]> {
-    const customers = await this.listCustomersUseCase.execute();
-    return JsonCustomerPresenter.presentMany(customers);
+    const output = await this.listCustomersUseCase.execute();
+    return JsonCustomerPresenter.presentMany(output.customers);
   }
 
   @Post()
@@ -137,10 +137,10 @@ export class CustomerController {
     @Param('id') id: string,
     @BodyCamelCase() input: UpdateCustomerInputDTO,
   ): Promise<CustomerResponse> {
-    const customer = await this.updateCustomerUseCase.execute(
+    const output = await this.updateCustomerUseCase.execute(
       new UpdateCustomerInputDTO({ ...input, id }),
     );
-    return JsonCustomerPresenter.present(customer);
+    return JsonCustomerPresenter.present(output.customer);
   }
 
   @Delete(':id')

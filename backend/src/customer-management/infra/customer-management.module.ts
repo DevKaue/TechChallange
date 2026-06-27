@@ -17,9 +17,9 @@ import PrismaVehicleRepository from '@customer-management/infra/repositories/pri
 import CustomerQueryServiceInterface from '@customer-management/application/contracts/customer-query-service.interface';
 import VehicleQueryServiceInterface from '@customer-management/application/contracts/vehicle-query-service.interface';
 import FindCustomerByIdUseCase from '@customer-management/application/usecases/find-customer-by-id.usecase';
-import ListCustomersUseCase from '@customer-management/application/usecases/list-customers.usecase';
+import ListCustomerUseCase from '@/customer-management/application/usecases/list-customer.usecase';
 import UpdateCustomerUseCase from '@customer-management/application/usecases/update-customer.usecase';
-import ListVehiclesUseCase from '@customer-management/application/usecases/list-vehicles.usecase';
+import ListVehicleUseCase from '@/customer-management/application/usecases/list-vehicle.usecase';
 import UpdateVehicleUseCase from '@customer-management/application/usecases/update-vehicle.usecase';
 import PrismaCustomerQueryService from '@customer-management/infra/services/prisma-customer-query.service';
 import PrismaVehicleQueryService from '@customer-management/infra/services/prisma-vehicle-query.service';
@@ -135,9 +135,9 @@ import { VehicleRepositoryAcl } from '@customer-management/infra/acls/vehicle-re
     },
 
     {
-      provide: ListCustomersUseCase,
+      provide: ListCustomerUseCase,
       useFactory: (queryService: CustomerQueryServiceInterface) => {
-        return new ListCustomersUseCase(queryService);
+        return new ListCustomerUseCase(queryService);
       },
       inject: [CustomerQueryServiceInterface],
     },
@@ -164,9 +164,9 @@ import { VehicleRepositoryAcl } from '@customer-management/infra/acls/vehicle-re
     },
 
     {
-      provide: ListVehiclesUseCase,
+      provide: ListVehicleUseCase,
       useFactory: (queryService: VehicleQueryServiceInterface) => {
-        return new ListVehiclesUseCase(queryService);
+        return new ListVehicleUseCase(queryService);
       },
       inject: [VehicleQueryServiceInterface],
     },

@@ -21,4 +21,8 @@ export default class CreateCustomerInputDTO {
   @IsEmail()
   @IsNotEmpty()
   email!: string;
+
+  constructor(props?: Partial<CreateCustomerInputDTO>) {
+    Object.assign(this, props);
+  }
 }

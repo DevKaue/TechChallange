@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
+import { IsString, IsNotEmpty, IsNumber } from 'class-validator';
 
 export default class CreateVehicleInputDTO {
   @IsString()
@@ -16,7 +16,11 @@ export default class CreateVehicleInputDTO {
   @IsNumber()
   year!: number;
 
-  @IsOptional()
   @IsString()
-  customerId?: string;
+  @IsNotEmpty()
+  customerId!: string;
+
+  constructor(props?: Partial<CreateVehicleInputDTO>) {
+    Object.assign(this, props);
+  }
 }
