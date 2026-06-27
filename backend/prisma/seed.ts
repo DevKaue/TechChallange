@@ -145,21 +145,21 @@ const customers = [
 
 const vehicles = [
   {
-    plate: 'ABC-1A23',
+    plate: 'ABC1A23',
     brand: 'Toyota',
     model: 'Corolla',
     year: 2022,
     customerIndex: 1,
   },
   {
-    plate: 'DEF-2B34',
+    plate: 'DEF2B34',
     brand: 'Honda',
     model: 'Civic',
     year: 2021,
     customerIndex: 0,
   },
   {
-    plate: 'GHI-3C45',
+    plate: 'GHII3C45',
     brand: 'Volkswagen',
     model: 'T-Cross',
     year: 2023,

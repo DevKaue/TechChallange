@@ -9,8 +9,6 @@ import ArchiveVehicleUseCase from '@/customer-management/application/usecases/ar
 import ArchiveCustomerUseCase from '@/customer-management/application/usecases/archive-customer.usecase';
 import CustomerManagementFacade from '@customer-management/infra/integrations/customer-management.facade';
 import CustomerManagementInterface from '@/common/contracts/customer-management.interface';
-import { CUSTOMER_REPOSITORY } from '@service-orders/domain/acls/customer-repository.interface';
-import { VEHICLE_REPOSITORY } from '@service-orders/domain/acls/vehicle-repository.interface';
 
 import CustomerRepositoryInterface from '@customer-management/domain/contracts/customer-repository.interface';
 import VehicleRepositoryInterface from '@customer-management/domain/contracts/vehicle-repository.interface';
@@ -49,11 +47,8 @@ import VehicleRegistrationChecker from '../domain/services/vehicle-registration-
 
     {
       provide: CreateCustomerUseCase,
-      useFactory: (
-        repository: CustomerRepositoryInterface,
-        registrationChecker: CustomerRegistrationChecker,
-      ) => {
-        return new CreateCustomerUseCase(repository, registrationChecker);
+      useFactory: (repository: CustomerRepositoryInterface, registrationChecker: CustomerRegistrationChecker) => {
+        return new CreateCustomerUseCase(repository, registrationChecker); 
       },
       inject: [CustomerRepositoryInterface, CustomerRegistrationChecker],
     },
@@ -65,17 +60,9 @@ import VehicleRegistrationChecker from '../domain/services/vehicle-registration-
         vehicleRepository: VehicleRepositoryInterface,
         unitOfWork: UnitOfWorkServiceInterface,
       ) => {
-        return new ArchiveCustomerUseCase(
-          customerRepository,
-          vehicleRepository,
-          unitOfWork,
-        );
+        return new ArchiveCustomerUseCase(customerRepository, vehicleRepository, unitOfWork);
       },
-      inject: [
-        CustomerRepositoryInterface,
-        VehicleRepositoryInterface,
-        UnitOfWorkServiceInterface,
-      ],
+      inject: [CustomerRepositoryInterface, VehicleRepositoryInterface, UnitOfWorkServiceInterface],
     },
 
     {
@@ -86,34 +73,30 @@ import VehicleRegistrationChecker from '../domain/services/vehicle-registration-
     {
       provide: CreateVehicleUseCase,
       useFactory: (
-        vehicleRepository: VehicleRepositoryInterface,
+        vehicleRepository: VehicleRepositoryInterface, 
         customerRepository: CustomerRepositoryInterface,
-        registrationChecker: VehicleRegistrationChecker,
+        registrationChecker: VehicleRegistrationChecker
       ) => {
-        return new CreateVehicleUseCase(
-          vehicleRepository,
-          customerRepository,
-          registrationChecker,
-        );
+        return new CreateVehicleUseCase(vehicleRepository, customerRepository, registrationChecker);
       },
-      inject: [
-        VehicleRepositoryInterface,
-        CustomerRepositoryInterface,
-        VehicleRegistrationChecker,
-      ],
+      inject: [VehicleRepositoryInterface, CustomerRepositoryInterface, VehicleRegistrationChecker],
     },
 
     {
       provide: ArchiveVehicleUseCase,
-      useFactory: (vehicleRepository: VehicleRepositoryInterface) => {
+      useFactory: (
+        vehicleRepository: VehicleRepositoryInterface
+      ) => {
         return new ArchiveVehicleUseCase(vehicleRepository);
       },
-      inject: [VehicleRepositoryInterface],
+      inject: [
+        VehicleRepositoryInterface, 
+      ]
     },
 
     {
       provide: CustomerQueryServiceInterface,
-      useClass: PrismaCustomerQueryService,
+      useClass: PrismaCustomerQueryService, 
     },
 
     {
@@ -163,70 +146,42 @@ import VehicleRegistrationChecker from '../domain/services/vehicle-registration-
 
     {
       provide: UpdateVehicleUseCase,
+      useFactory: (vehicleRepository: VehicleRepositoryInterface, registrationChecker: VehicleRegistrationChecker) => {
+        return new UpdateVehicleUseCase(vehicleRepository, registrationChecker);
+      },
+      inject: [VehicleRepositoryInterface, VehicleRegistrationChecker],
+    },
+
+    {
+      provide: VehicleRegistrationChecker,
       useFactory: (vehicleRepository: VehicleRepositoryInterface) => {
-        return new UpdateVehicleUseCase(vehicleRepository);
+        return new VehicleRegistrationChecker(vehicleRepository);
       },
       inject: [VehicleRepositoryInterface],
+    },
+
+    {
+      provide: CustomerRegistrationChecker,
+      useFactory: (customerRepository: CustomerRepositoryInterface) => {
+        return new CustomerRegistrationChecker(customerRepository);
+      },
+      inject: [CustomerRepositoryInterface],
     },
 
     {
       provide: CustomerManagementInterface,
       useFactory: (
         findCustomerByIdUseCase: FindCustomerByIdUseCase,
-        findVehicleByIdUseCase: FindVehicleByIdUseCase,
+        findVehicleByIdUseCase: FindVehicleByIdUseCase
       ) => {
         return new CustomerManagementFacade(
           findCustomerByIdUseCase,
-          findVehicleByIdUseCase,
+          findVehicleByIdUseCase
         );
       },
       inject: [FindCustomerByIdUseCase, FindVehicleByIdUseCase],
     },
-
-    // ACL adapters expostos para outros bounded contexts (service-orders).
-    {
-      provide: CUSTOMER_REPOSITORY,
-      useFactory: (repository: CustomerRepositoryInterface) => ({
-        findById: async (id: string) => {
-          const customer = await repository.findById(id);
-          return customer
-            ? {
-                id: customer.id,
-                document: customer.document.value,
-                name: customer.name,
-                email: customer.email?.value ?? null,
-                phone: customer.phone ?? null,
-              }
-            : null;
-        },
-      }),
-      inject: [CustomerRepositoryInterface],
-    },
-
-    {
-      provide: VEHICLE_REPOSITORY,
-      useFactory: (repository: VehicleRepositoryInterface) => ({
-        findById: async (id: string) => {
-          const vehicle = await repository.findById(id);
-          return vehicle
-            ? {
-                id: vehicle.id,
-                plate: vehicle.licensePlate.value,
-                brand: vehicle.brand,
-                model: vehicle.model,
-                year: vehicle.year.value,
-                customerId: vehicle.customerId,
-              }
-            : null;
-        },
-      }),
-      inject: [VehicleRepositoryInterface],
-    },
   ],
-  exports: [
-    CustomerManagementInterface,
-    CUSTOMER_REPOSITORY,
-    VEHICLE_REPOSITORY,
-  ],
+  exports: [CustomerManagementInterface],
 })
 export class CustomerManagementModule {}

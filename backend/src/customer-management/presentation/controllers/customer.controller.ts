@@ -53,6 +53,7 @@ import { FindCustomerByIdSwaggerResponse } from '@/customer-management/presentat
 import { HttpErrorSwaggerResponse } from '@customer-management/presentation/swaggers/http-error.swagger';
 
 import { BodyCamelCase } from '@/common/decorators/body-camel-case.decorator';
+import { UpdateCustomerSwaggerBody, UpdateCustomerSwaggerResponse } from '../swaggers/update-customer.swagger';
 
 @ApiTags('Customers')
 @ApiBearerAuth()
@@ -116,7 +117,8 @@ export class CustomerController {
 
   @Patch(':id')
   @ApiParam({ name: 'id', description: 'ID do cliente', type: String })
-  @ApiOkResponse({ description: 'Cliente atualizado com sucesso' })
+  @ApiBody({ type: UpdateCustomerSwaggerBody })
+  @ApiOkResponse({ description: 'Cliente atualizado com sucesso', type: UpdateCustomerSwaggerResponse })
   @ApiBadRequestResponse({
     description: 'Dados de entrada inválidos',
     type: HttpErrorSwaggerResponse,
