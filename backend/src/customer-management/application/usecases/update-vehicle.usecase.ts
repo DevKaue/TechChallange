@@ -8,7 +8,7 @@ import VehicleRegistrationChecker from '@/customer-management/domain/services/ve
 export default class UpdateVehicleUseCase {
   constructor(
     private readonly vehicleRepository: VehicleRepositoryInterface,
-    private readonly registrationChecker: VehicleRegistrationChecker
+    private readonly registrationChecker: VehicleRegistrationChecker,
   ) {}
 
   async execute(input: UpdateVehicleInputDTO): Promise<VehicleDTO> {

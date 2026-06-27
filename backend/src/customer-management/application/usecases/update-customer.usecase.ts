@@ -11,16 +11,18 @@ export default class UpdateCustomerUseCase {
   async execute(input: UpdateCustomerInputDTO): Promise<CustomerDTO> {
     const customer = await this.customerRepository.getById(input.id);
 
-    if (input.name != null){
+    if (input.name != null) {
       customer.changeName(input.name);
     }
 
-    if (input.phone !== undefined){
+    if (input.phone !== undefined) {
       customer.changePhone(input.phone ?? undefined);
     }
 
-    if (input.email !== undefined){
-      customer.changeEmail(input.email !== null ? new Email(input.email) : undefined);
+    if (input.email !== undefined) {
+      customer.changeEmail(
+        input.email !== null ? new Email(input.email) : undefined,
+      );
     }
 
     await this.customerRepository.update(customer);

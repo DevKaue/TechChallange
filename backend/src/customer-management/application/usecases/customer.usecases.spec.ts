@@ -95,7 +95,7 @@ describe('ListCustomersUseCase', () => {
 describe('UpdateCustomerUseCase', () => {
   it('updates an existing customer', async () => {
     const repo = buildRepository();
-    repo.findById.mockResolvedValue(buildCustomer());
+    repo.getById.mockResolvedValue(buildCustomer());
     const useCase = new UpdateCustomerUseCase(repo);
 
     const dto = await useCase.execute({
@@ -111,7 +111,7 @@ describe('UpdateCustomerUseCase', () => {
 
   it('throws when customer not found', async () => {
     const repo = buildRepository();
-    repo.findById.mockResolvedValue(null);
+    repo.getById.mockRejectedValue(new CustomerNotFoundException());
     const useCase = new UpdateCustomerUseCase(repo);
 
     await expect(

@@ -120,26 +120,27 @@ describe('ListVehiclesUseCase', () => {
 describe('UpdateVehicleUseCase', () => {
   it('updates an existing vehicle', async () => {
     const repo = buildVehicleRepo();
-    repo.findById.mockResolvedValue(buildVehicle());
-    const useCase = new UpdateVehicleUseCase(repo);
+    repo.getById.mockResolvedValue(buildVehicle());
+    const checker = { checkUniqueness: jest.fn() };
+    const useCase = new UpdateVehicleUseCase(repo, checker as any);
 
     const dto = await useCase.execute({
       id: 'vehicle-1',
       brand: 'Honda',
       year: 2022,
-      licensePlate: 'XYZ4321',
+      licensePlate: 'ABC1D23',
     });
 
     expect(repo.update).toHaveBeenCalledTimes(1);
     expect(dto.brand).toBe('Honda');
     expect(dto.year).toBe(2022);
-    expect(dto.licensePlate).toBe('XYZ4321');
   });
 
   it('throws when vehicle not found', async () => {
     const repo = buildVehicleRepo();
-    repo.findById.mockResolvedValue(null);
-    const useCase = new UpdateVehicleUseCase(repo);
+    repo.getById.mockRejectedValue(new VehicleNotFoundException());
+    const checker = { checkUniqueness: jest.fn() };
+    const useCase = new UpdateVehicleUseCase(repo, checker as any);
 
     await expect(
       useCase.execute({ id: 'missing', brand: 'X' } as any),

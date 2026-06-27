@@ -4,7 +4,10 @@ import { VehicleResponseData } from '@customer-management/presentation/swaggers/
 export class UpdateVehicleSwaggerResponse extends VehicleResponseData {}
 
 export class UpdateVehicleSwaggerBody {
-  @ApiProperty({ example: 'XYZ6789', description: 'Placa do veículo no formato brasileiro' })
+  @ApiProperty({
+    example: 'XYZ6789',
+    description: 'Placa do veículo no formato brasileiro',
+  })
   license_plate?: string;
 
   @ApiProperty({ example: 'Chevrolet', description: 'Marca do veículo' })
