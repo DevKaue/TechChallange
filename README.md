@@ -67,98 +67,23 @@ RECEIVED -> IN_DIAGNOSTICS -> WAITING_APPROVAL -> IN_PROGRESS -> FINISHED -> DEL
 └── sonar-project.properties    # configuração do scan SonarQube
 ```
 
-## Como rodar localmente
+## Como rodar com Docker (API + Banco)
 
 Pré-requisitos:
 
-- Node.js 22+
-- npm
-- Docker e Docker Compose
+- Docker
 
-### 1. Suba o PostgreSQL
+### 1. Inicialização Básica
 
-```bash
-docker compose up -d db
-```
-
-> O banco fica na porta **5433** para evitar conflito com outras instâncias PostgreSQL locais.
-
-> O Docker Compose já cria o banco `oficinadb` automaticamente (variável `POSTGRES_DB` no `docker-compose.yml`).
-
-**Se estiver usando uma instalação local do PostgreSQL (sem Docker):**
-
-Crie o banco manualmente antes de prosseguir:
-
-```bash
-psql -U postgres -c "CREATE DATABASE oficinadb;"
-```
-
-E ajuste a `DATABASE_URL` no `.env` para apontar para sua instância local.
-
-### 2. Prepare o backend
-
-```bash
-cd backend
-cp .env.example .env
-npm install
-npm run prisma:generate
-```
-
-### 3. Crie as tabelas (migrations)
-
-O DDL (`CREATE TABLE`, `ALTER TABLE`, etc.) está versionado nas migrations do Prisma em `prisma/migrations/`. Para aplicá-las ao banco:
-
-```bash
-# Se for a primeira vez ou quiser recriar (gera migrations do schema):
-npm run prisma:migrate:dev
-
-# Para aplicar as migrations já existentes (recomendado em time):
-npm run prisma:migrate:deploy
-```
-
-O schema completo da base está em `prisma/schema.prisma`. Qualquer alteração no schema gera uma nova migration com `prisma:migrate:dev`. Sempre comite o arquivo da migration gerado.
-
-### 4. Popule o banco com dados iniciais (seeders)
-
-```bash
-npm run prisma:seed
-```
-
-Os seeders criam:
-- **3 usuários internos** (2 mecânicos, 1 atendente) com senha local padrão `Tech@123`
-- **6 serviços** no catálogo (ex.: revisão básica, troca de óleo, alinhamento)
-- **6 peças** em estoque (ex.: filtro de óleo, pastilha de freio)
-- **3 clientes** (pessoa física e jurídica)
-- **3 veículos** vinculados aos clientes
-
-### 5. Inicie a API
-
-```bash
-npm run start:dev
-```
-
-A API fica em `http://localhost:3000`.
-
-Swagger:
-
-```text
-http://localhost:3000/api/docs
-```
-
-## Docker (API + banco completos)
-
-Para subir tudo com Docker Compose (já inclui migrations e seed):
+Para subir a aplicação completa (API e Banco de Dados) já executando as migrations e os dados iniciais (*seed*), rode o comando abaixo na raiz do projeto:
 
 ```bash
 docker compose up --build
 ```
 
-Se quiser aplicar migrations e seed manualmente dentro do container:
+### 2. Documentação API
 
-```bash
-docker compose exec api npm run prisma:migrate:deploy
-docker compose exec api npm run prisma:seed
-```
+http://localhost:3000/api/docs
 
 ## Autenticação
 
@@ -203,11 +128,14 @@ GET /service-orders/:id
 
 ## Testes e qualidade
 
+### Entre no container 
 ```bash
-cd backend
-npm test
+docker compose exec -it api sh
+npm run test
+npm run test:integration
+npm run test:e2e
 npm run test:cov
-npm run build
+
 ```
 
 Para subir o SonarQube local:
@@ -219,10 +147,10 @@ docker compose --profile quality up -d sonarqube
 Depois acesse `http://localhost:9000`, gere um token e rode o scanner apontando para este repositório. Antes do scan, gere cobertura:
 
 ```bash
-cd backend
-npm run test:cov
-cd ..
+docker compose exec api npm run test:cov
 ```
+
+- Depois abra o arquivo `backend/coverage/lcov-report/index.html` no seu navegador
 
 Exemplo usando o scanner via Docker no Linux:
 

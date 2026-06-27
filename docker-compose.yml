@@ -39,6 +39,10 @@ services:
       - ./backend/src:/usr/src/app/src
       - ./backend/prisma:/usr/src/app/prisma
       - ./backend/test:/usr/src/app/test
+      - ./backend/coverage:/usr/src/app/coverage
+      - ./backend/package.json:/usr/src/app/package.json
+      - ./backend/package-lock.json:/usr/src/app/package-lock.json
+      - /usr/src/app/node_modules
 
   sonar_db:
     image: postgres:15-alpine
