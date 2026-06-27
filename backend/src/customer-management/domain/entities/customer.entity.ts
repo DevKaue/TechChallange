@@ -67,21 +67,23 @@ export default class Customer {
         return this._deletedAt;
     }
 
+    // Methods
     public isArchived(): boolean {
         return this._deletedAt !== undefined;
     }
 
-    // Methods
-    public update(props: { name?: string; phone?: string; email?: Email }): void {
-        if (props.name !== undefined) {
-            this._name = props.name;
-        }
-        if (props.phone !== undefined) {
-            this._phone = props.phone;
-        }
-        if (props.email !== undefined) {
-            this._email = props.email;
-        }
+    public changeName(newName: string): void {
+        this._name = newName;
+        this._updatedAt = new Date();
+    }
+
+    public changePhone(newPhone: string | undefined): void {
+        this._phone = newPhone;
+        this._updatedAt = new Date();
+    }
+
+    public changeEmail(newEmail: Email | undefined): void {
+        this._email = newEmail;
         this._updatedAt = new Date();
     }
 

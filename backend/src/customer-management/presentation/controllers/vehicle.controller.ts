@@ -16,6 +16,7 @@ import ArchiveVehicleInputDTO from '@/customer-management/application/dtos/archi
 import { JsonVehiclePresenter, VehicleResponse } from '@customer-management/presentation/presenters/json-vehicle.presenter';
 import { BodyCamelCase } from '@/common/decorators/body-camel-case.decorator';
 import { CreateVehicleSwaggerBody, CreateVehicleSwaggerResponse, CreateVehicleSwaggerConflictResponse } from '@customer-management/presentation/swaggers/create-vehicle.swagger';
+import { UpdateVehicleSwaggerBody, UpdateVehicleSwaggerResponse, UpdateVehicleSwaggerConflictResponse } from '@customer-management/presentation/swaggers/update-vehicle.swagger';
 import { FindVehicleByIdSwaggerResponse } from '@customer-management/presentation/swaggers/find-vehicle-by-id.swagger';
 import { VehicleNotFoundSwaggerResponse } from '@customer-management/presentation/swaggers/vehicle.swagger';
 import { CustomerNotFoundSwaggerResponse } from '@/customer-management/presentation/swaggers/customer.swagger';
@@ -93,11 +94,19 @@ export class VehicleController {
   }
 
   @Patch('vehicles/:id')
+  @ApiBody({ type: UpdateVehicleSwaggerBody })
   @ApiParam({ name: 'id', description: 'ID do veículo', type: String })
-  @ApiOkResponse({ description: 'Veículo atualizado com sucesso' })
+  @ApiOkResponse({
+    description: 'Veículo atualizado com sucesso',
+    type: UpdateVehicleSwaggerResponse,
+  })
   @ApiBadRequestResponse({
     description: 'Dados de entrada inválidos',
     type: HttpErrorSwaggerResponse,
+  })
+  @ApiConflictResponse({
+    description: 'Placa já cadastrada no sistema',
+    type: UpdateVehicleSwaggerConflictResponse,
   })
   @ApiNotFoundResponse({
     description: 'Veículo não encontrado',

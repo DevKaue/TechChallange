@@ -2,7 +2,6 @@ import CustomerRepositoryInterface from '@customer-management/domain/contracts/c
 import Email from '@customer-management/domain/value-objects/email.vo';
 import UpdateCustomerInputDTO from '@customer-management/application/dtos/update-customer-input.dto';
 import CustomerDTO from '@customer-management/application/dtos/customer.dto';
-import CustomerNotFoundException from '@customer-management/domain/exceptions/customer-not-found.exception';
 
 export default class UpdateCustomerUseCase {
   constructor(
@@ -10,17 +9,19 @@ export default class UpdateCustomerUseCase {
   ) {}
 
   async execute(input: UpdateCustomerInputDTO): Promise<CustomerDTO> {
-    const customer = await this.customerRepository.findById(input.id);
+    const customer = await this.customerRepository.getById(input.id);
 
-    if (!customer) {
-      throw new CustomerNotFoundException();
+    if (input.name != null){
+      customer.changeName(input.name);
     }
 
-    customer.update({
-      name: input.name,
-      phone: input.phone,
-      email: input.email !== undefined ? new Email(input.email) : undefined,
-    });
+    if (input.phone !== undefined){
+      customer.changePhone(input.phone ?? undefined);
+    }
+
+    if (input.email !== undefined){
+      customer.changeEmail(input.email !== null ? new Email(input.email) : undefined);
+    }
 
     await this.customerRepository.update(customer);
 

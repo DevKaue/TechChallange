@@ -5,10 +5,10 @@ export interface CustomerResponse {
     document_type: string;
     document_number: string;
     name: string;
-    email?: string;
-    phone?: string;
+    email?: string | null;
+    phone?: string | null;
     created_at: Date | string;
-    updated_at?: Date | string;
+    updated_at?: Date | string | null;
 }
 
 export class JsonCustomerPresenter {
@@ -18,10 +18,10 @@ export class JsonCustomerPresenter {
             document_type: customer.documentType,
             document_number: customer.documentNumber,
             name: customer.name,
-            email: customer.email,
-            phone: customer.phone,
+            email: customer.email ?? null,
+            phone: customer.phone  ?? null,
             created_at: customer.createdAt,
-            updated_at: customer.updatedAt,
+            updated_at: customer.updatedAt ?? null,
         };
     }
 

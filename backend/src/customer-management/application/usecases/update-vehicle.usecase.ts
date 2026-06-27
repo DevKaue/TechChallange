@@ -3,29 +3,31 @@ import Year from '@customer-management/domain/value-objects/year.vo';
 import LicensePlate from '@customer-management/domain/value-objects/license-plate.vo';
 import UpdateVehicleInputDTO from '@customer-management/application/dtos/update-vehicle-input.dto';
 import VehicleDTO from '@customer-management/application/dtos/vehicle.dto';
-import VehicleNotFoundException from '@customer-management/domain/exceptions/vehicle-not-found.exception';
+import VehicleRegistrationChecker from '@/customer-management/domain/services/vehicle-registration-checker.service';
 
 export default class UpdateVehicleUseCase {
   constructor(
     private readonly vehicleRepository: VehicleRepositoryInterface,
+    private readonly registrationChecker: VehicleRegistrationChecker
   ) {}
 
   async execute(input: UpdateVehicleInputDTO): Promise<VehicleDTO> {
-    const vehicle = await this.vehicleRepository.findById(input.id);
+    const vehicle = await this.vehicleRepository.getById(input.id);
 
-    if (!vehicle) {
-      throw new VehicleNotFoundException();
+    if (input.licensePlate != null) {
+      const newLicensePlate = new LicensePlate(input.licensePlate);
+      if (!vehicle.licensePlate.equals(newLicensePlate)) {
+        await this.registrationChecker.checkUniqueness(newLicensePlate);
+        vehicle.changeLicensePlate(newLicensePlate);
+      }
     }
 
-    vehicle.update({
-      brand: input.brand,
-      model: input.model,
-      year: input.year !== undefined ? new Year(input.year) : undefined,
-      licensePlate:
-        input.licensePlate !== undefined
-          ? new LicensePlate(input.licensePlate)
-          : undefined,
-    });
+    if (input.brand !== undefined) vehicle.changeBrand(input.brand);
+    if (input.model !== undefined) vehicle.changeModel(input.model);
+
+    if (input.year != null) {
+      vehicle.changeYear(new Year(input.year));
+    }
 
     await this.vehicleRepository.update(vehicle);
 
