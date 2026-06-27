@@ -26,7 +26,7 @@ export class MetricsUseCase {
       totalDurationMs / finishedOrders.length / (1000 * 60);
 
     return {
-      averageExecutionTimeMinutes: parseFloat(
+      averageExecutionTimeMinutes: Number.parseFloat(
         averageDurationMinutes.toFixed(2),
       ),
       totalOrdersAnalyzed: finishedOrders.length,

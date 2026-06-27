@@ -10,7 +10,7 @@ import { MockJwtAuthGuard } from './guards/mock-jwt.guard';
 export class E2eTestHelper {
   /**
    * Creates a testing module with mock authentication guard
-   * 
+   *
    * Usage:
    * ```
    * const { app, module } = await E2eTestHelper.createTestingModule(
@@ -21,14 +21,18 @@ export class E2eTestHelper {
    *   ],
    * );
    * ```
-   * 
+   *
    * @param moduleClass - The main application module to import
    * @param overrideProviders - Array of providers to override [provide, useClass/useValue]
    * @returns Object containing the app instance and testing module
    */
   static async createTestingModule(
     moduleClass: any,
-    overrideProviders: Array<{ provide: any; useClass?: any; useValue?: any }> = [],
+    overrideProviders: Array<{
+      provide: any;
+      useClass?: any;
+      useValue?: any;
+    }> = [],
   ): Promise<{
     app: INestApplication;
     module: TestingModule;
@@ -66,7 +70,7 @@ export class E2eTestHelper {
 
   /**
    * Cleans up after tests (closes app and module)
-   * 
+   *
    * Usage:
    * ```
    * afterAll(async () => {
@@ -82,4 +86,3 @@ export class E2eTestHelper {
     await module.close();
   }
 }
-

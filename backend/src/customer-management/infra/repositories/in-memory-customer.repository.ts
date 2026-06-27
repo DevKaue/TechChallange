@@ -7,7 +7,7 @@ export default class InMemoryCustomerRepository implements CustomerRepositoryInt
   private customers: Customer[] = [];
 
   async getById(id: string): Promise<Customer> {
-    const customer = this.customers.find(c => c.id === id && !c.deletedAt);
+    const customer = this.customers.find((c) => c.id === id && !c.deletedAt);
 
     if (!customer) {
       throw new CustomerNotFoundException();
@@ -17,7 +17,7 @@ export default class InMemoryCustomerRepository implements CustomerRepositoryInt
   }
 
   async findById(id: string): Promise<Customer | null> {
-    const customer = this.customers.find(c => c.id === id && !c.deletedAt);
+    const customer = this.customers.find((c) => c.id === id && !c.deletedAt);
 
     if (!customer) {
       return null;
@@ -30,7 +30,12 @@ export default class InMemoryCustomerRepository implements CustomerRepositoryInt
     document: Document,
     options?: { includeDeleted?: boolean },
   ): Promise<Customer | null> {
-    const customer = this.customers.find(c => c.document.value === document.value && c.document.type === document.type && (options?.includeDeleted || !c.deletedAt));
+    const customer = this.customers.find(
+      (c) =>
+        c.document.value === document.value &&
+        c.document.type === document.type &&
+        (options?.includeDeleted || !c.deletedAt),
+    );
 
     if (!customer) {
       return null;
@@ -44,14 +49,15 @@ export default class InMemoryCustomerRepository implements CustomerRepositoryInt
   }
 
   async update(customer: Customer): Promise<void> {
-    const index = this.customers.findIndex(c => c.id === customer.id);
-    if (index !== -1) {
-      this.customers[index] = customer;
-    }
+    this.replace(customer);
   }
 
   async archive(customer: Customer): Promise<void> {
-    const index = this.customers.findIndex(c => c.id === customer.id);
+    this.replace(customer);
+  }
+
+  private replace(customer: Customer): void {
+    const index = this.customers.findIndex((c) => c.id === customer.id);
     if (index !== -1) {
       this.customers[index] = customer;
     }
