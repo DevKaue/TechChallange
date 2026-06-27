@@ -18,7 +18,7 @@ export class CreateVehicleUseCase {
 
   async execute(input: CreateVehicleInputDTO): Promise<CreateVehicleOutputDTO> {
     const existingCustomer = await this.customerRepository.getById(
-      input.customerId!,
+      input.customerId,
     );
 
     const vehicle = VehicleFactory.create({

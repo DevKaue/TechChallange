@@ -201,21 +201,21 @@ describe('IsValidDocumentConstraint', () => {
   describe('defaultMessage', () => {
     it('returns CPF message for CPF', () => {
       const msg = constraint.defaultMessage(
-        makeArgs({ documentType: 'CPF', document: 'x' }) as any,
+        makeArgs({ documentType: 'CPF', document: 'x' }),
       );
       expect(msg).toBe('Document must be a valid Brazilian CPF');
     });
 
     it('returns CNPJ message for CNPJ', () => {
       const msg = constraint.defaultMessage(
-        makeArgs({ documentType: 'CNPJ', document: 'x' }) as any,
+        makeArgs({ documentType: 'CNPJ', document: 'x' }),
       );
       expect(msg).toBe('Document must be a valid Brazilian CNPJ');
     });
 
     it('returns generic message for unknown type', () => {
       const msg = constraint.defaultMessage(
-        makeArgs({ documentType: 'XYZ', document: 'x' }) as any,
+        makeArgs({ documentType: 'XYZ', document: 'x' }),
       );
       expect(msg).toBe('Document must not be empty');
     });

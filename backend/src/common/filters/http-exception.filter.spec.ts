@@ -74,7 +74,7 @@ describe('HttpExceptionFilter', () => {
   });
 
   it('handles non-Error exception as 500', () => {
-    filter.catch('string error' as any, mockHost);
+    filter.catch('string error', mockHost);
 
     expect(mockResponse.status).toHaveBeenCalledWith(500);
   });
