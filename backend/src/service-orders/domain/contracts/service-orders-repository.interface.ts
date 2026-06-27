@@ -1,21 +1,23 @@
-// Apenas tipos (apagados na compilação): o domínio não tem dependência de
-// runtime de @prisma/client. As shapes abaixo descrevem o formato de
-// persistência retornado pelos repositórios.
-import type {
-  ServiceOrder,
-  Estimate,
-  EstimateItem,
-  ServiceOrderStatusHistory,
-} from '@prisma/client';
 import { EstimateStatus } from '@service-orders/domain/enums/estimate-status.enum';
 import { ServiceOrderStatus } from '@service-orders/domain/enums/service-order-status.enum';
 import { ServiceOrderItemType } from '@service-orders/domain/enums/service-order-item-type.enum';
+import { PersistedEstimate } from '@service-orders/domain/persistence/estimate.persistence';
+import { PersistedServiceOrder } from '@service-orders/domain/persistence/service-order.persistence';
+import { PersistedEstimateItem } from '@service-orders/domain/persistence/estimate-item.persistence';
+import { PersistedStatusHistory } from '@service-orders/domain/persistence/status-history.persistence';
 
-type EstimateWithItems = Estimate & {
-  items: EstimateItem[];
+export type {
+  PersistedServiceOrder,
+  PersistedEstimate,
+  PersistedEstimateItem,
+  PersistedStatusHistory,
 };
 
-type ServiceOrderWithRelations = ServiceOrder & {
+type EstimateWithItems = PersistedEstimate & {
+  items: PersistedEstimateItem[];
+};
+
+export type ServiceOrderWithRelations = PersistedServiceOrder & {
   customer: {
     id: string;
     document: string;
@@ -39,9 +41,8 @@ type ServiceOrderWithRelations = ServiceOrder & {
     name: string;
     role: string;
   } | null;
-  closedAt: Date | null;
   estimates: EstimateWithItems[];
-  statusHistory: ServiceOrderStatusHistory[];
+  statusHistory: PersistedStatusHistory[];
 };
 
 export type ServiceOrderUpdateData = {
@@ -55,16 +56,16 @@ export abstract class ServiceOrdersRepositoryInterface {
     customerId: string;
     vehicleId: string;
     status: ServiceOrderStatus;
-  }): Promise<ServiceOrder>;
+  }): Promise<PersistedServiceOrder>;
 
-  abstract findAll(): Promise<ServiceOrder[]>;
+  abstract findAll(): Promise<PersistedServiceOrder[]>;
 
   abstract findById(id: string): Promise<ServiceOrderWithRelations | null>;
 
   abstract update(
     id: string,
     data: ServiceOrderUpdateData,
-  ): Promise<ServiceOrder>;
+  ): Promise<PersistedServiceOrder>;
 
   abstract createStatusHistory(data: {
     serviceOrderId: string;
@@ -72,13 +73,13 @@ export abstract class ServiceOrdersRepositoryInterface {
     newStatus: ServiceOrderStatus;
     changedBy?: string;
     notes?: string;
-  }): Promise<ServiceOrderStatusHistory>;
+  }): Promise<PersistedStatusHistory>;
 
   abstract createEstimate(data: {
     serviceOrderId: string;
     status: EstimateStatus;
     totalAmount: number;
-  }): Promise<Estimate>;
+  }): Promise<PersistedEstimate>;
 
   abstract addEstimateItem(data: {
     estimateId: string;
@@ -88,19 +89,19 @@ export abstract class ServiceOrdersRepositoryInterface {
     quantity: number;
     unitPrice: number;
     totalPrice: number;
-  }): Promise<EstimateItem>;
+  }): Promise<PersistedEstimateItem>;
 
   abstract updateEstimateStatus(
     id: string,
     status: EstimateStatus,
     approvedAt?: Date,
-  ): Promise<Estimate>;
+  ): Promise<PersistedEstimate>;
 
   /**
    * Recalcula o totalAmount do orçamento somando o totalPrice de todos os
    * seus itens e persiste o valor agregado.
    */
-  abstract recalcEstimateTotal(estimateId: string): Promise<Estimate>;
+  abstract recalcEstimateTotal(estimateId: string): Promise<PersistedEstimate>;
 
   abstract findExecutionTimes(): Promise<
     Array<{ startTime: Date; endTime: Date }>

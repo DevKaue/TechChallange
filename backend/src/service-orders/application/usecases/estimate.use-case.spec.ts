@@ -5,6 +5,7 @@ import { PART_REPOSITORY } from '@service-orders/domain/acls/part-repository.int
 import { SERVICE_CATALOG_REPOSITORY } from '@service-orders/domain/acls/service-catalog-repository.interface';
 import { ServiceOrderStatus } from '@service-orders/domain/enums/service-order-status.enum';
 import { EstimateStatus } from '@service-orders/domain/enums/estimate-status.enum';
+import { ServiceOrderItemType } from '@service-orders/domain/enums/service-order-item-type.enum';
 import { ServiceOrderNotFoundException } from '@service-orders/application/exceptions/service-order-not-found.exception';
 import { ServiceCatalogNotFoundException } from '@service-orders/application/exceptions/service-catalog-not-found.exception';
 import { PartNotFoundException } from '@service-orders/application/exceptions/part-not-found.exception';
@@ -157,7 +158,7 @@ describe('EstimateUseCase', () => {
               addEstimateItem: jest.fn().mockResolvedValue({
                 id: 'item-1',
                 estimateId: 'est-1',
-                itemType: 'SERVICE',
+                itemType: ServiceOrderItemType.SERVICE,
                 referenceId: 'svc-1',
                 description: 'Troca de oleo',
                 quantity: 1,
@@ -181,7 +182,7 @@ describe('EstimateUseCase', () => {
       const repo = module.get(ServiceOrdersRepositoryInterface);
 
       const result = await uc.addEstimateItem('est-1', {
-        itemType: 'SERVICE',
+        itemType: ServiceOrderItemType.SERVICE,
         referenceId: 'svc-1',
         description: 'Troca de oleo',
         quantity: 1,
@@ -223,7 +224,7 @@ describe('EstimateUseCase', () => {
       const uc = module.get(EstimateUseCase);
       await expect(
         uc.addEstimateItem('est-1', {
-          itemType: 'SERVICE',
+          itemType: ServiceOrderItemType.SERVICE,
           referenceId: 'invalid',
           quantity: 1,
         }),
@@ -264,7 +265,7 @@ describe('EstimateUseCase', () => {
       const uc = module.get(EstimateUseCase);
       await expect(
         uc.addEstimateItem('est-1', {
-          itemType: 'PART',
+          itemType: ServiceOrderItemType.PART,
           referenceId: 'part-1',
           quantity: 5,
         }),
@@ -300,7 +301,7 @@ describe('EstimateUseCase', () => {
       const uc = module.get(EstimateUseCase);
       await expect(
         uc.addEstimateItem('est-1', {
-          itemType: 'PART',
+          itemType: ServiceOrderItemType.PART,
           referenceId: 'invalid',
           quantity: 1,
         }),
@@ -452,17 +453,25 @@ describe('EstimateUseCase', () => {
             id: 'est-1',
             status: EstimateStatus.PENDING,
             items: [
-              { itemType: 'PART', referenceId: 'part-1', quantity: 3 },
-              { itemType: 'SERVICE', referenceId: 'svc-1', quantity: 1 },
+              {
+                itemType: ServiceOrderItemType.PART,
+                referenceId: 'part-1',
+                quantity: 3,
+              },
+              {
+                itemType: ServiceOrderItemType.SERVICE,
+                referenceId: 'svc-1',
+                quantity: 1,
+              },
             ],
           },
         ],
       };
-      repository.findById.mockResolvedValue(order as any);
+      repository.findById.mockResolvedValue(order);
       repository.update.mockResolvedValue({
         ...order,
         status: ServiceOrderStatus.IN_DIAGNOSIS,
-      } as any);
+      });
       repository.createStatusHistory.mockResolvedValue({} as any);
 
       await useCase.rejectEstimate('order-1', { reason: 'Rejected' });

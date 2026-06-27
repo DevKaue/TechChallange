@@ -6,6 +6,7 @@ import { UnauthorizedMechanicException } from '@service-orders/application/excep
 import { ServiceCatalogNotFoundException } from '@service-orders/application/exceptions/service-catalog-not-found.exception';
 import { PartNotFoundException } from '@service-orders/application/exceptions/part-not-found.exception';
 import { InvalidMaterialDataException } from '@service-orders/application/exceptions/invalid-material-data.exception';
+import { CustomerNotFoundException } from '@service-orders/application/exceptions/customer-not-found.exception';
 
 @Catch(
   ServiceOrderNotFoundException,
@@ -14,6 +15,7 @@ import { InvalidMaterialDataException } from '@service-orders/application/except
   ServiceCatalogNotFoundException,
   PartNotFoundException,
   InvalidMaterialDataException,
+  CustomerNotFoundException,
 )
 export class ServiceOrderExceptionFilter implements ExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost) {
@@ -40,6 +42,9 @@ export class ServiceOrderExceptionFilter implements ExceptionFilter {
       message = exception.message;
     } else if (exception instanceof InvalidMaterialDataException) {
       status = 400;
+      message = exception.message;
+    } else if (exception instanceof CustomerNotFoundException) {
+      status = 404;
       message = exception.message;
     }
 
