@@ -4,4 +4,8 @@ export default class CreateCustomerInputDTO {
   name!: string;
   phone!: string;
   email!: string;
+
+  constructor(props?: Partial<CreateCustomerInputDTO>) {
+    Object.assign(this, props);
+  }
 }
