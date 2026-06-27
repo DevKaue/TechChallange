@@ -22,7 +22,7 @@ export function env(): {
 } {
   return {
     jwtSecret: process.env.JWT_SECRET!,
-    port: parseInt(process.env.PORT ?? '3000', 10),
+    port: Number.parseInt(process.env.PORT ?? '3000', 10),
     databaseUrl: process.env.DATABASE_URL!,
   };
 }

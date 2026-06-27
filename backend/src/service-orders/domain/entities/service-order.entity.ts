@@ -92,7 +92,7 @@ export class ServiceOrder {
         `Cannot finish when status is ${this._status}. Expected: ${ServiceOrderStatus.IN_EXECUTION}`,
       );
     }
-    if (!this._mechanic || !this._mechanic.isSame(mechanicId)) {
+    if (!this._mechanic?.isSame(mechanicId)) {
       throw new Error(
         'Only the assigned mechanic can finish this service order',
       );

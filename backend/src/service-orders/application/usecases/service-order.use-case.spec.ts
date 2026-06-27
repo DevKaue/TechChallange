@@ -181,7 +181,14 @@ describe('ServiceOrderUseCase', () => {
       //   id: 'vehicle-1',
       //   customerId: 'client-1',
       // });
-      customerManagement.findCustomerById.mockResolvedValue({ id: 'client-1', document: '123', email: null, phone: null, createdAt: new Date(), updatedAt: new Date() } as any);
+      customerManagement.findCustomerById.mockResolvedValue({
+        id: 'client-1',
+        document: '123',
+        email: null,
+        phone: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      } as any);
       customerManagement.findVehicleById.mockResolvedValue({
         id: 'vehicle-1',
         customerId: 'client-1',
@@ -211,7 +218,14 @@ describe('ServiceOrderUseCase', () => {
     it('should throw when the vehicle does not exist', async () => {
       // customerRepository.findById.mockResolvedValue({ id: 'client-1' });
       // vehicleRepository.findById.mockResolvedValue(null);
-      customerManagement.findCustomerById.mockResolvedValue({ id: 'client-1', document: '123', email: null, phone: null, createdAt: new Date(), updatedAt: new Date() } as any);
+      customerManagement.findCustomerById.mockResolvedValue({
+        id: 'client-1',
+        document: '123',
+        email: null,
+        phone: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      } as any);
       customerManagement.findVehicleById.mockResolvedValue(null);
       await expect(
         useCase.create({ customerId: 'client-1', vehicleId: 'x' }),
@@ -234,7 +248,14 @@ describe('ServiceOrderUseCase', () => {
       //   id: 'vehicle-1',
       //   customerId: 'another-client',
       // });
-      customerManagement.findCustomerById.mockResolvedValue({ id: 'client-1', document: '123', email: null, phone: null, createdAt: new Date(), updatedAt: new Date() } as any);
+      customerManagement.findCustomerById.mockResolvedValue({
+        id: 'client-1',
+        document: '123',
+        email: null,
+        phone: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      } as any);
       customerManagement.findVehicleById.mockResolvedValue({
         id: 'vehicle-1',
         customerId: 'another-client',

@@ -123,12 +123,13 @@ describe('Create Vehicle (e2e)', () => {
         brand: 'Hyundai', // Different brand but same plate
       };
 
-      await request(app.getHttpServer())
+      const duplicateResponse = await request(app.getHttpServer())
         .post(`/api/customers/${customerId}/vehicles`)
         .set('Authorization', `Bearer valid-token`)
         .set('X-User-Role', UserRole.ATTENDANT)
-        .send(secondVehicleInput)
-        .expect(409);
+        .send(secondVehicleInput);
+
+      expect(duplicateResponse.status).toBe(409);
     });
 
     it('should return 400 when license_plate is invalid', async () => {

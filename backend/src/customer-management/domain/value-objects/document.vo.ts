@@ -32,20 +32,20 @@ export default class Document {
     // Cálculo do 1º Dígito Verificador
     let sum = 0;
     for (let i = 0; i < 9; i++) {
-      sum += parseInt(cpf.charAt(i)) * (10 - i);
+      sum += Number.parseInt(cpf.charAt(i), 10) * (10 - i);
     }
     let rev = 11 - (sum % 11);
     if (rev === 10 || rev === 11) rev = 0;
-    if (rev !== parseInt(cpf.charAt(9))) return false;
+    if (rev !== Number.parseInt(cpf.charAt(9), 10)) return false;
 
     // Cálculo do 2º Dígito Verificador
     sum = 0;
     for (let i = 0; i < 10; i++) {
-      sum += parseInt(cpf.charAt(i)) * (11 - i);
+      sum += Number.parseInt(cpf.charAt(i), 10) * (11 - i);
     }
     rev = 11 - (sum % 11);
     if (rev === 10 || rev === 11) rev = 0;
-    if (rev !== parseInt(cpf.charAt(10))) return false;
+    if (rev !== Number.parseInt(cpf.charAt(10), 10)) return false;
 
     return true;
   }
@@ -61,11 +61,11 @@ export default class Document {
     let sum = 0;
     let pos = size - 7;
     for (let i = size; i >= 1; i--) {
-      sum += parseInt(numbers.charAt(size - i)) * pos--;
+      sum += Number.parseInt(numbers.charAt(size - i), 10) * pos--;
       if (pos < 2) pos = 9;
     }
     let result = sum % 11 < 2 ? 0 : 11 - (sum % 11);
-    if (result !== parseInt(digits.charAt(0))) return false;
+    if (result !== Number.parseInt(digits.charAt(0), 10)) return false;
 
     // Cálculo do 2º Dígito Verificador
     size = size + 1;
@@ -73,11 +73,11 @@ export default class Document {
     sum = 0;
     pos = size - 7;
     for (let i = size; i >= 1; i--) {
-      sum += parseInt(numbers.charAt(size - i)) * pos--;
+      sum += Number.parseInt(numbers.charAt(size - i), 10) * pos--;
       if (pos < 2) pos = 9;
     }
     result = sum % 11 < 2 ? 0 : 11 - (sum % 11);
-    if (result !== parseInt(digits.charAt(1))) return false;
+    if (result !== Number.parseInt(digits.charAt(1), 10)) return false;
 
     return true;
   }

@@ -61,11 +61,12 @@ describe('Materials (e2e)', () => {
     });
 
     it('should return 400 for invalid data', async () => {
-      await request(testApp.app.getHttpServer())
+      const res = await request(testApp.app.getHttpServer())
         .post('/api/materials')
         .set(authHeader(token))
-        .send({ name: '' })
-        .expect(400);
+        .send({ name: '' });
+
+      expect(res.status).toBe(400);
     });
   });
 
@@ -93,10 +94,11 @@ describe('Materials (e2e)', () => {
     });
 
     it('should return 404 for non-existent material', async () => {
-      await request(testApp.app.getHttpServer())
+      const res = await request(testApp.app.getHttpServer())
         .get('/api/materials/00000000-0000-0000-0000-000000000000')
-        .set(authHeader(token))
-        .expect(404);
+        .set(authHeader(token));
+
+      expect(res.status).toBe(404);
     });
   });
 
@@ -138,10 +140,11 @@ describe('Materials (e2e)', () => {
           stockUnit: 'UNIT',
         });
 
-      await request(testApp.app.getHttpServer())
+      const res = await request(testApp.app.getHttpServer())
         .delete(`/api/materials/${created.body.id}`)
-        .set(authHeader(token))
-        .expect(200);
+        .set(authHeader(token));
+
+      expect(res.status).toBe(200);
     });
   });
 });

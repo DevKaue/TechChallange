@@ -43,11 +43,12 @@ describe('Vehicles (e2e)', () => {
     });
 
     it('should return 400 for empty plate', async () => {
-      await request(testApp.app.getHttpServer())
+      const res = await request(testApp.app.getHttpServer())
         .post(`/api/customers/${seed.customer1Id}/vehicles`)
         .set(authHeader(token))
-        .send({ license_plate: '' })
-        .expect(400);
+        .send({ license_plate: '' });
+
+      expect(res.status).toBe(400);
     });
   });
 
@@ -75,10 +76,11 @@ describe('Vehicles (e2e)', () => {
     });
 
     it('should return 404 for non-existent vehicle', async () => {
-      await request(testApp.app.getHttpServer())
+      const res = await request(testApp.app.getHttpServer())
         .get('/api/vehicles/00000000-0000-0000-0000-000000000000')
-        .set(authHeader(token))
-        .expect(404);
+        .set(authHeader(token));
+
+      expect(res.status).toBe(404);
     });
   });
 
@@ -106,15 +108,16 @@ describe('Vehicles (e2e)', () => {
           year: 2019,
         });
 
-      await request(testApp.app.getHttpServer())
+      const deleteResponse = await request(testApp.app.getHttpServer())
         .delete(`/api/vehicles/${created.body.id}`)
-        .set(authHeader(token))
-        .expect(204);
+        .set(authHeader(token));
 
-      await request(testApp.app.getHttpServer())
+      const findResponse = await request(testApp.app.getHttpServer())
         .get(`/api/vehicles/${created.body.id}`)
-        .set(authHeader(token))
-        .expect(404);
+        .set(authHeader(token));
+
+      expect(deleteResponse.status).toBe(204);
+      expect(findResponse.status).toBe(404);
     });
   });
 });

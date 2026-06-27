@@ -14,13 +14,13 @@ export type VehicleProps = {
 };
 
 export default class Vehicle {
-  private _id: string;
+  private readonly _id: string;
   private _licensePlate: LicensePlate;
   private _brand: string;
   private _model: string;
   private _year: Year;
-  private _customerId: string;
-  private _createdAt: Date;
+  private readonly _customerId: string;
+  private readonly _createdAt: Date;
   private _updatedAt: Date;
   private _deletedAt?: Date;
 

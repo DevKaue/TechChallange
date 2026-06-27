@@ -200,8 +200,6 @@ import VehicleRegistrationChecker from '../domain/services/vehicle-registration-
       inject: [FindCustomerByIdUseCase, FindVehicleByIdUseCase],
     },
   ],
-  exports: [
-    CustomerManagementInterface
-  ],
+  exports: [CustomerManagementInterface],
 })
 export class CustomerManagementModule {}
