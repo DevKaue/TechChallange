@@ -6,7 +6,7 @@ import { Roles } from '@/access-identity/presentation/decorators/roles.decorator
 import { UserRole } from '@/access-identity/domain/enums/user-role.enum';
 import { CreateVehicleUseCase } from '@customer-management/application/usecases/create-vehicle.usecase';
 import FindVehicleByIdUseCase from '@customer-management/application/usecases/find-vehicle-by-id.usecase';
-import ListVehiclesUseCase from '@customer-management/application/usecases/list-vehicles.usecase';
+import ListVehicleUseCase from '@/customer-management/application/usecases/list-vehicle.usecase';
 import UpdateVehicleUseCase from '@customer-management/application/usecases/update-vehicle.usecase';
 import ArchiveVehicleUseCase from '@/customer-management/application/usecases/archive-vehicle.usecase';
 import CreateVehicleInputDTO from '@customer-management/application/dtos/create-vehicle-input.dto';
@@ -23,6 +23,7 @@ import { CustomerNotFoundSwaggerResponse } from '@/customer-management/presentat
 import { HttpErrorSwaggerResponse } from '@customer-management/presentation/swaggers/http-error.swagger';
 import { VehicleExceptionFilter } from '@customer-management/presentation/filters/vehicle-exception.filter';
 import { CustomerExceptionFilter } from '@customer-management/presentation/filters/customer-exception.filter';
+import ListVehicleInputDTO from '@/customer-management/application/dtos/list-vehicle-input.dto';
 
 @ApiTags('Vehicles')
 @ApiBearerAuth()
@@ -35,7 +36,7 @@ export class VehicleController {
   constructor(
     private readonly createVehicleUseCase: CreateVehicleUseCase,
     private readonly findVehicleByIdUseCase: FindVehicleByIdUseCase,
-    private readonly listVehiclesUseCase: ListVehiclesUseCase,
+    private readonly listVehiclesUseCase: ListVehicleUseCase,
     private readonly updateVehicleUseCase: UpdateVehicleUseCase,
     private readonly archiveVehicleUseCase: ArchiveVehicleUseCase
   ) {}
@@ -46,8 +47,9 @@ export class VehicleController {
   async list(
     @Query('customerId') customerId?: string
   ): Promise<VehicleResponse[]> {
-    const vehicles = await this.listVehiclesUseCase.execute({ customerId });
-    return JsonVehiclePresenter.presentMany(vehicles);
+    const input = new ListVehicleInputDTO({ customerId: customerId ?? undefined });
+    const output = await this.listVehiclesUseCase.execute(input);
+    return JsonVehiclePresenter.presentMany(output.vehicles);
   }
 
   @Post('customers/:customerId/vehicles')
@@ -116,10 +118,10 @@ export class VehicleController {
     @Param('id') id: string,
     @BodyCamelCase() input: UpdateVehicleInputDTO
   ): Promise<VehicleResponse> {
-    const vehicle = await this.updateVehicleUseCase.execute(
+    const output = await this.updateVehicleUseCase.execute(
       new UpdateVehicleInputDTO({ ...input, id })
     );
-    return JsonVehiclePresenter.present(vehicle);
+    return JsonVehiclePresenter.present(output.vehicle);
   }
 
   @Delete('vehicles/:id')

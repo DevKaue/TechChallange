@@ -2,13 +2,14 @@ import CustomerRepositoryInterface from '@customer-management/domain/contracts/c
 import Email from '@customer-management/domain/value-objects/email.vo';
 import UpdateCustomerInputDTO from '@customer-management/application/dtos/update-customer-input.dto';
 import CustomerDTO from '@customer-management/application/dtos/customer.dto';
+import UpdateCustomerOutputDTO from '@customer-management/application/dtos/update-customer-output.dto';
 
 export default class UpdateCustomerUseCase {
   constructor(
     private readonly customerRepository: CustomerRepositoryInterface,
   ) {}
 
-  async execute(input: UpdateCustomerInputDTO): Promise<CustomerDTO> {
+  async execute(input: UpdateCustomerInputDTO): Promise<UpdateCustomerOutputDTO> {
     const customer = await this.customerRepository.getById(input.id);
 
     if (input.name != null){
@@ -25,6 +26,8 @@ export default class UpdateCustomerUseCase {
 
     await this.customerRepository.update(customer);
 
-    return CustomerDTO.fromDomain(customer);
+    return new UpdateCustomerOutputDTO({
+      customer: CustomerDTO.fromDomain(customer)
+    });
   }
 }

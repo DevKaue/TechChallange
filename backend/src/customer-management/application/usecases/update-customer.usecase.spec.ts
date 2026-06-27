@@ -1,6 +1,7 @@
 import UpdateCustomerUseCase from './update-customer.usecase';
 import CustomerRepositoryInterface from '@customer-management/domain/contracts/customer-repository.interface';
 import UpdateCustomerInputDTO from '@customer-management/application/dtos/update-customer-input.dto';
+import UpdateCustomerOutputDTO from '@customer-management/application/dtos/update-customer-output.dto';
 import CustomerDTO from '@customer-management/application/dtos/customer.dto';
 import Customer from '@customer-management/domain/entities/customer.entity';
 import Document from '@customer-management/domain/value-objects/document.vo';
@@ -41,7 +42,8 @@ describe('UpdateCustomerUseCase', () => {
 
       const result = await useCase.execute(input);
 
-      expect(result).toBeInstanceOf(CustomerDTO);
+      expect(result).toBeInstanceOf(UpdateCustomerOutputDTO);
+      expect(result.customer).toBeDefined();
       expect(customerRepositoryMock.update).toHaveBeenCalledWith(customer);
     });
 
@@ -62,8 +64,9 @@ describe('UpdateCustomerUseCase', () => {
 
       const result = await useCase.execute(input);
 
+      expect(result).toBeInstanceOf(UpdateCustomerOutputDTO);
+      expect(result.customer).toBeDefined();
       expect(customerRepositoryMock.update).toHaveBeenCalledWith(customer);
-      expect(result).toBeInstanceOf(CustomerDTO);
     });
 
     it('should update customer email successfully', async () => {
@@ -83,8 +86,9 @@ describe('UpdateCustomerUseCase', () => {
 
       const result = await useCase.execute(input);
 
+      expect(result).toBeInstanceOf(UpdateCustomerOutputDTO);
+      expect(result.customer).toBeDefined();
       expect(customerRepositoryMock.update).toHaveBeenCalledWith(customer);
-      expect(result).toBeInstanceOf(CustomerDTO);
     });
 
     it('should update multiple customer fields', async () => {
@@ -107,8 +111,9 @@ describe('UpdateCustomerUseCase', () => {
 
       const result = await useCase.execute(input);
 
+      expect(result).toBeInstanceOf(UpdateCustomerOutputDTO);
+      expect(result.customer).toBeDefined();
       expect(customerRepositoryMock.update).toHaveBeenCalledWith(customer);
-      expect(result).toBeInstanceOf(CustomerDTO);
     });
 
     it('should not update fields when they are undefined', async () => {
@@ -214,9 +219,9 @@ describe('UpdateCustomerUseCase', () => {
 
       const result = await useCase.execute(input);
 
-      expect(result).toBeInstanceOf(CustomerDTO);
-      expect(result.id).toBe(customer.id);
-      expect(result.documentType).toBe(customer.document.type);
+      expect(result).toBeInstanceOf(UpdateCustomerOutputDTO);
+      expect(result.customer.id).toBe(customer.id);
+      expect(result.customer.documentType).toBe(customer.document.type);
     });
   });
 });

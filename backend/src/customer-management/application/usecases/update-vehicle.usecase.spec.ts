@@ -2,6 +2,7 @@ import UpdateVehicleUseCase from './update-vehicle.usecase';
 import VehicleRepositoryInterface from '@customer-management/domain/contracts/vehicle-repository.interface';
 import VehicleRegistrationChecker from '@/customer-management/domain/services/vehicle-registration-checker.service';
 import UpdateVehicleInputDTO from '@customer-management/application/dtos/update-vehicle-input.dto';
+import UpdateVehicleOutputDTO from '@customer-management/application/dtos/update-vehicle-output.dto';
 import VehicleDTO from '@customer-management/application/dtos/vehicle.dto';
 import Vehicle from '@customer-management/domain/entities/vehicle.entity';
 import LicensePlate from '@customer-management/domain/value-objects/license-plate.vo';
@@ -48,7 +49,8 @@ describe('UpdateVehicleUseCase', () => {
 
       const result = await useCase.execute(input);
 
-      expect(result).toBeInstanceOf(VehicleDTO);
+      expect(result).toBeInstanceOf(UpdateVehicleOutputDTO);
+      expect(result.vehicle).toBeDefined();
       expect(vehicleRepositoryMock.update).toHaveBeenCalledWith(vehicle);
     });
 
@@ -115,8 +117,9 @@ describe('UpdateVehicleUseCase', () => {
 
       const result = await useCase.execute(input);
 
+      expect(result).toBeInstanceOf(UpdateVehicleOutputDTO);
+      expect(result.vehicle).toBeDefined();
       expect(vehicleRepositoryMock.update).toHaveBeenCalledWith(vehicle);
-      expect(result).toBeInstanceOf(VehicleDTO);
     });
 
     it('should update vehicle model successfully', async () => {
@@ -138,8 +141,9 @@ describe('UpdateVehicleUseCase', () => {
 
       const result = await useCase.execute(input);
 
+      expect(result).toBeInstanceOf(UpdateVehicleOutputDTO);
+      expect(result.vehicle).toBeDefined();
       expect(vehicleRepositoryMock.update).toHaveBeenCalledWith(vehicle);
-      expect(result).toBeInstanceOf(VehicleDTO);
     });
 
     it('should update vehicle year successfully', async () => {
@@ -161,8 +165,9 @@ describe('UpdateVehicleUseCase', () => {
 
       const result = await useCase.execute(input);
 
+      expect(result).toBeInstanceOf(UpdateVehicleOutputDTO);
+      expect(result.vehicle).toBeDefined();
       expect(vehicleRepositoryMock.update).toHaveBeenCalledWith(vehicle);
-      expect(result).toBeInstanceOf(VehicleDTO);
     });
 
     it('should update multiple vehicle fields', async () => {
@@ -187,8 +192,9 @@ describe('UpdateVehicleUseCase', () => {
 
       const result = await useCase.execute(input);
 
+      expect(result).toBeInstanceOf(UpdateVehicleOutputDTO);
+      expect(result.vehicle).toBeDefined();
       expect(vehicleRepositoryMock.update).toHaveBeenCalledWith(vehicle);
-      expect(result).toBeInstanceOf(VehicleDTO);
     });
 
     it('should not update fields when they are undefined', async () => {
@@ -256,9 +262,9 @@ describe('UpdateVehicleUseCase', () => {
 
       const result = await useCase.execute(input);
 
-      expect(result).toBeInstanceOf(VehicleDTO);
-      expect(result.id).toBe(vehicle.id);
-      expect(result.licensePlate).toBe(vehicle.licensePlate.value);
+      expect(result).toBeInstanceOf(UpdateVehicleOutputDTO);
+      expect(result.vehicle.id).toBe(vehicle.id);
+      expect(result.vehicle.licensePlate).toBe(vehicle.licensePlate.value);
     });
 
     it('should throw error if license plate already exists', async () => {
