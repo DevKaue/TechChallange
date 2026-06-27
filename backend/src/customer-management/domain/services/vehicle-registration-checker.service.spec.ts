@@ -11,12 +11,13 @@ describe('VehicleRegistrationChecker Service', () => {
 
   beforeEach(() => {
     mockVehicleRepository = {
+      getById: jest.fn(),
+      findById: jest.fn(),
       findByLicensePlate: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
-      findById: jest.fn(),
-      list: jest.fn(),
-      softDelete: jest.fn(),
+      archive: jest.fn(),
+      archiveAllByCustomerId: jest.fn(),
     };
 
     service = new VehicleRegistrationChecker(mockVehicleRepository);
@@ -27,8 +28,12 @@ describe('VehicleRegistrationChecker Service', () => {
       const licensePlate = new LicensePlate('ABC1234');
       mockVehicleRepository.findByLicensePlate.mockResolvedValueOnce(null);
 
-      await expect(service.checkUniqueness(licensePlate)).resolves.not.toThrow();
-      expect(mockVehicleRepository.findByLicensePlate).toHaveBeenCalledWith(licensePlate);
+      await expect(
+        service.checkUniqueness(licensePlate),
+      ).resolves.not.toThrow();
+      expect(mockVehicleRepository.findByLicensePlate).toHaveBeenCalledWith(
+        licensePlate,
+      );
     });
 
     it('should throw VehicleAlreadyExistsException when vehicle exists', async () => {
@@ -42,12 +47,16 @@ describe('VehicleRegistrationChecker Service', () => {
         customerId: 'customer-123',
       });
 
-      mockVehicleRepository.findByLicensePlate.mockResolvedValueOnce(existingVehicle);
+      mockVehicleRepository.findByLicensePlate.mockResolvedValueOnce(
+        existingVehicle,
+      );
 
       await expect(service.checkUniqueness(licensePlate)).rejects.toThrow(
         VehicleAlreadyExistsException,
       );
-      expect(mockVehicleRepository.findByLicensePlate).toHaveBeenCalledWith(licensePlate);
+      expect(mockVehicleRepository.findByLicensePlate).toHaveBeenCalledWith(
+        licensePlate,
+      );
     });
 
     it('should call repository with the correct license plate', async () => {
@@ -56,7 +65,9 @@ describe('VehicleRegistrationChecker Service', () => {
 
       await service.checkUniqueness(licensePlate);
 
-      expect(mockVehicleRepository.findByLicensePlate).toHaveBeenCalledWith(licensePlate);
+      expect(mockVehicleRepository.findByLicensePlate).toHaveBeenCalledWith(
+        licensePlate,
+      );
     });
 
     it('should verify repository is called exactly once', async () => {
@@ -73,7 +84,9 @@ describe('VehicleRegistrationChecker Service', () => {
       const error = new Error('Database error');
       mockVehicleRepository.findByLicensePlate.mockRejectedValueOnce(error);
 
-      await expect(service.checkUniqueness(licensePlate)).rejects.toThrow('Database error');
+      await expect(service.checkUniqueness(licensePlate)).rejects.toThrow(
+        'Database error',
+      );
     });
 
     it('should allow multiple vehicles with different license plates', async () => {
@@ -81,10 +94,14 @@ describe('VehicleRegistrationChecker Service', () => {
       const licensePlate2 = new LicensePlate('XYZ9999');
 
       mockVehicleRepository.findByLicensePlate.mockResolvedValueOnce(null);
-      await expect(service.checkUniqueness(licensePlate1)).resolves.not.toThrow();
+      await expect(
+        service.checkUniqueness(licensePlate1),
+      ).resolves.not.toThrow();
 
       mockVehicleRepository.findByLicensePlate.mockResolvedValueOnce(null);
-      await expect(service.checkUniqueness(licensePlate2)).resolves.not.toThrow();
+      await expect(
+        service.checkUniqueness(licensePlate2),
+      ).resolves.not.toThrow();
 
       expect(mockVehicleRepository.findByLicensePlate).toHaveBeenCalledTimes(2);
     });
@@ -94,10 +111,14 @@ describe('VehicleRegistrationChecker Service', () => {
       const mercosulPlate = new LicensePlate('ABC1D23');
 
       mockVehicleRepository.findByLicensePlate.mockResolvedValueOnce(null);
-      await expect(service.checkUniqueness(traditionalPlate)).resolves.not.toThrow();
+      await expect(
+        service.checkUniqueness(traditionalPlate),
+      ).resolves.not.toThrow();
 
       mockVehicleRepository.findByLicensePlate.mockResolvedValueOnce(null);
-      await expect(service.checkUniqueness(mercosulPlate)).resolves.not.toThrow();
+      await expect(
+        service.checkUniqueness(mercosulPlate),
+      ).resolves.not.toThrow();
 
       expect(mockVehicleRepository.findByLicensePlate).toHaveBeenCalledTimes(2);
     });
@@ -114,7 +135,9 @@ describe('VehicleRegistrationChecker Service', () => {
         deletedAt: new Date(),
       });
 
-      mockVehicleRepository.findByLicensePlate.mockResolvedValueOnce(deletedVehicle);
+      mockVehicleRepository.findByLicensePlate.mockResolvedValueOnce(
+        deletedVehicle,
+      );
 
       await expect(service.checkUniqueness(licensePlate)).rejects.toThrow(
         VehicleAlreadyExistsException,

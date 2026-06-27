@@ -12,12 +12,12 @@ describe('CustomerRegistrationChecker Service', () => {
 
   beforeEach(() => {
     mockCustomerRepository = {
+      findById: jest.fn(),
+      getById: jest.fn(),
       findByDocument: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
-      findById: jest.fn(),
-      list: jest.fn(),
-      softDelete: jest.fn(),
+      archive: jest.fn(),
     };
 
     service = new CustomerRegistrationChecker(mockCustomerRepository);
@@ -29,9 +29,12 @@ describe('CustomerRegistrationChecker Service', () => {
       mockCustomerRepository.findByDocument.mockResolvedValueOnce(null);
 
       await expect(service.checkUniqueness(document)).resolves.not.toThrow();
-      expect(mockCustomerRepository.findByDocument).toHaveBeenCalledWith(document, {
-        includeDeleted: true,
-      });
+      expect(mockCustomerRepository.findByDocument).toHaveBeenCalledWith(
+        document,
+        {
+          includeDeleted: true,
+        },
+      );
     });
 
     it('should throw CustomerAlreadyExistsException when customer exists and is not archived', async () => {
@@ -42,14 +45,19 @@ describe('CustomerRegistrationChecker Service', () => {
         name: 'John Doe',
       });
 
-      mockCustomerRepository.findByDocument.mockResolvedValueOnce(existingCustomer);
+      mockCustomerRepository.findByDocument.mockResolvedValueOnce(
+        existingCustomer,
+      );
 
       await expect(service.checkUniqueness(document)).rejects.toThrow(
         CustomerAlreadyExistsException,
       );
-      expect(mockCustomerRepository.findByDocument).toHaveBeenCalledWith(document, {
-        includeDeleted: true,
-      });
+      expect(mockCustomerRepository.findByDocument).toHaveBeenCalledWith(
+        document,
+        {
+          includeDeleted: true,
+        },
+      );
     });
 
     it('should throw CustomerIsArchivedException when customer exists and is archived', async () => {
@@ -61,14 +69,19 @@ describe('CustomerRegistrationChecker Service', () => {
         deletedAt: new Date(),
       });
 
-      mockCustomerRepository.findByDocument.mockResolvedValueOnce(archivedCustomer);
+      mockCustomerRepository.findByDocument.mockResolvedValueOnce(
+        archivedCustomer,
+      );
 
       await expect(service.checkUniqueness(document)).rejects.toThrow(
         CustomerIsArchivedException,
       );
-      expect(mockCustomerRepository.findByDocument).toHaveBeenCalledWith(document, {
-        includeDeleted: true,
-      });
+      expect(mockCustomerRepository.findByDocument).toHaveBeenCalledWith(
+        document,
+        {
+          includeDeleted: true,
+        },
+      );
     });
 
     it('should call repository with includeDeleted flag', async () => {
@@ -77,9 +90,12 @@ describe('CustomerRegistrationChecker Service', () => {
 
       await service.checkUniqueness(document);
 
-      expect(mockCustomerRepository.findByDocument).toHaveBeenCalledWith(document, {
-        includeDeleted: true,
-      });
+      expect(mockCustomerRepository.findByDocument).toHaveBeenCalledWith(
+        document,
+        {
+          includeDeleted: true,
+        },
+      );
     });
 
     it('should verify repository is called with the correct document instance', async () => {
@@ -88,9 +104,12 @@ describe('CustomerRegistrationChecker Service', () => {
 
       await service.checkUniqueness(document);
 
-      expect(mockCustomerRepository.findByDocument).toHaveBeenCalledWith(document, {
-        includeDeleted: true,
-      });
+      expect(mockCustomerRepository.findByDocument).toHaveBeenCalledWith(
+        document,
+        {
+          includeDeleted: true,
+        },
+      );
     });
 
     it('should handle repository errors', async () => {
@@ -98,7 +117,9 @@ describe('CustomerRegistrationChecker Service', () => {
       const error = new Error('Database error');
       mockCustomerRepository.findByDocument.mockRejectedValueOnce(error);
 
-      await expect(service.checkUniqueness(document)).rejects.toThrow('Database error');
+      await expect(service.checkUniqueness(document)).rejects.toThrow(
+        'Database error',
+      );
     });
 
     it('should properly distinguish between active and archived customers', async () => {
@@ -110,7 +131,9 @@ describe('CustomerRegistrationChecker Service', () => {
         document,
         name: 'John Doe',
       });
-      mockCustomerRepository.findByDocument.mockResolvedValueOnce(activeCustomer);
+      mockCustomerRepository.findByDocument.mockResolvedValueOnce(
+        activeCustomer,
+      );
 
       await expect(service.checkUniqueness(document)).rejects.toThrow(
         CustomerAlreadyExistsException,
@@ -126,7 +149,9 @@ describe('CustomerRegistrationChecker Service', () => {
         name: 'John Doe',
         deletedAt: new Date(),
       });
-      mockCustomerRepository.findByDocument.mockResolvedValueOnce(archivedCustomer);
+      mockCustomerRepository.findByDocument.mockResolvedValueOnce(
+        archivedCustomer,
+      );
 
       await expect(service.checkUniqueness(document)).rejects.toThrow(
         CustomerIsArchivedException,

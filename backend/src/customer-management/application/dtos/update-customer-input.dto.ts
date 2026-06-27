@@ -16,7 +16,7 @@ export default class UpdateCustomerInputDTO {
   @IsOptional()
   @IsString()
   @IsEmail()
-  email?: string;
+  email?: string | null;
 
   constructor(props?: Partial<UpdateCustomerInputDTO>) {
     Object.assign(this, props);

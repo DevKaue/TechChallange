@@ -9,7 +9,9 @@ export default class UpdateCustomerUseCase {
     private readonly customerRepository: CustomerRepositoryInterface,
   ) {}
 
-  async execute(input: UpdateCustomerInputDTO): Promise<UpdateCustomerOutputDTO> {
+  async execute(
+    input: UpdateCustomerInputDTO,
+  ): Promise<UpdateCustomerOutputDTO> {
     const customer = await this.customerRepository.getById(input.id);
 
     if (input.name != null) {
@@ -29,7 +31,7 @@ export default class UpdateCustomerUseCase {
     await this.customerRepository.update(customer);
 
     return new UpdateCustomerOutputDTO({
-      customer: CustomerDTO.fromDomain(customer)
+      customer: CustomerDTO.fromDomain(customer),
     });
   }
 }

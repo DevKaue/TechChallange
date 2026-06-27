@@ -1,12 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { VEHICLE_REPOSITORY, VehicleRepository } from '@service-orders/domain/acls/vehicle-repository.interface';
+import {
+  VEHICLE_REPOSITORY,
+  VehicleRepository,
+} from '@service-orders/domain/acls/vehicle-repository.interface';
 import VehicleRepositoryInterface from '@customer-management/domain/contracts/vehicle-repository.interface';
 
 @Injectable()
 export class VehicleRepositoryAcl implements VehicleRepository {
-  constructor(
-    private readonly vehicleRepository: VehicleRepositoryInterface,
-  ) {}
+  constructor(private readonly vehicleRepository: VehicleRepositoryInterface) {}
 
   async findById(id: string): Promise<{
     id: string;

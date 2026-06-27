@@ -33,8 +33,8 @@ export default class UpdateVehicleUseCase {
     await this.vehicleRepository.update(vehicle);
 
     const output = new UpdateVehicleOutputDTO({
-          vehicle: VehicleDTO.fromDomain(vehicle)
-        });
+      vehicle: VehicleDTO.fromDomain(vehicle),
+    });
     return output;
   }
 }

@@ -204,7 +204,7 @@ describe('Year Value Object', () => {
 
   describe('Type Validation', () => {
     it('should work with year from Date object', () => {
-      const date = new Date('2024-01-01');
+      const date = new Date('2024-06-15T12:00:00');
       const yearValue = date.getFullYear();
       const year = new Year(yearValue);
 

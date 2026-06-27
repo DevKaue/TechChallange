@@ -8,7 +8,9 @@ export default class ListVehicleUseCase {
   ) {}
 
   async execute(input: ListVehicleInputDTO): Promise<ListVehicleOutputDTO> {
-    const vehicles = await this.vehicleQueryService.findAll({ customerId: input.customerId });
+    const vehicles = await this.vehicleQueryService.findAll({
+      customerId: input.customerId,
+    });
     return new ListVehicleOutputDTO({ vehicles });
   }
 }
