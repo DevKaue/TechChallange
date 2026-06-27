@@ -28,6 +28,10 @@ import UnitOfWorkServiceInterface from '@customer-management/application/contrac
 import PrismaUnitOfWorkService from '@customer-management/infra/services/prisma-unit-of-work.service';
 import CustomerRegistrationChecker from '../domain/services/customer-registration-checker.service';
 import VehicleRegistrationChecker from '../domain/services/vehicle-registration-checker.service';
+import { CUSTOMER_REPOSITORY } from '@service-orders/domain/acls/customer-repository.interface';
+import { VEHICLE_REPOSITORY } from '@service-orders/domain/acls/vehicle-repository.interface';
+import { CustomerRepositoryAcl } from '@customer-management/infra/acls/customer-repository.acl';
+import { VehicleRepositoryAcl } from '@customer-management/infra/acls/vehicle-repository.acl';
 
 @Module({
   imports: [PrismaModule],
@@ -36,6 +40,14 @@ import VehicleRegistrationChecker from '../domain/services/vehicle-registration-
     PrismaUnitOfWorkService,
     CustomerRegistrationChecker,
     VehicleRegistrationChecker,
+    {
+      provide: CUSTOMER_REPOSITORY,
+      useClass: CustomerRepositoryAcl,
+    },
+    {
+      provide: VEHICLE_REPOSITORY,
+      useClass: VehicleRepositoryAcl,
+    },
     {
       provide: UnitOfWorkServiceInterface,
       useClass: PrismaUnitOfWorkService,
@@ -47,8 +59,11 @@ import VehicleRegistrationChecker from '../domain/services/vehicle-registration-
 
     {
       provide: CreateCustomerUseCase,
-      useFactory: (repository: CustomerRepositoryInterface, registrationChecker: CustomerRegistrationChecker) => {
-        return new CreateCustomerUseCase(repository, registrationChecker); 
+      useFactory: (
+        repository: CustomerRepositoryInterface,
+        registrationChecker: CustomerRegistrationChecker,
+      ) => {
+        return new CreateCustomerUseCase(repository, registrationChecker);
       },
       inject: [CustomerRepositoryInterface, CustomerRegistrationChecker],
     },
@@ -60,9 +75,17 @@ import VehicleRegistrationChecker from '../domain/services/vehicle-registration-
         vehicleRepository: VehicleRepositoryInterface,
         unitOfWork: UnitOfWorkServiceInterface,
       ) => {
-        return new ArchiveCustomerUseCase(customerRepository, vehicleRepository, unitOfWork);
+        return new ArchiveCustomerUseCase(
+          customerRepository,
+          vehicleRepository,
+          unitOfWork,
+        );
       },
-      inject: [CustomerRepositoryInterface, VehicleRepositoryInterface, UnitOfWorkServiceInterface],
+      inject: [
+        CustomerRepositoryInterface,
+        VehicleRepositoryInterface,
+        UnitOfWorkServiceInterface,
+      ],
     },
 
     {
@@ -73,30 +96,34 @@ import VehicleRegistrationChecker from '../domain/services/vehicle-registration-
     {
       provide: CreateVehicleUseCase,
       useFactory: (
-        vehicleRepository: VehicleRepositoryInterface, 
+        vehicleRepository: VehicleRepositoryInterface,
         customerRepository: CustomerRepositoryInterface,
-        registrationChecker: VehicleRegistrationChecker
+        registrationChecker: VehicleRegistrationChecker,
       ) => {
-        return new CreateVehicleUseCase(vehicleRepository, customerRepository, registrationChecker);
+        return new CreateVehicleUseCase(
+          vehicleRepository,
+          customerRepository,
+          registrationChecker,
+        );
       },
-      inject: [VehicleRepositoryInterface, CustomerRepositoryInterface, VehicleRegistrationChecker],
+      inject: [
+        VehicleRepositoryInterface,
+        CustomerRepositoryInterface,
+        VehicleRegistrationChecker,
+      ],
     },
 
     {
       provide: ArchiveVehicleUseCase,
-      useFactory: (
-        vehicleRepository: VehicleRepositoryInterface
-      ) => {
+      useFactory: (vehicleRepository: VehicleRepositoryInterface) => {
         return new ArchiveVehicleUseCase(vehicleRepository);
       },
-      inject: [
-        VehicleRepositoryInterface, 
-      ]
+      inject: [VehicleRepositoryInterface],
     },
 
     {
       provide: CustomerQueryServiceInterface,
-      useClass: PrismaCustomerQueryService, 
+      useClass: PrismaCustomerQueryService,
     },
 
     {
@@ -146,7 +173,10 @@ import VehicleRegistrationChecker from '../domain/services/vehicle-registration-
 
     {
       provide: UpdateVehicleUseCase,
-      useFactory: (vehicleRepository: VehicleRepositoryInterface, registrationChecker: VehicleRegistrationChecker) => {
+      useFactory: (
+        vehicleRepository: VehicleRepositoryInterface,
+        registrationChecker: VehicleRegistrationChecker,
+      ) => {
         return new UpdateVehicleUseCase(vehicleRepository, registrationChecker);
       },
       inject: [VehicleRepositoryInterface, VehicleRegistrationChecker],
@@ -172,16 +202,20 @@ import VehicleRegistrationChecker from '../domain/services/vehicle-registration-
       provide: CustomerManagementInterface,
       useFactory: (
         findCustomerByIdUseCase: FindCustomerByIdUseCase,
-        findVehicleByIdUseCase: FindVehicleByIdUseCase
+        findVehicleByIdUseCase: FindVehicleByIdUseCase,
       ) => {
         return new CustomerManagementFacade(
           findCustomerByIdUseCase,
-          findVehicleByIdUseCase
+          findVehicleByIdUseCase,
         );
       },
       inject: [FindCustomerByIdUseCase, FindVehicleByIdUseCase],
     },
   ],
-  exports: [CustomerManagementInterface],
+  exports: [
+    CustomerManagementInterface,
+    CUSTOMER_REPOSITORY,
+    VEHICLE_REPOSITORY,
+  ],
 })
 export class CustomerManagementModule {}
