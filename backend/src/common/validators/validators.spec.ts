@@ -9,7 +9,7 @@ function makeArgs(documentType: string): ValidationArguments {
     value: undefined,
     constraints: ['documentType'],
     targetName: '',
-  } as unknown as ValidationArguments;
+  };
 }
 
 describe('Custom Validators', () => {

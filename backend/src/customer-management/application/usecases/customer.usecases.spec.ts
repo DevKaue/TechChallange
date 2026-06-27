@@ -34,7 +34,7 @@ describe('CreateCustomerUseCase', () => {
   it('creates a new customer after checking uniqueness', async () => {
     const repo = buildRepository();
     const checker = { checkUniqueness: jest.fn() };
-    const useCase = new CreateCustomerUseCase(repo as any, checker as any);
+    const useCase = new CreateCustomerUseCase(repo, checker as any);
 
     const output = await useCase.execute({
       documentType: 'CPF',
@@ -54,7 +54,7 @@ describe('CreateCustomerUseCase', () => {
     const checker = {
       checkUniqueness: jest.fn().mockRejectedValue(new Error('duplicated')),
     };
-    const useCase = new CreateCustomerUseCase(repo as any, checker as any);
+    const useCase = new CreateCustomerUseCase(repo, checker as any);
 
     await expect(
       useCase.execute({
@@ -73,9 +73,9 @@ describe('FindCustomerByIdUseCase', () => {
   it('returns a customer DTO', async () => {
     const query = buildQueryService();
     query.getById.mockResolvedValue({ id: 'customer-1', name: 'John' });
-    const useCase = new FindCustomerByIdUseCase(query as any);
+    const useCase = new FindCustomerByIdUseCase(query);
 
-    const output = await useCase.execute({ id: 'customer-1' } as any);
+    const output = await useCase.execute({ id: 'customer-1' });
     expect(output.customer.id).toBe('customer-1');
     expect(query.getById).toHaveBeenCalledWith({ id: 'customer-1' });
   });
@@ -85,7 +85,7 @@ describe('ListCustomersUseCase', () => {
   it('lists all customers', async () => {
     const query = buildQueryService();
     query.findAll.mockResolvedValue([{ id: 'a' }, { id: 'b' }]);
-    const useCase = new ListCustomersUseCase(query as any);
+    const useCase = new ListCustomersUseCase(query);
 
     const result = await useCase.execute();
     expect(result).toHaveLength(2);
@@ -96,13 +96,13 @@ describe('UpdateCustomerUseCase', () => {
   it('updates an existing customer', async () => {
     const repo = buildRepository();
     repo.findById.mockResolvedValue(buildCustomer());
-    const useCase = new UpdateCustomerUseCase(repo as any);
+    const useCase = new UpdateCustomerUseCase(repo);
 
     const dto = await useCase.execute({
       id: 'customer-1',
       name: 'Jane Doe',
       email: 'jane@example.com',
-    } as any);
+    });
 
     expect(repo.update).toHaveBeenCalledTimes(1);
     expect(dto.name).toBe('Jane Doe');
@@ -112,7 +112,7 @@ describe('UpdateCustomerUseCase', () => {
   it('throws when customer not found', async () => {
     const repo = buildRepository();
     repo.findById.mockResolvedValue(null);
-    const useCase = new UpdateCustomerUseCase(repo as any);
+    const useCase = new UpdateCustomerUseCase(repo);
 
     await expect(
       useCase.execute({ id: 'missing', name: 'X' } as any),
@@ -129,12 +129,12 @@ describe('ArchiveCustomerUseCase', () => {
       runInTransaction: jest.fn(async (cb: () => Promise<void>) => cb()),
     };
     const useCase = new ArchiveCustomerUseCase(
-      repo as any,
+      repo,
       vehicleRepo as any,
       unitOfWork as any,
     );
 
-    await useCase.execute({ id: 'customer-1' } as any);
+    await useCase.execute({ id: 'customer-1' });
 
     expect(unitOfWork.runInTransaction).toHaveBeenCalledTimes(1);
     expect(vehicleRepo.archiveAllByCustomerId).toHaveBeenCalledWith(
