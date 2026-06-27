@@ -4,7 +4,7 @@ export default class CreateVehicleInputDTO {
   model!: string;
   year!: number;
   customerId!: string;
-
+  
   constructor(props?: Partial<CreateVehicleInputDTO>) {
     Object.assign(this, props);
   }

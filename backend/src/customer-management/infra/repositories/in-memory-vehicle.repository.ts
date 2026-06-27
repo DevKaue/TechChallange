@@ -21,9 +21,7 @@ export default class InMemoryVehicleRepository implements VehicleRepositoryInter
     return vehicle || null;
   }
 
-  async findByLicensePlate(
-    licensePlate: LicensePlate,
-  ): Promise<Vehicle | null> {
+  async findByLicensePlate(licensePlate: LicensePlate): Promise<Vehicle | null> {
     const vehicle = this.vehicles.find(
       (v) => v.licensePlate.value === licensePlate.value && !v.deletedAt,
     );
@@ -35,9 +33,7 @@ export default class InMemoryVehicleRepository implements VehicleRepositoryInter
   }
 
   async update(vehicle: Vehicle): Promise<void> {
-    const index = this.vehicles.findIndex(
-      (v) => v.id === vehicle.id && !v.deletedAt,
-    );
+    const index = this.vehicles.findIndex((v) => v.id === vehicle.id && !v.deletedAt);
 
     if (index === -1) {
       throw new VehicleNotFoundException();

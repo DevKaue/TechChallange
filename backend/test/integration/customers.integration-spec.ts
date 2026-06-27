@@ -52,7 +52,7 @@ describe('Customers (e2e)', () => {
     });
 
     it('should return 400 for invalid document', async () => {
-      const res = await request(testApp.app.getHttpServer())
+      await request(testApp.app.getHttpServer())
         .post('/api/customers')
         .set(authHeader(token))
         .send({
@@ -61,13 +61,12 @@ describe('Customers (e2e)', () => {
           documentType: 'CPF',
           email: 'inv@email.com',
           phone: '(11) 90000-0000',
-        });
-
-      expect(res.status).toBe(400);
+        })
+        .expect(400);
     });
 
     it('should return 409 for duplicate document', async () => {
-      const res = await request(testApp.app.getHttpServer())
+      await request(testApp.app.getHttpServer())
         .post('/api/customers')
         .set(authHeader(token))
         .send({
@@ -76,9 +75,8 @@ describe('Customers (e2e)', () => {
           documentType: 'CPF',
           email: 'dup@email.com',
           phone: '(11) 90000-0000',
-        });
-
-      expect(res.status).toBe(409);
+        })
+        .expect(409);
     });
   });
 
@@ -94,11 +92,9 @@ describe('Customers (e2e)', () => {
     });
 
     it('should return 401 without token', async () => {
-      const res = await request(testApp.app.getHttpServer()).get(
-        '/api/customers',
-      );
-
-      expect(res.status).toBe(401);
+      await request(testApp.app.getHttpServer())
+        .get('/api/customers')
+        .expect(401);
     });
   });
 
@@ -114,11 +110,10 @@ describe('Customers (e2e)', () => {
     });
 
     it('should return 404 for non-existent customer', async () => {
-      const res = await request(testApp.app.getHttpServer())
+      await request(testApp.app.getHttpServer())
         .get('/api/customers/00000000-0000-0000-0000-000000000000')
-        .set(authHeader(token));
-
-      expect(res.status).toBe(404);
+        .set(authHeader(token))
+        .expect(404);
     });
   });
 
@@ -147,16 +142,15 @@ describe('Customers (e2e)', () => {
           phone: '(11) 90000-0001',
         });
 
-      const deleteResponse = await request(testApp.app.getHttpServer())
+      await request(testApp.app.getHttpServer())
         .delete(`/api/customers/${created.body.id}`)
-        .set(authHeader(token));
+        .set(authHeader(token))
+        .expect(204);
 
-      const findResponse = await request(testApp.app.getHttpServer())
+      await request(testApp.app.getHttpServer())
         .get(`/api/customers/${created.body.id}`)
-        .set(authHeader(token));
-
-      expect(deleteResponse.status).toBe(204);
-      expect(findResponse.status).toBe(404);
+        .set(authHeader(token))
+        .expect(404);
     });
   });
 });

@@ -8,16 +8,6 @@ import { PartNotFoundException } from '@service-orders/application/exceptions/pa
 import { InvalidMaterialDataException } from '@service-orders/application/exceptions/invalid-material-data.exception';
 import { CustomerNotFoundException } from '@service-orders/application/exceptions/customer-not-found.exception';
 
-const exceptionStatusMap = new Map<Function, number>([
-  [ServiceOrderNotFoundException, 404],
-  [InvalidStatusTransitionException, 400],
-  [UnauthorizedMechanicException, 403],
-  [ServiceCatalogNotFoundException, 404],
-  [PartNotFoundException, 404],
-  [InvalidMaterialDataException, 400],
-  [CustomerNotFoundException, 404],
-]);
-
 @Catch(
   ServiceOrderNotFoundException,
   InvalidStatusTransitionException,
@@ -32,13 +22,35 @@ export class ServiceOrderExceptionFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
 
-    const error = exception as Error;
-    const status = exceptionStatusMap.get(error.constructor) ?? 500;
-    const message = error.message || 'Internal server error';
+    let status = 500;
+    let message = 'Internal server error';
+
+    if (exception instanceof ServiceOrderNotFoundException) {
+      status = 404;
+      message = exception.message;
+    } else if (exception instanceof InvalidStatusTransitionException) {
+      status = 400;
+      message = exception.message;
+    } else if (exception instanceof UnauthorizedMechanicException) {
+      status = 403;
+      message = exception.message;
+    } else if (exception instanceof ServiceCatalogNotFoundException) {
+      status = 404;
+      message = exception.message;
+    } else if (exception instanceof PartNotFoundException) {
+      status = 404;
+      message = exception.message;
+    } else if (exception instanceof InvalidMaterialDataException) {
+      status = 400;
+      message = exception.message;
+    } else if (exception instanceof CustomerNotFoundException) {
+      status = 404;
+      message = exception.message;
+    }
 
     response.status(status).json({
       status_code: status,
-      error: error.constructor?.name ?? 'Error',
+      error: (exception as Error).constructor?.name ?? 'Error',
       message,
     });
   }

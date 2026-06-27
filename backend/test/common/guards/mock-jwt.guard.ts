@@ -1,17 +1,11 @@
-import {
-  Injectable,
-  CanActivate,
-  ExecutionContext,
-  UnauthorizedException,
-  ForbiddenException,
-} from '@nestjs/common';
+import { Injectable, CanActivate, ExecutionContext, UnauthorizedException, ForbiddenException } from '@nestjs/common';
 import { Request } from 'express';
 import { UserRole } from '@/access-identity/domain/enums/user-role.enum';
 
 /**
  * Mock JWT Guard for e2e tests
  * Replaces the real JwtAuthGuard and RolesGuard to avoid token validation complexity in tests
- *
+ * 
  * Usage in tests:
  * ```
  * .overrideGuard(JwtAuthGuard)
@@ -39,12 +33,10 @@ export class MockJwtAuthGuard implements CanActivate {
     // Check if the requested route requires ATTENDANT role
     // This is a simplified version - in real scenarios we'd check @Roles() decorators
     const requiredRoles = this.getRequiredRoles(context);
-
+    
     if (requiredRoles.length > 0 && userRole) {
       if (!requiredRoles.includes(userRole)) {
-        throw new ForbiddenException(
-          `User role must be one of: ${requiredRoles.join(', ')}`,
-        );
+        throw new ForbiddenException(`User role must be one of: ${requiredRoles.join(', ')}`);
       }
     }
 

@@ -16,8 +16,8 @@ export default class LicensePlate {
   }
 
   private validate(value: string): boolean {
-    const mercosulRegex = /^[A-Z]{3}\d[A-Z]\d{2}$/;
-    const traditionalRegex = /^[A-Z]{3}\d{4}$/;
+    const mercosulRegex = /^[A-Z]{3}[0-9]{1}[A-Z]{1}[0-9]{2}$/;
+    const traditionalRegex = /^[A-Z]{3}[0-9]{4}$/;
 
     return mercosulRegex.test(value) || traditionalRegex.test(value);
   }

@@ -2,6 +2,10 @@ import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { ServiceOrdersRepositoryInterface } from '@service-orders/domain/contracts/service-orders-repository.interface';
 import { ServiceOrderQueryServiceInterface } from '@service-orders/application/contracts/service-order-query-service.interface';
 import CustomarManagementInterface from '@common/contracts/customer-management.interface';
+import { CUSTOMER_REPOSITORY } from '@service-orders/domain/acls/customer-repository.interface';
+import type { CustomerRepository } from '@service-orders/domain/acls/customer-repository.interface';
+import { VEHICLE_REPOSITORY } from '@service-orders/domain/acls/vehicle-repository.interface';
+import type { VehicleRepository } from '@service-orders/domain/acls/vehicle-repository.interface';
 import { ServiceOrderStatus } from '@service-orders/domain/enums/service-order-status.enum';
 import { ServiceOrderResponseDto } from '@service-orders/application/dto/service-order/service-order-response.dto';
 import { CreateServiceOrderDto } from '@service-orders/application/dto/service-order/create-service-order.dto';
@@ -32,14 +36,10 @@ export class ServiceOrderUseCase {
   }
 
   async create(dto: CreateServiceOrderDto) {
-    const customer = await this.customerManagement.findCustomerById({
-      id: dto.customerId,
-    });
+    const customer = await this.customerManagement.findCustomerById({ id: dto.customerId });
     if (!customer) throw new CustomerNotFoundException(dto.customerId);
 
-    const vehicle = await this.customerManagement.findVehicleById({
-      id: dto.vehicleId,
-    });
+    const vehicle = await this.customerManagement.findVehicleById({ id: dto.vehicleId });
     if (!vehicle) {
       throw new BadRequestException('Vehicle not found');
     }

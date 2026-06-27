@@ -41,12 +41,11 @@ describe('Service Catalog (e2e)', () => {
     });
 
     it('should return 400 for invalid data', async () => {
-      const res = await request(testApp.app.getHttpServer())
+      await request(testApp.app.getHttpServer())
         .post('/api/services')
         .set(authHeader(token))
-        .send({ name: '' });
-
-      expect(res.status).toBe(400);
+        .send({ name: '' })
+        .expect(400);
     });
   });
 
@@ -74,11 +73,10 @@ describe('Service Catalog (e2e)', () => {
     });
 
     it('should return 404 for non-existent service', async () => {
-      const res = await request(testApp.app.getHttpServer())
+      await request(testApp.app.getHttpServer())
         .get('/api/services/00000000-0000-0000-0000-000000000000')
-        .set(authHeader(token));
-
-      expect(res.status).toBe(404);
+        .set(authHeader(token))
+        .expect(404);
     });
   });
 
@@ -101,11 +99,10 @@ describe('Service Catalog (e2e)', () => {
         .set(authHeader(token))
         .send({ name: 'To Delete', description: 'X', price: 50 });
 
-      const res = await request(testApp.app.getHttpServer())
+      await request(testApp.app.getHttpServer())
         .delete(`/api/services/${created.body.id}`)
-        .set(authHeader(token));
-
-      expect(res.status).toBe(204);
+        .set(authHeader(token))
+        .expect(204);
     });
   });
 });

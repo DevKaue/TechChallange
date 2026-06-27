@@ -47,15 +47,14 @@ describe('Service Orders (e2e)', () => {
     });
 
     it('should return 404 for non-existent customerId', async () => {
-      const res = await request(testApp.app.getHttpServer())
+      await request(testApp.app.getHttpServer())
         .post('/api/service-orders')
         .set(authHeader(attendantToken))
         .send({
           customerId: '00000000-0000-0000-0000-000000000000',
           vehicleId: seed.vehicle1Id,
-        });
-
-      expect(res.status).toBe(404);
+        })
+        .expect(404);
     });
   });
 
@@ -71,11 +70,9 @@ describe('Service Orders (e2e)', () => {
     });
 
     it('should return 401 without token', async () => {
-      const res = await request(testApp.app.getHttpServer()).get(
-        '/api/service-orders',
-      );
-
-      expect(res.status).toBe(401);
+      await request(testApp.app.getHttpServer())
+        .get('/api/service-orders')
+        .expect(401);
     });
   });
 
@@ -133,26 +130,25 @@ describe('Service Orders (e2e)', () => {
 
       const estimateId = osRes.body.estimates[0].id;
 
-      const partItemResponse = await request(testApp.app.getHttpServer())
+      await request(testApp.app.getHttpServer())
         .post(`/api/service-orders/estimates/${estimateId}/items`)
         .set(authHeader(attendantToken))
         .send({
           itemType: 'PART',
           referenceId: seed.part1Id,
           quantity: 2,
-        });
+        })
+        .expect(201);
 
-      const serviceItemResponse = await request(testApp.app.getHttpServer())
+      await request(testApp.app.getHttpServer())
         .post(`/api/service-orders/estimates/${estimateId}/items`)
         .set(authHeader(attendantToken))
         .send({
           itemType: 'SERVICE',
           referenceId: seed.service1Id,
           quantity: 1,
-        });
-
-      expect(partItemResponse.status).toBe(201);
-      expect(serviceItemResponse.status).toBe(201);
+        })
+        .expect(201);
     });
 
     it('6. Approve Estimate → IN_EXECUTION', async () => {
@@ -214,11 +210,10 @@ describe('Service Orders (e2e)', () => {
 
   describe('GET /api/service-orders/:id', () => {
     it('should return 404 for non-existent OS', async () => {
-      const res = await request(testApp.app.getHttpServer())
+      await request(testApp.app.getHttpServer())
         .get('/api/service-orders/00000000-0000-0000-0000-000000000000')
-        .set(authHeader(attendantToken));
-
-      expect(res.status).toBe(404);
+        .set(authHeader(attendantToken))
+        .expect(404);
     });
   });
 });

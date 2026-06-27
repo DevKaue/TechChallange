@@ -80,8 +80,54 @@ export class EstimateUseCase {
   }
 
   async addEstimateItem(estimateId: string, dto: AddEstimateItemDto) {
-    const { unitPriceMoney, description } =
-      await this.resolveEstimateItemPricing(dto);
+    let unitPriceMoney: Money | null = null;
+
+    let description = dto.description ?? '';
+
+    if (dto.itemType === ServiceOrderItemType.SERVICE) {
+      if (this.serviceCatalogRepository) {
+        const service = await this.serviceCatalogRepository.findById(
+          dto.referenceId,
+        );
+
+        if (!service) {
+          throw new ServiceCatalogNotFoundException(dto.referenceId);
+        }
+
+        unitPriceMoney = Money.fromFloat(service.price);
+      } else {
+        unitPriceMoney = Money.fromFloat(0);
+      }
+    } else {
+      const part = await this.partRepository.findById(dto.referenceId);
+
+      if (!part) {
+        throw new PartNotFoundException(dto.referenceId);
+      }
+
+      if (part.stockQuantity < dto.quantity) {
+        throw new ConflictException(
+          `Insufficient stock for part ${part.name}. Available: ${part.stockQuantity}`,
+        );
+      }
+
+      unitPriceMoney = Money.fromFloat(part.price);
+      description = dto.description ?? part.name;
+
+      try {
+        await this.partRepository.decrementStock(part.id, dto.quantity);
+      } catch (error: unknown) {
+        if (error instanceof InsufficientMaterialStockException) {
+          throw new ConflictException(error.message);
+        }
+
+        if (error instanceof DomainException) {
+          throw new InvalidMaterialDataException(error.message);
+        }
+
+        throw error;
+      }
+    }
 
     const totalPriceMoney = unitPriceMoney.multiply(dto.quantity);
 
@@ -89,7 +135,7 @@ export class EstimateUseCase {
       estimateId,
       itemType: dto.itemType,
       referenceId: dto.referenceId,
-      description,
+      description: dto.description ?? description,
       quantity: dto.quantity,
       unitPrice: unitPriceMoney.float,
       totalPrice: totalPriceMoney.float,
@@ -101,79 +147,6 @@ export class EstimateUseCase {
     return plainToInstance(EstimateItemDto, item, {
       excludeExtraneousValues: true,
     });
-  }
-
-  private async resolveEstimateItemPricing(
-    dto: AddEstimateItemDto,
-  ): Promise<{ unitPriceMoney: Money; description: string }> {
-    if (dto.itemType === ServiceOrderItemType.SERVICE) {
-      return this.resolveServiceItemPricing(dto);
-    }
-
-    return this.resolvePartItemPricing(dto);
-  }
-
-  private async resolveServiceItemPricing(
-    dto: AddEstimateItemDto,
-  ): Promise<{ unitPriceMoney: Money; description: string }> {
-    if (!this.serviceCatalogRepository) {
-      return {
-        unitPriceMoney: Money.fromFloat(0),
-        description: dto.description ?? '',
-      };
-    }
-
-    const service = await this.serviceCatalogRepository.findById(
-      dto.referenceId,
-    );
-
-    if (!service) {
-      throw new ServiceCatalogNotFoundException(dto.referenceId);
-    }
-
-    return {
-      unitPriceMoney: Money.fromFloat(service.price),
-      description: dto.description ?? '',
-    };
-  }
-
-  private async resolvePartItemPricing(
-    dto: AddEstimateItemDto,
-  ): Promise<{ unitPriceMoney: Money; description: string }> {
-    const part = await this.partRepository.findById(dto.referenceId);
-
-    if (!part) {
-      throw new PartNotFoundException(dto.referenceId);
-    }
-
-    if (part.stockQuantity < dto.quantity) {
-      throw new ConflictException(
-        `Insufficient stock for part ${part.name}. Available: ${part.stockQuantity}`,
-      );
-    }
-
-    await this.decrementPartStock(part.id, dto.quantity);
-
-    return {
-      unitPriceMoney: Money.fromFloat(part.price),
-      description: dto.description ?? part.name,
-    };
-  }
-
-  private async decrementPartStock(partId: string, quantity: number) {
-    try {
-      await this.partRepository.decrementStock(partId, quantity);
-    } catch (error: unknown) {
-      if (error instanceof InsufficientMaterialStockException) {
-        throw new ConflictException(error.message);
-      }
-
-      if (error instanceof DomainException) {
-        throw new InvalidMaterialDataException(error.message);
-      }
-
-      throw error;
-    }
   }
 
   async updateEstimateStatus(estimateId: string, dto: UpdateEstimateStatusDto) {

@@ -61,12 +61,11 @@ describe('Service Orders - Mechanics (e2e)', () => {
         .set(authHeader(attendantToken))
         .send({ diagnosis: 'Diagnóstico' });
 
-      const res = await request(testApp.app.getHttpServer())
+      await request(testApp.app.getHttpServer())
         .patch(`/api/service-orders/${osId}/mechanic`)
         .set(authHeader(attendantToken))
-        .send({ mechanicId: seed.mechanic1Id });
-
-      expect(res.status).toBe(400);
+        .send({ mechanicId: seed.mechanic1Id })
+        .expect(400);
     });
 
     it('should return 404 for invalid mechanicId (non-mechanic user)', async () => {
@@ -77,12 +76,11 @@ describe('Service Orders - Mechanics (e2e)', () => {
 
       const osId = osRes.body.id;
 
-      const res = await request(testApp.app.getHttpServer())
+      await request(testApp.app.getHttpServer())
         .patch(`/api/service-orders/${osId}/mechanic`)
         .set(authHeader(attendantToken))
-        .send({ mechanicId: '00000000-0000-0000-0000-000000000000' });
-
-      expect(res.status).toBe(404);
+        .send({ mechanicId: '00000000-0000-0000-0000-000000000000' })
+        .expect(404);
     });
   });
 

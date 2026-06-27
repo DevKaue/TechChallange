@@ -37,19 +37,17 @@ describe('Auth (e2e)', () => {
     });
 
     it('should return 401 for invalid email', async () => {
-      const res = await request(testApp.app.getHttpServer())
+      await request(testApp.app.getHttpServer())
         .post('/api/auth/login')
-        .send({ email: 'wrong@email.com', password: 'Tech@123' });
-
-      expect(res.status).toBe(401);
+        .send({ email: 'wrong@email.com', password: 'Tech@123' })
+        .expect(401);
     });
 
     it('should return 401 for invalid password', async () => {
-      const res = await request(testApp.app.getHttpServer())
+      await request(testApp.app.getHttpServer())
         .post('/api/auth/login')
-        .send({ email: 'ana.test@oficina.com', password: 'WrongPass' });
-
-      expect(res.status).toBe(401);
+        .send({ email: 'ana.test@oficina.com', password: 'WrongPass' })
+        .expect(401);
     });
   });
 
@@ -65,11 +63,10 @@ describe('Auth (e2e)', () => {
     });
 
     it('should return 403 for MECHANIC role', async () => {
-      const res = await request(testApp.app.getHttpServer())
+      await request(testApp.app.getHttpServer())
         .post('/api/auth/login-admin')
-        .send({ email: 'joao.test@oficina.com', password: 'Tech@123' });
-
-      expect(res.status).toBe(403);
+        .send({ email: 'joao.test@oficina.com', password: 'Tech@123' })
+        .expect(403);
     });
   });
 
@@ -88,11 +85,9 @@ describe('Auth (e2e)', () => {
     });
 
     it('should return 401 without token', async () => {
-      const res = await request(testApp.app.getHttpServer()).get(
-        '/api/auth/me',
-      );
-
-      expect(res.status).toBe(401);
+      await request(testApp.app.getHttpServer())
+        .get('/api/auth/me')
+        .expect(401);
     });
   });
 });

@@ -8,24 +8,14 @@ export class ServiceOrderMapper {
     return ServiceOrder.create({
       id: data.id,
       status: data.status as ServiceOrderStatus,
-      mechanic: this.toMechanicAssignment(data),
+      mechanic: data.mechanic
+        ? MechanicAssignment.fromPersistence(
+            data.mechanic.id,
+            data.mechanic.name,
+          )
+        : data.mechanicId
+          ? MechanicAssignment.fromPersistence(data.mechanicId, '')
+          : null,
     });
-  }
-
-  private static toMechanicAssignment(
-    data: PersistedServiceOrder,
-  ): MechanicAssignment | null {
-    if (data.mechanic) {
-      return MechanicAssignment.fromPersistence(
-        data.mechanic.id,
-        data.mechanic.name,
-      );
-    }
-
-    if (data.mechanicId) {
-      return MechanicAssignment.fromPersistence(data.mechanicId, '');
-    }
-
-    return null;
   }
 }

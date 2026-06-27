@@ -84,13 +84,12 @@ describe('Create Customer (e2e)', () => {
         email: 'maria.test2@email.com',
       };
 
-      const duplicateResponse = await request(app.getHttpServer())
+      await request(app.getHttpServer())
         .post('/api/customers')
         .set('Authorization', `Bearer valid-token`)
         .set('X-User-Role', UserRole.ATTENDANT)
-        .send(secondCustomerInput);
-
-      expect(duplicateResponse.status).toBe(409);
+        .send(secondCustomerInput)
+        .expect(409);
     });
 
     it('should return 400 when documentType is missing', async () => {

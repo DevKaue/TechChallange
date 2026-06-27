@@ -2,6 +2,7 @@ import CustomerRepositoryInterface from '@customer-management/domain/contracts/c
 import VehicleRepositoryInterface from '@customer-management/domain/contracts/vehicle-repository.interface';
 import UnitOfWorkServiceInterface from '@customer-management/application/contracts/unit-of-work-service.interface';
 import ArchiveCustomerInputDTO from '@/customer-management/application/dtos/archive-customer-input.dto';
+import CustomerNotFoundException from '@/customer-management/domain/exceptions/customer-not-found.exception';
 
 export default class ArchiveCustomerUseCase {
   constructor(

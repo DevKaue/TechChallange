@@ -30,7 +30,7 @@ export type UpdateMaterialProps = Partial<
 >;
 
 export default class Material {
-  private readonly _id: string;
+  private _id: string;
   private _name: string;
   private _description: string | null;
   private _price: number;
@@ -38,7 +38,7 @@ export default class Material {
   private _stockQuantity: number;
   private _stockUnit: StockUnit;
   private _expiresAt: Date | null;
-  private readonly _createdAt: Date;
+  private _createdAt: Date;
   private _updatedAt: Date;
 
   constructor(props: MaterialProps) {

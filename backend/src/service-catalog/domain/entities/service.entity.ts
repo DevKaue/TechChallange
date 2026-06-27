@@ -14,11 +14,11 @@ export type UpdateServiceProps = Partial<
 >;
 
 export default class Service {
-  private readonly _id: string;
+  private _id: string;
   private _name: string;
   private _description: string | null;
   private _price: number;
-  private readonly _createdAt: Date;
+  private _createdAt: Date;
   private _updatedAt: Date;
 
   constructor(props: ServiceProps) {

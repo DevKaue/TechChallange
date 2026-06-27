@@ -11,21 +11,8 @@ export default class Email {
   }
 
   private isValid(email: string): boolean {
-    if (email.length > 254 || /\s/.test(email)) {
-      return false;
-    }
-
-    const parts = email.split('@');
-    if (parts.length !== 2) {
-      return false;
-    }
-
-    const [localPart, domain] = parts;
-    return (
-      localPart.length > 0 &&
-      domain.includes('.') &&
-      domain.split('.').every((label) => label.length > 0)
-    );
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email) && email.length <= 254;
   }
 
   public toString(): string {

@@ -13,12 +13,12 @@ export type CustomerProps = {
 };
 
 export default class Customer {
-  private readonly _id: string;
-  private readonly _document: Document;
+  private _id: string;
+  private _document: Document;
   private _name: string;
   private _phone?: string;
   private _email?: Email;
-  private readonly _createdAt: Date;
+  private _createdAt: Date;
   private _updatedAt: Date;
   private _deletedAt?: Date;
 

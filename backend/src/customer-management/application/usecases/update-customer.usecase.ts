@@ -24,7 +24,7 @@ export default class UpdateCustomerUseCase {
 
     if (input.email !== undefined) {
       customer.changeEmail(
-        input.email === null ? undefined : new Email(input.email),
+        input.email !== null ? new Email(input.email) : undefined,
       );
     }
 
