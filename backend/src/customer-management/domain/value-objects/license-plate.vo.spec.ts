@@ -22,11 +22,7 @@ describe('LicensePlate Value Object', () => {
     });
 
     it('should accept valid traditional formats', () => {
-      const validPlates = [
-        'ABC1234',
-        'XYZ9999',
-        'AAA0000',
-      ];
+      const validPlates = ['ABC1234', 'XYZ9999', 'AAA0000'];
 
       validPlates.forEach((plateLetter) => {
         const plate = new LicensePlate(plateLetter);
@@ -55,11 +51,7 @@ describe('LicensePlate Value Object', () => {
     });
 
     it('should accept valid Mercosul formats', () => {
-      const validPlates = [
-        'ABC1D23',
-        'XYZ9Z99',
-        'AAA1B00',
-      ];
+      const validPlates = ['ABC1D23', 'XYZ9Z99', 'AAA1B00'];
 
       validPlates.forEach((plateLetter) => {
         const plate = new LicensePlate(plateLetter);
@@ -213,7 +205,9 @@ describe('LicensePlate Value Object', () => {
     it('should throw error with descriptive message', () => {
       expect(() => {
         new LicensePlate('INVALID');
-      }).toThrow('Invalid license plate format. Must be Mercosul or traditional Brazilian format.');
+      }).toThrow(
+        'Invalid license plate format. Must be Mercosul or traditional Brazilian format.',
+      );
     });
   });
 

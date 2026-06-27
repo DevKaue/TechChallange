@@ -10,7 +10,10 @@ describe('CustomerManagementFacade', () => {
   beforeEach(() => {
     findCustomerByIdUseCase = { execute: jest.fn() };
     findVehicleByIdUseCase = { execute: jest.fn() };
-    facade = new CustomerManagementFacade(findCustomerByIdUseCase, findVehicleByIdUseCase);
+    facade = new CustomerManagementFacade(
+      findCustomerByIdUseCase,
+      findVehicleByIdUseCase,
+    );
   });
 
   describe('findCustomerById', () => {
@@ -33,14 +36,18 @@ describe('CustomerManagementFacade', () => {
     });
 
     it('returns null when CustomerNotFoundException is thrown', async () => {
-      findCustomerByIdUseCase.execute.mockRejectedValue(new CustomerNotFoundException());
+      findCustomerByIdUseCase.execute.mockRejectedValue(
+        new CustomerNotFoundException(),
+      );
       const result = await facade.findCustomerById({ id: 'missing' });
       expect(result).toBeNull();
     });
 
     it('rethrows non-CustomerNotFoundException errors', async () => {
       findCustomerByIdUseCase.execute.mockRejectedValue(new Error('DB error'));
-      await expect(facade.findCustomerById({ id: 'x' })).rejects.toThrow('DB error');
+      await expect(facade.findCustomerById({ id: 'x' })).rejects.toThrow(
+        'DB error',
+      );
     });
   });
 
@@ -65,14 +72,18 @@ describe('CustomerManagementFacade', () => {
     });
 
     it('returns null when VehicleNotFoundException is thrown', async () => {
-      findVehicleByIdUseCase.execute.mockRejectedValue(new VehicleNotFoundException());
+      findVehicleByIdUseCase.execute.mockRejectedValue(
+        new VehicleNotFoundException(),
+      );
       const result = await facade.findVehicleById({ id: 'missing' });
       expect(result).toBeNull();
     });
 
     it('rethrows non-VehicleNotFoundException errors', async () => {
       findVehicleByIdUseCase.execute.mockRejectedValue(new Error('DB error'));
-      await expect(facade.findVehicleById({ id: 'x' })).rejects.toThrow('DB error');
+      await expect(facade.findVehicleById({ id: 'x' })).rejects.toThrow(
+        'DB error',
+      );
     });
   });
 });

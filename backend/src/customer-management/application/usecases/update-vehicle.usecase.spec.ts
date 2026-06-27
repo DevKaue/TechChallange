@@ -26,7 +26,10 @@ describe('UpdateVehicleUseCase', () => {
       checkUniqueness: jest.fn(),
     } as any;
 
-    useCase = new UpdateVehicleUseCase(vehicleRepositoryMock, registrationCheckerMock);
+    useCase = new UpdateVehicleUseCase(
+      vehicleRepositoryMock,
+      registrationCheckerMock,
+    );
   });
 
   describe('execute', () => {
@@ -286,7 +289,9 @@ describe('UpdateVehicleUseCase', () => {
       const error = new Error('License plate already exists');
       registrationCheckerMock.checkUniqueness.mockRejectedValue(error);
 
-      await expect(useCase.execute(input)).rejects.toThrow('License plate already exists');
+      await expect(useCase.execute(input)).rejects.toThrow(
+        'License plate already exists',
+      );
     });
   });
 });

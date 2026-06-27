@@ -27,7 +27,7 @@ describe('CreateCustomerUseCase', () => {
 
     useCase = new CreateCustomerUseCase(
       customerRepositoryMock,
-      registrationCheckerMock
+      registrationCheckerMock,
     );
   });
 
@@ -77,7 +77,9 @@ describe('CreateCustomerUseCase', () => {
 
       await useCase.execute(input);
 
-      expect(customerRepositoryMock.create).toHaveBeenCalledWith(expect.any(Customer));
+      expect(customerRepositoryMock.create).toHaveBeenCalledWith(
+        expect.any(Customer),
+      );
     });
 
     it('should return customer output DTO with correct properties', async () => {
@@ -109,7 +111,9 @@ describe('CreateCustomerUseCase', () => {
       const error = new Error('Document already exists');
       registrationCheckerMock.checkUniqueness.mockRejectedValue(error);
 
-      await expect(useCase.execute(input)).rejects.toThrow('Document already exists');
+      await expect(useCase.execute(input)).rejects.toThrow(
+        'Document already exists',
+      );
     });
 
     it('should create customer with all required fields', async () => {

@@ -11,8 +11,13 @@ describe('MaterialExceptionFilter', () => {
 
   beforeEach(() => {
     filter = new MaterialExceptionFilter();
-    mockResponse = { status: jest.fn().mockReturnThis(), json: jest.fn().mockReturnThis() };
-    mockHost = { switchToHttp: () => ({ getResponse: () => mockResponse }) } as any;
+    mockResponse = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn().mockReturnThis(),
+    };
+    mockHost = {
+      switchToHttp: () => ({ getResponse: () => mockResponse }),
+    } as any;
   });
 
   it('maps MaterialNotFoundException to 404', () => {

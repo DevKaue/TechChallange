@@ -29,7 +29,9 @@ describe('env', () => {
     it('throws with both missing vars listed', () => {
       delete process.env.DATABASE_URL;
       delete process.env.JWT_SECRET;
-      expect(() => validateEnv()).toThrow(/DATABASE_URL.*JWT_SECRET|JWT_SECRET.*DATABASE_URL/);
+      expect(() => validateEnv()).toThrow(
+        /DATABASE_URL.*JWT_SECRET|JWT_SECRET.*DATABASE_URL/,
+      );
     });
   });
 

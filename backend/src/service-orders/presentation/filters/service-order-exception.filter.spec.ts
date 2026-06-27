@@ -15,8 +15,13 @@ describe('ServiceOrderExceptionFilter', () => {
 
   beforeEach(() => {
     filter = new ServiceOrderExceptionFilter();
-    mockResponse = { status: jest.fn().mockReturnThis(), json: jest.fn().mockReturnThis() };
-    mockHost = { switchToHttp: () => ({ getResponse: () => mockResponse }) } as any;
+    mockResponse = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn().mockReturnThis(),
+    };
+    mockHost = {
+      switchToHttp: () => ({ getResponse: () => mockResponse }),
+    } as any;
   });
 
   it.each([
@@ -32,7 +37,10 @@ describe('ServiceOrderExceptionFilter', () => {
     filter.catch(exc, mockHost);
     expect(mockResponse.status).toHaveBeenCalledWith(expectedStatus);
     expect(mockResponse.json).toHaveBeenCalledWith(
-      expect.objectContaining({ status_code: expectedStatus, message: exc.message }),
+      expect.objectContaining({
+        status_code: expectedStatus,
+        message: exc.message,
+      }),
     );
   });
 });

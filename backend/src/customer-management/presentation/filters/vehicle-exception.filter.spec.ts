@@ -11,8 +11,13 @@ describe('VehicleExceptionFilter', () => {
 
   beforeEach(() => {
     filter = new VehicleExceptionFilter();
-    mockResponse = { status: jest.fn().mockReturnThis(), json: jest.fn().mockReturnThis() };
-    mockHost = { switchToHttp: () => ({ getResponse: () => mockResponse }) } as any;
+    mockResponse = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn().mockReturnThis(),
+    };
+    mockHost = {
+      switchToHttp: () => ({ getResponse: () => mockResponse }),
+    } as any;
   });
 
   it('maps VehicleAlreadyExistsException to 409', () => {

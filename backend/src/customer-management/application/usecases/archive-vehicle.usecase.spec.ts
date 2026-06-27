@@ -66,9 +66,13 @@ describe('ArchiveVehicleUseCase', () => {
     it('should throw VehicleNotFoundException when vehicle does not exist', async () => {
       const input = new ArchiveVehicleInputDTO({ id: 'non-existent-id' });
 
-      vehicleRepositoryMock.getById.mockRejectedValue(new VehicleNotFoundException());
+      vehicleRepositoryMock.getById.mockRejectedValue(
+        new VehicleNotFoundException(),
+      );
 
-      await expect(useCase.execute(input)).rejects.toThrow(VehicleNotFoundException);
+      await expect(useCase.execute(input)).rejects.toThrow(
+        VehicleNotFoundException,
+      );
     });
 
     it('should archive the vehicle returned from repository', async () => {

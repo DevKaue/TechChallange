@@ -88,10 +88,7 @@ describe('Document Value Object', () => {
     });
 
     it('should accept valid CNPJ numbers', () => {
-      const validCNPJs = [
-        '11222333000181',
-        '11444777000161',
-      ];
+      const validCNPJs = ['11222333000181', '11444777000161'];
 
       validCNPJs.forEach((cnpj) => {
         const document = new Document(DocumentType.CNPJ, cnpj);

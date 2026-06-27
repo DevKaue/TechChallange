@@ -60,7 +60,9 @@ describe('FindCustomerByIdUseCase', () => {
 
       await useCase.execute(input);
 
-      expect(customerQueryServiceMock.getById).toHaveBeenCalledWith({ id: customerId });
+      expect(customerQueryServiceMock.getById).toHaveBeenCalledWith({
+        id: customerId,
+      });
     });
 
     it('should return output DTO with customer data', async () => {
@@ -90,9 +92,13 @@ describe('FindCustomerByIdUseCase', () => {
     it('should throw CustomerNotFoundException when customer does not exist', async () => {
       const input = new FindCustomerByIdInputDTO({ id: 'non-existent-id' });
 
-      customerQueryServiceMock.getById.mockRejectedValue(new CustomerNotFoundException());
+      customerQueryServiceMock.getById.mockRejectedValue(
+        new CustomerNotFoundException(),
+      );
 
-      await expect(useCase.execute(input)).rejects.toThrow(CustomerNotFoundException);
+      await expect(useCase.execute(input)).rejects.toThrow(
+        CustomerNotFoundException,
+      );
     });
 
     it('should return customer with all properties', async () => {

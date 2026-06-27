@@ -10,8 +10,13 @@ describe('ServiceCatalogExceptionFilter', () => {
 
   beforeEach(() => {
     filter = new ServiceCatalogExceptionFilter();
-    mockResponse = { status: jest.fn().mockReturnThis(), json: jest.fn().mockReturnThis() };
-    mockHost = { switchToHttp: () => ({ getResponse: () => mockResponse }) } as any;
+    mockResponse = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn().mockReturnThis(),
+    };
+    mockHost = {
+      switchToHttp: () => ({ getResponse: () => mockResponse }),
+    } as any;
   });
 
   it('maps ServiceNotFoundException to 404', () => {

@@ -40,7 +40,7 @@ describe('CreateVehicleUseCase', () => {
     useCase = new CreateVehicleUseCase(
       vehicleRepositoryMock,
       customerRepositoryMock,
-      registrationCheckerMock
+      registrationCheckerMock,
     );
   });
 
@@ -91,7 +91,9 @@ describe('CreateVehicleUseCase', () => {
 
       await useCase.execute(input);
 
-      expect(customerRepositoryMock.getById).toHaveBeenCalledWith(input.customerId);
+      expect(customerRepositoryMock.getById).toHaveBeenCalledWith(
+        input.customerId,
+      );
     });
 
     it('should check uniqueness of license plate before creating', async () => {
@@ -135,7 +137,9 @@ describe('CreateVehicleUseCase', () => {
 
       await useCase.execute(input);
 
-      expect(vehicleRepositoryMock.create).toHaveBeenCalledWith(expect.any(Vehicle));
+      expect(vehicleRepositoryMock.create).toHaveBeenCalledWith(
+        expect.any(Vehicle),
+      );
     });
 
     it('should throw error if customer does not exist', async () => {
@@ -150,7 +154,9 @@ describe('CreateVehicleUseCase', () => {
       const error = new Error('Customer not found');
       customerRepositoryMock.getById.mockRejectedValue(error);
 
-      await expect(useCase.execute(input)).rejects.toThrow('Customer not found');
+      await expect(useCase.execute(input)).rejects.toThrow(
+        'Customer not found',
+      );
     });
 
     it('should throw error if license plate is not unique', async () => {
@@ -172,7 +178,9 @@ describe('CreateVehicleUseCase', () => {
       const error = new Error('License plate already registered');
       registrationCheckerMock.checkUniqueness.mockRejectedValue(error);
 
-      await expect(useCase.execute(input)).rejects.toThrow('License plate already registered');
+      await expect(useCase.execute(input)).rejects.toThrow(
+        'License plate already registered',
+      );
     });
 
     it('should return vehicle output DTO with correct properties', async () => {

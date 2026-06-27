@@ -12,8 +12,13 @@ describe('CustomerExceptionFilter', () => {
 
   beforeEach(() => {
     filter = new CustomerExceptionFilter();
-    mockResponse = { status: jest.fn().mockReturnThis(), json: jest.fn().mockReturnThis() };
-    mockHost = { switchToHttp: () => ({ getResponse: () => mockResponse }) } as any;
+    mockResponse = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn().mockReturnThis(),
+    };
+    mockHost = {
+      switchToHttp: () => ({ getResponse: () => mockResponse }),
+    } as any;
   });
 
   it('maps CustomerAlreadyExistsException to 409', () => {
@@ -21,7 +26,10 @@ describe('CustomerExceptionFilter', () => {
     filter.catch(exc, mockHost);
     expect(mockResponse.status).toHaveBeenCalledWith(409);
     expect(mockResponse.json).toHaveBeenCalledWith(
-      expect.objectContaining({ error: 'Customer Already Exists', error_code: 'customer_already_exists' }),
+      expect.objectContaining({
+        error: 'Customer Already Exists',
+        error_code: 'customer_already_exists',
+      }),
     );
   });
 
@@ -30,7 +38,10 @@ describe('CustomerExceptionFilter', () => {
     filter.catch(exc, mockHost);
     expect(mockResponse.status).toHaveBeenCalledWith(404);
     expect(mockResponse.json).toHaveBeenCalledWith(
-      expect.objectContaining({ error: 'Customer Not Found', error_code: 'customer_not_found' }),
+      expect.objectContaining({
+        error: 'Customer Not Found',
+        error_code: 'customer_not_found',
+      }),
     );
   });
 
@@ -39,7 +50,10 @@ describe('CustomerExceptionFilter', () => {
     filter.catch(exc, mockHost);
     expect(mockResponse.status).toHaveBeenCalledWith(409);
     expect(mockResponse.json).toHaveBeenCalledWith(
-      expect.objectContaining({ error: 'Customer Is Archived', error_code: 'customer_is_archived' }),
+      expect.objectContaining({
+        error: 'Customer Is Archived',
+        error_code: 'customer_is_archived',
+      }),
     );
   });
 

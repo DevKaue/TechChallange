@@ -161,7 +161,9 @@ describe('Customer Entity', () => {
       customer.changeName('Jane Doe');
 
       expect(customer.name).toBe('Jane Doe');
-      expect(customer.updatedAt.getTime()).toBeGreaterThanOrEqual(previousUpdatedAt.getTime());
+      expect(customer.updatedAt.getTime()).toBeGreaterThanOrEqual(
+        previousUpdatedAt.getTime(),
+      );
     });
 
     it('should update updatedAt when changing name', () => {
@@ -176,7 +178,9 @@ describe('Customer Entity', () => {
 
       customer.changeName('Jane Doe');
 
-      expect(customer.updatedAt.getTime()).toBeGreaterThanOrEqual(previousUpdatedAt.getTime());
+      expect(customer.updatedAt.getTime()).toBeGreaterThanOrEqual(
+        previousUpdatedAt.getTime(),
+      );
     });
   });
 
@@ -220,7 +224,9 @@ describe('Customer Entity', () => {
 
       customer.changePhone('11988888888');
 
-      expect(customer.updatedAt.getTime()).toBeGreaterThanOrEqual(previousUpdatedAt.getTime());
+      expect(customer.updatedAt.getTime()).toBeGreaterThanOrEqual(
+        previousUpdatedAt.getTime(),
+      );
     });
   });
 
@@ -266,7 +272,9 @@ describe('Customer Entity', () => {
 
       customer.changeEmail(newEmail);
 
-      expect(customer.updatedAt.getTime()).toBeGreaterThanOrEqual(previousUpdatedAt.getTime());
+      expect(customer.updatedAt.getTime()).toBeGreaterThanOrEqual(
+        previousUpdatedAt.getTime(),
+      );
     });
   });
 
@@ -298,8 +306,12 @@ describe('Customer Entity', () => {
       customer.softDelete();
       const afterDelete = new Date();
 
-      expect(customer.deletedAt!.getTime()).toBeGreaterThanOrEqual(beforeDelete.getTime());
-      expect(customer.deletedAt!.getTime()).toBeLessThanOrEqual(afterDelete.getTime());
+      expect(customer.deletedAt!.getTime()).toBeGreaterThanOrEqual(
+        beforeDelete.getTime(),
+      );
+      expect(customer.deletedAt!.getTime()).toBeLessThanOrEqual(
+        afterDelete.getTime(),
+      );
     });
   });
 });

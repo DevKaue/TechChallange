@@ -30,7 +30,10 @@ describe('HttpExceptionFilter', () => {
   });
 
   it('handles HttpException with object response', () => {
-    const exception = new HttpException({ message: 'Bad data' }, HttpStatus.BAD_REQUEST);
+    const exception = new HttpException(
+      { message: 'Bad data' },
+      HttpStatus.BAD_REQUEST,
+    );
     filter.catch(exception, mockHost);
 
     expect(mockResponse.status).toHaveBeenCalledWith(400);
@@ -63,7 +66,10 @@ describe('HttpExceptionFilter', () => {
 
     expect(mockResponse.status).toHaveBeenCalledWith(500);
     expect(mockResponse.json).toHaveBeenCalledWith(
-      expect.objectContaining({ statusCode: 500, error: 'Internal server error' }),
+      expect.objectContaining({
+        statusCode: 500,
+        error: 'Internal server error',
+      }),
     );
   });
 

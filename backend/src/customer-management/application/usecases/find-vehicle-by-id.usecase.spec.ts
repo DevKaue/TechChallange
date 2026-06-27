@@ -60,7 +60,9 @@ describe('FindVehicleByIdUseCase', () => {
 
       await useCase.execute(input);
 
-      expect(vehicleQueryServiceMock.getById).toHaveBeenCalledWith({ id: vehicleId });
+      expect(vehicleQueryServiceMock.getById).toHaveBeenCalledWith({
+        id: vehicleId,
+      });
     });
 
     it('should return output DTO with vehicle data', async () => {
@@ -91,9 +93,13 @@ describe('FindVehicleByIdUseCase', () => {
     it('should throw VehicleNotFoundException when vehicle does not exist', async () => {
       const input = new FindVehicleByIdInputDTO({ id: 'non-existent-id' });
 
-      vehicleQueryServiceMock.getById.mockRejectedValue(new VehicleNotFoundException());
+      vehicleQueryServiceMock.getById.mockRejectedValue(
+        new VehicleNotFoundException(),
+      );
 
-      await expect(useCase.execute(input)).rejects.toThrow(VehicleNotFoundException);
+      await expect(useCase.execute(input)).rejects.toThrow(
+        VehicleNotFoundException,
+      );
     });
 
     it('should return vehicle with all properties', async () => {

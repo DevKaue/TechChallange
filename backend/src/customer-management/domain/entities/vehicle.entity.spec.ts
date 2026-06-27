@@ -177,7 +177,9 @@ describe('Vehicle Entity', () => {
 
       vehicle.changeLicensePlate(newLicensePlate);
 
-      expect(vehicle.updatedAt.getTime()).toBeGreaterThanOrEqual(previousUpdatedAt.getTime());
+      expect(vehicle.updatedAt.getTime()).toBeGreaterThanOrEqual(
+        previousUpdatedAt.getTime(),
+      );
     });
   });
 
@@ -212,7 +214,9 @@ describe('Vehicle Entity', () => {
 
       vehicle.changeBrand('Honda');
 
-      expect(vehicle.updatedAt.getTime()).toBeGreaterThanOrEqual(previousUpdatedAt.getTime());
+      expect(vehicle.updatedAt.getTime()).toBeGreaterThanOrEqual(
+        previousUpdatedAt.getTime(),
+      );
     });
   });
 
@@ -247,7 +251,9 @@ describe('Vehicle Entity', () => {
 
       vehicle.changeModel('Camry');
 
-      expect(vehicle.updatedAt.getTime()).toBeGreaterThanOrEqual(previousUpdatedAt.getTime());
+      expect(vehicle.updatedAt.getTime()).toBeGreaterThanOrEqual(
+        previousUpdatedAt.getTime(),
+      );
     });
   });
 
@@ -284,7 +290,9 @@ describe('Vehicle Entity', () => {
 
       vehicle.changeYear(newYear);
 
-      expect(vehicle.updatedAt.getTime()).toBeGreaterThanOrEqual(previousUpdatedAt.getTime());
+      expect(vehicle.updatedAt.getTime()).toBeGreaterThanOrEqual(
+        previousUpdatedAt.getTime(),
+      );
     });
   });
 
@@ -320,8 +328,12 @@ describe('Vehicle Entity', () => {
       vehicle.softDelete();
       const afterDelete = new Date();
 
-      expect(vehicle.deletedAt!.getTime()).toBeGreaterThanOrEqual(beforeDelete.getTime());
-      expect(vehicle.deletedAt!.getTime()).toBeLessThanOrEqual(afterDelete.getTime());
+      expect(vehicle.deletedAt!.getTime()).toBeGreaterThanOrEqual(
+        beforeDelete.getTime(),
+      );
+      expect(vehicle.deletedAt!.getTime()).toBeLessThanOrEqual(
+        afterDelete.getTime(),
+      );
     });
   });
 });

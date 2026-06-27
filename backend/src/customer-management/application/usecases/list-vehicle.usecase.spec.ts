@@ -78,7 +78,9 @@ describe('ListVehicleUseCase', () => {
 
       const result = await useCase.execute(input);
 
-      expect(vehicleQueryServiceMock.findAll).toHaveBeenCalledWith({ customerId });
+      expect(vehicleQueryServiceMock.findAll).toHaveBeenCalledWith({
+        customerId,
+      });
       expect(result.vehicles).toHaveLength(1);
       expect(result.vehicles[0].customerId).toBe(customerId);
     });
@@ -125,7 +127,9 @@ describe('ListVehicleUseCase', () => {
 
       const result = await useCase.execute(input);
 
-      expect(vehicleQueryServiceMock.findAll).toHaveBeenCalledWith({ customerId: undefined });
+      expect(vehicleQueryServiceMock.findAll).toHaveBeenCalledWith({
+        customerId: undefined,
+      });
       expect(result.vehicles).toHaveLength(2);
     });
 

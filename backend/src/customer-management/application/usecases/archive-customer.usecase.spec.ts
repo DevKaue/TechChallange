@@ -37,7 +37,7 @@ describe('ArchiveCustomerUseCase', () => {
     useCase = new ArchiveCustomerUseCase(
       customerRepositoryMock,
       vehicleRepositoryMock,
-      unitOfWorkMock
+      unitOfWorkMock,
     );
   });
 
@@ -59,7 +59,9 @@ describe('ArchiveCustomerUseCase', () => {
 
       expect(customerRepositoryMock.getById).toHaveBeenCalledWith(input.id);
       expect(customerRepositoryMock.archive).toHaveBeenCalledWith(customer);
-      expect(vehicleRepositoryMock.archiveAllByCustomerId).toHaveBeenCalledWith(input.id);
+      expect(vehicleRepositoryMock.archiveAllByCustomerId).toHaveBeenCalledWith(
+        input.id,
+      );
       expect(unitOfWorkMock.runInTransaction).toHaveBeenCalled();
     });
 
@@ -94,15 +96,21 @@ describe('ArchiveCustomerUseCase', () => {
 
       await useCase.execute(input);
 
-      expect(vehicleRepositoryMock.archiveAllByCustomerId).toHaveBeenCalledWith(customerId);
+      expect(vehicleRepositoryMock.archiveAllByCustomerId).toHaveBeenCalledWith(
+        customerId,
+      );
     });
 
     it('should throw CustomerNotFoundException when customer does not exist', async () => {
       const input = new ArchiveCustomerInputDTO({ id: 'non-existent-id' });
 
-      customerRepositoryMock.getById.mockRejectedValue(new CustomerNotFoundException());
+      customerRepositoryMock.getById.mockRejectedValue(
+        new CustomerNotFoundException(),
+      );
 
-      await expect(useCase.execute(input)).rejects.toThrow(CustomerNotFoundException);
+      await expect(useCase.execute(input)).rejects.toThrow(
+        CustomerNotFoundException,
+      );
     });
 
     it('should run archive in a transaction', async () => {
