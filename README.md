@@ -134,36 +134,6 @@ docker compose exec -it api sh
 npm run test
 npm run test:integration
 npm run test:e2e
-npm run test:cov
-
+npm run test:all:cov
 ```
-
-Para subir o SonarQube local:
-
-```bash
-docker compose --profile quality up -d sonarqube
-```
-
-Depois acesse `http://localhost:9000`, gere um token e rode o scanner apontando para este repositório. Antes do scan, gere cobertura:
-
-```bash
-docker compose exec api npm run test:cov
-```
-
 - Depois abra o arquivo `backend/coverage/lcov-report/index.html` no seu navegador
-
-Exemplo usando o scanner via Docker no Linux:
-
-```bash
-docker run --rm --network host -v "$PWD:/usr/src" -w /usr/src sonarsource/sonar-scanner-cli -Dsonar.host.url=http://localhost:9000 -Dsonar.token=<TOKEN>
-```
-
-Observação: em algumas máquinas o SonarQube exige ajustar `vm.max_map_count` no host antes de iniciar.
-
-## Referências do domínio
-
-Os documentos de apoio do DDD continuam no repositorio e no Obsidian:
-
-- `DDD_Documentacao.md`
-- `LinguagemUbiqua_GestaoClientes.md`
-- `Pessoal/Pós Graduação/Fase 1 - Tech Challenge` no vault do Obsidian
