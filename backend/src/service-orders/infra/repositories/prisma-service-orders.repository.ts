@@ -65,6 +65,7 @@ export class PrismaServiceOrdersRepository extends ServiceOrdersRepositoryInterf
     const serviceOrder = await this.prisma.serviceOrder.update({
       where: { id },
       data,
+      include: { mechanic: { select: { id: true, name: true } } },
     });
 
     return PrismaServiceOrderMapper.toPersistence(serviceOrder);

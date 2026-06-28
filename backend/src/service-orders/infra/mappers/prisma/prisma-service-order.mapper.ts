@@ -13,6 +13,7 @@ export class PrismaServiceOrderMapper {
     closedAt: Date | null;
     createdAt: Date;
     updatedAt: Date;
+    mechanic?: { id: string; name: string } | null;
   }): PersistedServiceOrder {
     return {
       id: entity.id,
@@ -22,7 +23,7 @@ export class PrismaServiceOrderMapper {
       status: entity.status,
       mileage: entity.mileage,
       notes: entity.notes,
-      mechanic: null,
+      mechanic: entity.mechanic ?? null,
       closedAt: entity.closedAt,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
