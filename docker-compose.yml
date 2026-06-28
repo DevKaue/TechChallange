@@ -33,12 +33,10 @@ services:
       npm run start:dev"
     ports:
       - '3000:3000'
+    env_file: ./backend/.env
     environment:
-      - DATABASE_URL=postgresql://admin:adminpassword@db:5432/oficinadb?schema=public
-      - JWT_SECRET=techchallenge_secret_key_2026
       - PORT=3000
       - NODE_ENV=development
-      - PASSWORD_SALT=4a7b1e8f9c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f
     depends_on:
       db:
         condition: service_healthy
