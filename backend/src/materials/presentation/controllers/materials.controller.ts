@@ -42,7 +42,7 @@ import {
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @UseFilters(MaterialExceptionFilter)
-@Controller(['materials', 'parts'])
+@Controller(['materials'])
 export class MaterialsController {
   constructor(
     private readonly createMaterialUseCase: CreateMaterialUseCase,
