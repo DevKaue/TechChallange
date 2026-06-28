@@ -131,9 +131,7 @@ GET /service-orders/:id
 ### Entre no container 
 ```bash
 docker compose exec -it api sh
-npm run test
-npm run test:integration
-npm run test:e2e
+npm run test:all
 npm run test:all:cov
 ```
 - Depois abra o arquivo `backend/coverage/lcov-report/index.html` no seu navegador
