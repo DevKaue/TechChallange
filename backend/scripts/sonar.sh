@@ -46,8 +46,8 @@ echo "[2/3] Running tests with coverage..."
 cd "$APP_DIR"
 
 # Limpar coverage anterior
-rm -f coverage/lcov.info combined-coverage/lcov.info
-rm -rf coverage-integration coverage-unit 2>/dev/null
+rm -rf coverage coverage-integration coverage-e2e combined-coverage 2>/dev/null
+
 
 # Executar a suíte de testes com cobertura unificada
 echo "  Running npm run test:all:cov..."

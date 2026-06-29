@@ -4,12 +4,18 @@ const { execSync } = require('child_process');
 
 const rootDir = path.resolve(__dirname, '..');
 const nycOutputDir = path.join(rootDir, '.nyc_output');
+const combinedDir = path.join(rootDir, 'combined-coverage');
 
-// 1. Clean and create .nyc_output
+// 1. Clean and create directories
 if (fs.existsSync(nycOutputDir)) {
   fs.rmSync(nycOutputDir, { recursive: true, force: true });
 }
 fs.mkdirSync(nycOutputDir, { recursive: true });
+
+if (fs.existsSync(combinedDir)) {
+  fs.rmSync(combinedDir, { recursive: true, force: true });
+}
+
 
 // 2. Define source files
 const sources = [
@@ -37,7 +43,16 @@ if (copiedCount === 0) {
 console.log(`[merge-coverage] Merging ${copiedCount} coverage files...`);
 
 try {
-  // 4. Run nyc report to merge and generate HTML, text and lcov reports
+  // 4. Converte e consolida os relatórios finais em um arquivo bruto que o nyc entende
+  const mergedRawJson = path.join(nycOutputDir, 'out.json');
+  console.log('[merge-coverage] Executing nyc merge...');
+  execSync(`npx nyc merge ${nycOutputDir} ${mergedRawJson}`, {
+    cwd: rootDir,
+    stdio: 'inherit'
+  });
+
+  // 5. Run nyc report to merge and generate HTML, text and lcov reports
+  console.log('[merge-coverage] Generating coverage reports...');
   execSync('npx nyc report --reporter=html --reporter=text --reporter=lcov --temp-dir=.nyc_output --report-dir=coverage', {
     cwd: rootDir,
     stdio: 'inherit'
@@ -46,8 +61,8 @@ try {
 
   // Generate combined-coverage/lcov.info with adjusted paths for SonarQube
   const mergedLcovPath = path.join(rootDir, 'coverage', 'lcov.info');
-  const combinedDir = path.join(rootDir, 'combined-coverage');
   const combinedLcovPath = path.join(combinedDir, 'lcov.info');
+
 
   if (fs.existsSync(mergedLcovPath)) {
     console.log('[merge-coverage] Generating combined-coverage/lcov.info with adjusted paths for SonarQube...');
@@ -65,7 +80,7 @@ try {
   process.exit(1);
 }
 
-// 5. Fix ownership and permissions for all generated coverage directories
+// 6. Fix ownership and permissions for all generated coverage directories
 const dirsToFix = [
   path.join(rootDir, 'coverage'),
   path.join(rootDir, 'coverage-integration'),
@@ -136,4 +151,3 @@ for (const dir of dirsToFix) {
   chownAndChmodRecursive(dir, hostUid, hostGid);
 }
 console.log('[merge-coverage] Permissions and ownership adjusted successfully.');
-
