@@ -12,8 +12,19 @@ if (fs.existsSync(nycOutputDir)) {
 }
 fs.mkdirSync(nycOutputDir, { recursive: true });
 
+// CORREÇÃO: Em vez de apagar a pasta combinada (que pode ser um volume montado e causar EBUSY),
+// esvaziamos o conteúdo dela se ela já existir, ou criamos se não existir.
 if (fs.existsSync(combinedDir)) {
-  fs.rmSync(combinedDir, { recursive: true, force: true });
+  try {
+    const files = fs.readdirSync(combinedDir);
+    for (const file of files) {
+      fs.rmSync(path.join(combinedDir, file), { recursive: true, force: true });
+    }
+  } catch (err) {
+    console.log(`[merge-coverage] Warning: Could not empty ${combinedDir}, trying to proceed...`);
+  }
+} else {
+  fs.mkdirSync(combinedDir, { recursive: true });
 }
 
 
@@ -46,17 +57,18 @@ try {
   // 4. Converte e consolida os relatórios finais em um arquivo bruto que o nyc entende
   const mergedRawJson = path.join(nycOutputDir, 'out.json');
   console.log('[merge-coverage] Executing nyc merge...');
-  execSync(`npx nyc merge ${nycOutputDir} ${mergedRawJson}`, {
+  execSync(`npx --yes nyc merge ${nycOutputDir} ${mergedRawJson}`, {
     cwd: rootDir,
     stdio: 'inherit'
   });
 
   // 5. Run nyc report to merge and generate HTML, text and lcov reports
   console.log('[merge-coverage] Generating coverage reports...');
-  execSync('npx nyc report --reporter=html --reporter=text --reporter=lcov --temp-dir=.nyc_output --report-dir=coverage', {
+  execSync('npx --yes nyc report --reporter=html --reporter=text --reporter=lcov --temp-dir=.nyc_output --report-dir=coverage', {
     cwd: rootDir,
     stdio: 'inherit'
   });
+
   console.log('[merge-coverage] Merged coverage report generated successfully under backend/coverage/lcov-report/index.html');
 
   // Generate combined-coverage/lcov.info with adjusted paths for SonarQube
