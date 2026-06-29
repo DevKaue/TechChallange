@@ -36,6 +36,8 @@ const config: Config = {
     '!src/**/enums/**',
     '!src/**/factories/**',
     '!src/prisma/**',
+    '!src/**/in-memory-*.ts',
+    '!src/**/exceptions/index.ts',
   ],
   coverageDirectory: '<rootDir>/coverage-integration',
   coverageThreshold: {
