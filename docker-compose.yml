@@ -8,9 +8,10 @@ services:
       POSTGRES_PASSWORD: adminpassword
       POSTGRES_DB: oficinadb
     ports:
-      - '5433:5432'
+      - '0.0.0.0:5433:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./backend/scripts/init-test-db.sql:/docker-entrypoint-initdb.d/init-test-db.sql
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U admin -d oficinadb']
       interval: 10s
@@ -21,17 +22,45 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+      target: development
     container_name: techchallenge_api
+    #user: "${UID:-1000}:${GID:-1000}"
     restart: unless-stopped
+    command: >
+      sh -c "npm run prisma:generate &&
+      npm run prisma:migrate:deploy &&
+      npm run prisma:seed &&
+      DATABASE_URL=postgresql://admin:adminpassword@db:5432/oficinadb_test npx prisma migrate deploy &&
+      npm run start:dev"
     ports:
       - '3000:3000'
     environment:
       - DATABASE_URL=postgresql://admin:adminpassword@db:5432/oficinadb?schema=public
       - JWT_SECRET=techchallenge_secret_key_2026
       - PORT=3000
+      - NODE_ENV=development
+      - PASSWORD_SALT=4a7b1e8f9c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f
     depends_on:
       db:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 120s
+    volumes:
+      - ./backend/src:/usr/src/app/src
+      - ./backend/prisma:/usr/src/app/prisma
+      - ./backend/test:/usr/src/app/test
+      - ./backend/coverage:/usr/src/app/coverage
+      - ./backend/coverage-integration:/usr/src/app/coverage-integration
+      - ./backend/coverage-e2e:/usr/src/app/coverage-e2e
+      - ./backend/combined-coverage:/usr/src/app/combined-coverage
+      - ./backend/scripts:/usr/src/app/scripts
+      - ./backend/package.json:/usr/src/app/package.json
+      - ./backend/package-lock.json:/usr/src/app/package-lock.json
+      - /usr/src/app/node_modules
 
   sonar_db:
     image: postgres:15-alpine
@@ -45,6 +74,11 @@ services:
       POSTGRES_DB: sonar
     volumes:
       - sonar_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U sonar -d sonar']
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   sonarqube:
     image: sonarqube:community
@@ -53,17 +87,48 @@ services:
       - quality
     restart: unless-stopped
     depends_on:
-      - sonar_db
+      sonar_db:
+        condition: service_healthy
     environment:
       SONAR_JDBC_URL: jdbc:postgresql://sonar_db:5432/sonar
       SONAR_JDBC_USERNAME: sonar
       SONAR_JDBC_PASSWORD: sonar
     ports:
       - '9000:9000'
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:9000/api/system/status"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
     volumes:
       - sonarqube_data:/opt/sonarqube/data
       - sonarqube_extensions:/opt/sonarqube/extensions
       - sonarqube_logs:/opt/sonarqube/logs
+
+  sonar-scanner:
+    image: sonarsource/sonar-scanner-cli:latest
+    container_name: techchallenge_sonar_scanner
+    profiles:
+      - quality
+    depends_on:
+      sonarqube:
+        condition: service_healthy
+    volumes:
+      - ./:/usr/src/app
+    working_dir: /usr/src/app
+    environment:
+      - SONAR_SCANNER_OPTS=-Xmx2g
+    # platform: linux/amd64
+    command: >
+      sh -c "
+      until curl -sf http://sonarqube:9000/api/system/status | grep -q '\"status\":\"UP\"'; do
+        echo 'Waiting for SonarQube...'; sleep 5;
+      done &&
+      sonar-scanner
+      -Dsonar.host.url=http://sonarqube:9000
+      -Dsonar.token=squ_ece4455f374071d59b177a199450d69840e945a8
+      "
 
 volumes:
   postgres_data:

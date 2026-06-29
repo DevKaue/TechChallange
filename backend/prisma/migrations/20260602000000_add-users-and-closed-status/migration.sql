@@ -24,8 +24,4 @@ ALTER TABLE "service_orders" ADD COLUMN "data_fechamento" TIMESTAMP(3);
 -- AddForeignKey
 ALTER TABLE "service_orders" ADD CONSTRAINT "service_orders_mecanico_id_fkey" FOREIGN KEY ("mecanico_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
--- Seed users
-INSERT INTO "users" ("id", "name", "role", "created_at", "updated_at") VALUES
-  (gen_random_uuid(), 'João Mecânico', 'MECHANIC', NOW(), NOW()),
-  (gen_random_uuid(), 'Maria Mecânica', 'MECHANIC', NOW(), NOW()),
-  (gen_random_uuid(), 'Carlos Atendente', 'ATTENDANT', NOW(), NOW());
+

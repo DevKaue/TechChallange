@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["partialIndexes"]
 }
 
 datasource db {
@@ -33,6 +34,20 @@ enum ServiceOrderItemType {
   PART
 }
 
+enum MaterialType {
+  PART
+  SUPPLY
+}
+
+enum StockUnit {
+  UNIT
+  LITER
+  MILLILITER
+  GRAM
+  KILOGRAM
+  METER
+}
+
 enum DocumentType {
   CPF
   CNPJ
@@ -40,7 +55,7 @@ enum DocumentType {
   RNE
 }
 
-model Client {
+model Customer {
   id            String         @id @default(uuid()) @map("id")
   document      String         @map("document")
   documentType  DocumentType   @map("document_type")
@@ -51,23 +66,26 @@ model Client {
   serviceOrders ServiceOrder[]
   createdAt     DateTime       @default(now()) @map("created_at")
   updatedAt     DateTime       @updatedAt @map("updated_at")
+  deletedAt     DateTime?      @map("deleted_at")
 
-  @@unique([document, documentType], name: "uq_client_document")
-  @@map("clients")
+  @@unique([document, documentType], name: "uq_customer_document")
+  @@map("customers")
 }
 
 model Vehicle {
   id            String         @id @default(uuid()) @map("id")
-  plate         String         @unique @map("plate")
+  plate         String         @map("plate") // O @unique foi removido daqui
   brand         String         @map("brand")
   model         String         @map("model")
   year          Int            @map("year")
-  clientId      String         @map("client_id")
-  client        Client         @relation(fields: [clientId], references: [id])
+  customerId    String         @map("customer_id")
+  customer      Customer       @relation(fields: [customerId], references: [id])
   serviceOrders ServiceOrder[]
   createdAt     DateTime       @default(now()) @map("created_at")
   updatedAt     DateTime       @updatedAt @map("updated_at")
+  deletedAt     DateTime?      @map("deleted_at")
 
+  @@unique([plate], map: "vehicles_plate_active_unique_idx", where: { deletedAt: null })
   @@map("vehicles")
 }
 
@@ -82,14 +100,17 @@ model ServiceCatalog {
   @@map("service_catalog")
 }
 
-model Part {
-  id            String   @id @default(uuid()) @map("id")
-  name          String   @map("name")
+model Material {
+  id            String       @id @default(uuid()) @map("id")
+  name          String       @map("name")
   description   String?
-  price         Float    @map("price")
-  stockQuantity Int      @default(0) @map("stock_quantity")
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
+  price         Float        @map("price")
+  type          MaterialType @default(PART) @map("type")
+  stockQuantity Float        @default(0) @map("stock_quantity")
+  stockUnit     StockUnit    @default(UNIT) @map("stock_unit")
+  expiresAt     DateTime?    @map("expires_at")
+  createdAt     DateTime     @default(now()) @map("created_at")
+  updatedAt     DateTime     @updatedAt @map("updated_at")
 
   @@map("parts")
 }
@@ -98,8 +119,10 @@ model User {
   id            String         @id @default(uuid()) @map("id")
   name          String         @map("name")
   role          UserRole       @map("role")
-  email         String?
+  email         String         @unique
+  passwordHash  String         @map("password_hash")
   phone         String?
+  available     Boolean        @default(true) @map("available")
   serviceOrders ServiceOrder[] @relation("AssignedMechanic")
   createdAt     DateTime       @default(now()) @map("created_at")
   updatedAt     DateTime       @updatedAt @map("updated_at")
@@ -108,17 +131,17 @@ model User {
 }
 
 model ServiceOrder {
-  id              String              @id @default(uuid()) @map("id")
-  clientId        String              @map("client_id")
-  client          Client              @relation(fields: [clientId], references: [id])
-  vehicleId       String              @map("vehicle_id")
-  vehicle         Vehicle             @relation(fields: [vehicleId], references: [id])
-  status          ServiceOrderStatus  @default(RECEIVED) @map("status")
-  mileage         Int?
-  notes           String?
-  mechanicId      String?             @map("mechanic_id")
-  mechanic        User?               @relation("AssignedMechanic", fields: [mechanicId], references: [id])
-  closedAt        DateTime?           @map("closed_at")
+  id         String             @id @default(uuid()) @map("id")
+  customerId String             @map("customer_id")
+  customer   Customer           @relation(fields: [customerId], references: [id])
+  vehicleId  String             @map("vehicle_id")
+  vehicle    Vehicle            @relation(fields: [vehicleId], references: [id])
+  status     ServiceOrderStatus @default(RECEIVED) @map("status")
+  mileage    Int?
+  notes      String?
+  mechanicId String?            @map("mechanic_id")
+  mechanic   User?              @relation("AssignedMechanic", fields: [mechanicId], references: [id])
+  closedAt   DateTime?          @map("closed_at")
 
   statusHistory ServiceOrderStatusHistory[]
   estimates     Estimate[]
@@ -126,7 +149,7 @@ model ServiceOrder {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  @@index([clientId], name: "idx_service_orders_client_id")
+  @@index([customerId], name: "idx_service_orders_customer_id")
   @@index([vehicleId], name: "idx_service_orders_vehicle_id")
   @@index([status], name: "idx_service_orders_status")
   @@index([createdAt], name: "idx_service_orders_created_at")
@@ -134,14 +157,14 @@ model ServiceOrder {
 }
 
 model ServiceOrderStatusHistory {
-  id              String              @id @default(uuid()) @map("id")
-  serviceOrderId  String              @map("service_order_id")
-  serviceOrder    ServiceOrder        @relation(fields: [serviceOrderId], references: [id], onDelete: Cascade)
-  previousStatus  ServiceOrderStatus? @map("previous_status")
-  newStatus       ServiceOrderStatus  @map("new_status")
-  changedBy       String?             @db.VarChar(150) @map("changed_by")
-  notes           String?
-  changedAt       DateTime            @default(now()) @map("changed_at")
+  id             String              @id @default(uuid()) @map("id")
+  serviceOrderId String              @map("service_order_id")
+  serviceOrder   ServiceOrder        @relation(fields: [serviceOrderId], references: [id], onDelete: Cascade)
+  previousStatus ServiceOrderStatus? @map("previous_status")
+  newStatus      ServiceOrderStatus  @map("new_status")
+  changedBy      String?             @map("changed_by") @db.VarChar(150)
+  notes          String?
+  changedAt      DateTime            @default(now()) @map("changed_at")
 
   @@index([serviceOrderId], name: "idx_status_history_service_order_id")
   @@index([changedAt], name: "idx_status_history_changed_at")
@@ -149,16 +172,16 @@ model ServiceOrderStatusHistory {
 }
 
 model Estimate {
-  id              String         @id @default(uuid()) @map("id")
-  serviceOrderId  String         @map("service_order_id")
-  serviceOrder    ServiceOrder   @relation(fields: [serviceOrderId], references: [id], onDelete: Restrict)
-  status          EstimateStatus @default(PENDING) @map("status")
-  totalAmount     Decimal        @default(0) @db.Decimal(10, 2) @map("total_amount")
-  validUntil      DateTime?      @map("valid_until")
-  approvedAt      DateTime?      @map("approved_at")
-  notes           String?
-  createdAt       DateTime       @default(now()) @map("created_at")
-  updatedAt       DateTime       @updatedAt @map("updated_at")
+  id             String         @id @default(uuid()) @map("id")
+  serviceOrderId String         @map("service_order_id")
+  serviceOrder   ServiceOrder   @relation(fields: [serviceOrderId], references: [id], onDelete: Restrict)
+  status         EstimateStatus @default(PENDING) @map("status")
+  totalAmount    Decimal        @default(0) @map("total_amount") @db.Decimal(10, 2)
+  validUntil     DateTime?      @map("valid_until")
+  approvedAt     DateTime?      @map("approved_at")
+  notes          String?
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
 
   items EstimateItem[]
 
@@ -173,10 +196,10 @@ model EstimateItem {
   estimate    Estimate             @relation(fields: [estimateId], references: [id], onDelete: Cascade)
   itemType    ServiceOrderItemType @map("item_type")
   referenceId String               @map("reference_id")
-  description String               @db.VarChar(200) @map("description")
-  quantity    Decimal              @db.Decimal(10, 3) @map("quantity")
-  unitPrice   Decimal              @db.Decimal(10, 2) @map("unit_price")
-  totalPrice  Decimal              @db.Decimal(10, 2) @map("total_price")
+  description String               @map("description") @db.VarChar(200)
+  quantity    Decimal              @map("quantity") @db.Decimal(10, 3)
+  unitPrice   Decimal              @map("unit_price") @db.Decimal(10, 2)
+  totalPrice  Decimal              @map("total_price") @db.Decimal(10, 2)
   notes       String?
 
   @@unique([estimateId, itemType, referenceId], name: "uq_estimate_item")

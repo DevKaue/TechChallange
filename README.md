@@ -39,7 +39,7 @@ O MVP segue um monólito modular. A aplicação fica em um único deploy, mas os
 | Administrativo / Core Data | `clients`, `vehicles`, `service-catalog` | Manter os cadastros-base usados pelas ordens de serviço. |
 | Operação / Atendimento | `service-orders` | Criar OS, controlar status, itens, orçamento e métricas de execução. |
 | Estoque | `parts` | Controlar peças, insumos e saldo disponível para uso em OS. |
-| Plataforma | `auth`, `prisma`, `common` | Autenticação, acesso ao banco e validadores compartilhados. |
+| Plataforma | `access-identity`, `prisma`, `common` | Autenticação, acesso ao banco e validadores compartilhados. |
 
 Fluxo principal da OS:
 
@@ -54,7 +54,7 @@ RECEIVED -> IN_DIAGNOSTICS -> WAITING_APPROVAL -> IN_PROGRESS -> FINISHED -> DEL
 ├── backend/
 │   ├── prisma/                 # schema, migrations e config do Prisma
 │   ├── src/
-│   │   ├── auth/               # JWT + Passport
+│   │   ├── access-identity/    # identidade de acesso, JWT + Passport
 │   │   ├── clients/            # clientes
 │   │   ├── vehicles/           # veículos
 │   │   ├── parts/              # peças e estoque
@@ -67,102 +67,42 @@ RECEIVED -> IN_DIAGNOSTICS -> WAITING_APPROVAL -> IN_PROGRESS -> FINISHED -> DEL
 └── sonar-project.properties    # configuração do scan SonarQube
 ```
 
-## Como rodar localmente
+## Como rodar com Docker (API + Banco)
 
 Pré-requisitos:
 
-- Node.js 22+
-- npm
-- Docker e Docker Compose
+- Docker
 
-### 1. Suba o PostgreSQL
+### 1. Inicialização Básica
 
-```bash
-docker compose up -d db
-```
-
-> O banco fica na porta **5433** para evitar conflito com outras instâncias PostgreSQL locais.
-
-> O Docker Compose já cria o banco `oficinadb` automaticamente (variável `POSTGRES_DB` no `docker-compose.yml`).
-
-**Se estiver usando uma instalação local do PostgreSQL (sem Docker):**
-
-Crie o banco manualmente antes de prosseguir:
-
-```bash
-psql -U postgres -c "CREATE DATABASE oficinadb;"
-```
-
-E ajuste a `DATABASE_URL` no `.env` para apontar para sua instância local.
-
-### 2. Prepare o backend
-
-```bash
-cd backend
-cp .env.example .env
-npm install
-npm run prisma:generate
-```
-
-### 3. Crie as tabelas (migrations)
-
-O DDL (`CREATE TABLE`, `ALTER TABLE`, etc.) está versionado nas migrations do Prisma em `prisma/migrations/`. Para aplicá-las ao banco:
-
-```bash
-# Se for a primeira vez ou quiser recriar (gera migrations do schema):
-npm run prisma:migrate:dev
-
-# Para aplicar as migrations já existentes (recomendado em time):
-npm run prisma:migrate:deploy
-```
-
-O schema completo da base está em `prisma/schema.prisma`. Qualquer alteração no schema gera uma nova migration com `prisma:migrate:dev`. Sempre comite o arquivo da migration gerado.
-
-### 4. Popule o banco com dados iniciais (seeders)
-
-```bash
-npm run prisma:seed
-```
-
-Os seeders criam:
-- **3 usuários** (2 mecânicos, 1 atendente)
-- **6 serviços** no catálogo (ex.: revisão básica, troca de óleo, alinhamento)
-- **6 peças** em estoque (ex.: filtro de óleo, pastilha de freio)
-- **3 clientes** (pessoa física e jurídica)
-- **3 veículos** vinculados aos clientes
-
-### 5. Inicie a API
-
-```bash
-npm run start:dev
-```
-
-A API fica em `http://localhost:3000`.
-
-Swagger:
-
-```text
-http://localhost:3000/api/docs
-```
-
-## Docker (API + banco completos)
-
-Para subir tudo com Docker Compose (já inclui migrations e seed):
+Para subir a aplicação completa (API e Banco de Dados) já executando as migrations e os dados iniciais (*seed*), rode o comando abaixo na raiz do projeto:
 
 ```bash
 docker compose up --build
 ```
 
-Se quiser aplicar migrations e seed manualmente dentro do container:
+### 2. Documentação API
 
-```bash
-docker compose exec api npm run prisma:migrate:deploy
-docker compose exec api npm run prisma:seed
-```
+http://localhost:3000/api/docs
 
 ## Autenticação
 
-As rotas administrativas usam Bearer Token JWT. Gere um token em:
+As rotas administrativas usam Bearer Token JWT. Autentique um usuário interno em:
+
+```text
+POST /auth/login
+```
+
+Payload:
+
+```json
+{
+  "email": "ana.santos@oficina.com",
+  "password": "Tech@123"
+}
+```
+
+O endpoint legado abaixo continua disponível com o mesmo payload:
 
 ```text
 POST /auth/login-admin
@@ -174,6 +114,12 @@ Depois envie o header:
 Authorization: Bearer <TOKEN>
 ```
 
+Também é possível consultar a identidade autenticada em:
+
+```text
+GET /auth/me
+```
+
 A consulta pública de acompanhamento da OS fica em:
 
 ```text
@@ -182,39 +128,10 @@ GET /service-orders/:id
 
 ## Testes e qualidade
 
+### Entre no container 
 ```bash
-cd backend
-npm test
-npm run test:cov
-npm run build
+docker compose exec -it api sh
+npm run test:all
+npm run test:all:cov
 ```
-
-Para subir o SonarQube local:
-
-```bash
-docker compose --profile quality up -d sonarqube
-```
-
-Depois acesse `http://localhost:9000`, gere um token e rode o scanner apontando para este repositório. Antes do scan, gere cobertura:
-
-```bash
-cd backend
-npm run test:cov
-cd ..
-```
-
-Exemplo usando o scanner via Docker no Linux:
-
-```bash
-docker run --rm --network host -v "$PWD:/usr/src" -w /usr/src sonarsource/sonar-scanner-cli -Dsonar.host.url=http://localhost:9000 -Dsonar.token=<TOKEN>
-```
-
-Observação: em algumas máquinas o SonarQube exige ajustar `vm.max_map_count` no host antes de iniciar.
-
-## Referências do domínio
-
-Os documentos de apoio do DDD continuam no repositorio e no Obsidian:
-
-- `DDD_Documentacao.md`
-- `LinguagemUbiqua_GestaoClientes.md`
-- `Pessoal/Pós Graduação/Fase 1 - Tech Challenge` no vault do Obsidian
+- Depois abra o arquivo `backend/coverage/lcov-report/index.html` no seu navegador

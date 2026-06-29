@@ -29,9 +29,22 @@ export class HttpExceptionFilter implements ExceptionFilter {
       });
     }
 
+    // Erros de domínio (DomainException de qualquer bounded context) representam
+    // violação de regra de negócio/entrada inválida → HTTP 400, não 500.
+    if (exception instanceof Error && exception.name === 'DomainException') {
+      this.logger.warn(`${request.method} ${request.url} → 400`);
+
+      return response.status(400).json({
+        path: request.url,
+        statusCode: 400,
+        error: exception.message,
+      });
+    }
+
+    const stack = exception instanceof Error && exception.stack ? exception.stack : '';
     this.logger.error(
       `Unhandled exception on ${request.method} ${request.url}`,
-      exception instanceof Error ? exception.stack : undefined,
+      stack,
     );
 
     return response.status(500).json({

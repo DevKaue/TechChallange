@@ -1,24 +1,22 @@
 import { Module, OnModuleInit } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { ClientsModule } from './clients/clients.module';
-import { VehiclesModule } from './vehicles/vehicles.module';
-import { PartsModule } from './parts/parts.module';
-import { ServiceCatalogModule } from './service-catalog/service-catalog.module';
+import { MaterialsModule } from './materials/infra/materials.module';
+import { CustomerManagementModule } from './customer-management/infra/customer-management.module';
+import { ServiceCatalogModule } from './service-catalog/infra/service-catalog.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ServiceOrdersModule } from './service-orders/service-orders.module';
-import { AuthModule } from './auth/auth.module';
+import { AccessIdentityModule } from './access-identity/access-identity.module';
 import { validateEnv } from './common/config/env';
 
 @Module({
   imports: [
-    ClientsModule,
-    VehiclesModule,
-    PartsModule,
+    MaterialsModule,
+    CustomerManagementModule,
     ServiceCatalogModule,
     PrismaModule,
     ServiceOrdersModule,
-    AuthModule,
+    AccessIdentityModule,
   ],
   controllers: [AppController],
   providers: [AppService],

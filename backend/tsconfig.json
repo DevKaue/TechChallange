@@ -15,7 +15,13 @@
     "outDir": "./dist",
     "baseUrl": "./",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "@access-identity/*": ["src/access-identity/*"],
+      "@customer-management/*": ["src/customer-management/*"],
+      "@materials/*": ["src/materials/*"],
+      "@service-orders/*": ["src/service-orders/*"],
+      "@service-catalog/*": ["src/service-catalog/*"],
+      "@common/*": ["src/common/*"]
     },
     "incremental": true,
     "skipLibCheck": true,
