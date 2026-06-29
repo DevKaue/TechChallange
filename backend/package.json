@@ -20,8 +20,8 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "test:e2e:cov": "jest --config ./test/jest-e2e.json --coverage --coverageReporters=lcov --coverageDirectory=../coverage-e2e --runInBand",
-    "test:integration": "dotenv -e .env.test -- jest --config test/integration/jest.integration.config.ts --runInBand",
-    "test:integration:cov": "dotenv -e .env.test -- jest --config test/integration/jest.integration.config.ts --runInBand --coverage",
+    "test:integration": "DATABASE_URL=postgresql://admin:adminpassword@db:5432/oficinadb_test?schema=public jest --config test/integration/jest.integration.config.ts --runInBand",
+    "test:integration:cov": "DATABASE_URL=postgresql://admin:adminpassword@db:5432/oficinadb_test?schema=public jest --config test/integration/jest.integration.config.ts --runInBand --coverage",
     "test:all": "npm test && npm run test:integration && npm run test:e2e",
     "test:all:cov": "npm run test:cov && npm run test:integration:cov && npm run test:e2e:cov",
     "prisma:generate": "prisma generate",
@@ -116,7 +116,9 @@
       "!**/contracts/**",
       "!**/acls/**",
       "!**/*.swagger.ts",
-      "!**/swaggers/**"
+      "!**/swaggers/**",
+      "!**/in-memory-*.ts",
+      "!**/exceptions/index.ts"
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node",
