@@ -170,6 +170,15 @@ const vehicles = [
 async function main() {
   console.log('Seeding database...');
 
+  const seedEmails = users.map((u) => u.email.toLowerCase());
+  const existingWithSeedEmails = await prisma.user.count({
+    where: { email: { in: seedEmails } },
+  });
+  if (existingWithSeedEmails === users.length) {
+    console.log('Seed already applied — skipping');
+    return;
+  }
+
   await prisma.vehicle.deleteMany();
   await prisma.customer.deleteMany();
   await prisma.material.deleteMany();
