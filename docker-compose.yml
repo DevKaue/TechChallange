@@ -24,6 +24,7 @@ services:
       dockerfile: Dockerfile
       target: development
     container_name: techchallenge_api
+    #user: "${UID:-1000}:${GID:-1000}"
     restart: unless-stopped
     command: >
       sh -c "npm run prisma:generate &&
@@ -53,6 +54,8 @@ services:
       - ./backend/prisma:/usr/src/app/prisma
       - ./backend/test:/usr/src/app/test
       - ./backend/coverage:/usr/src/app/coverage
+      - ./backend/coverage-integration:/usr/src/app/coverage-integration
+      - ./backend/coverage-e2e:/usr/src/app/coverage-e2e
       - ./backend/combined-coverage:/usr/src/app/combined-coverage
       - ./backend/scripts:/usr/src/app/scripts
       - ./backend/package.json:/usr/src/app/package.json

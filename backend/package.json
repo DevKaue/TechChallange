@@ -19,11 +19,11 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "test:e2e:cov": "jest --config ./test/jest-e2e.json --coverage --coverageReporters=lcov --coverageDirectory=../coverage-e2e --runInBand",
+    "test:e2e:cov": "jest --config ./test/jest-e2e.json --coverage --coverageReporters=lcov --coverageDirectory=coverage-e2e --runInBand",
     "test:integration": "DATABASE_URL=postgresql://admin:adminpassword@db:5432/oficinadb_test?schema=public jest --config test/integration/jest.integration.config.ts --runInBand",
     "test:integration:cov": "DATABASE_URL=postgresql://admin:adminpassword@db:5432/oficinadb_test?schema=public jest --config test/integration/jest.integration.config.ts --runInBand --coverage",
     "test:all": "npm test && npm run test:integration && npm run test:e2e",
-    "test:all:cov": "npm run test:cov && npm run test:integration:cov && npm run test:e2e:cov",
+    "test:all:cov": "npm run test:cov; npm run test:integration:cov; npm run test:e2e:cov; node scripts/merge-coverage.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate:dev": "prisma migrate dev",
     "prisma:migrate:deploy": "prisma migrate deploy",
@@ -60,11 +60,13 @@
     "@types/node": "^24.0.0",
     "@types/passport-jwt": "^4.0.1",
     "@types/supertest": "^7.0.0",
+    "dotenv-cli": "^11.0.0",
     "eslint": "^9.18.0",
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-prettier": "^5.2.2",
     "globals": "^17.0.0",
     "jest": "^30.0.0",
+    "nyc": "^18.0.0",
     "prettier": "^3.4.2",
     "prisma": "^7.8.0",
     "sonarqube-scanner": "^4.3.8",
@@ -75,8 +77,7 @@
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.7.3",
-    "typescript-eslint": "^8.20.0",
-    "dotenv-cli": "^11.0.0"
+    "typescript-eslint": "^8.20.0"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
