@@ -1,10 +1,15 @@
 import { Module } from '@nestjs/common';
 import { PrismaModule } from '@/prisma/prisma.module';
 import { ServiceCatalogController } from '@service-catalog/presentation/controllers/service-catalog.controller';
-import { ServiceCatalogUseCase } from '@service-catalog/application/usecases/service-catalog.use-case';
 import ServiceCatalogRepositoryInterface from '@service-catalog/domain/contracts/service-catalog-repository.interface';
 import { PrismaServiceCatalogRepository } from '@service-catalog/infra/repositories/prisma-service-catalog.repository';
 import { SERVICE_CATALOG_REPOSITORY } from '@service-orders/domain/acls/service-catalog-repository.interface';
+
+import { CreateServiceCatalogUseCase } from '../application/usecases/create-service-catalog.use-case';
+import { ListServiceCatalogUseCase } from '../application/usecases/list-service-catalog.use-case';
+import { FindByIdServiceCatalogUseCase } from '../application/usecases/find-by-id-service-catalog.use-case';
+import { UpdateServiceCatalogUseCase } from '../application/usecases/update-service-catalog.use-case';
+import { DeleteServiceCatalogUseCase } from '../application/usecases/delete-service-catalog.use-case';
 
 @Module({
   imports: [PrismaModule],
@@ -14,12 +19,11 @@ import { SERVICE_CATALOG_REPOSITORY } from '@service-orders/domain/acls/service-
       provide: ServiceCatalogRepositoryInterface,
       useClass: PrismaServiceCatalogRepository,
     },
-    {
-      provide: ServiceCatalogUseCase,
-      useFactory: (repository: ServiceCatalogRepositoryInterface) =>
-        new ServiceCatalogUseCase(repository),
-      inject: [ServiceCatalogRepositoryInterface],
-    },
+    CreateServiceCatalogUseCase,
+    ListServiceCatalogUseCase,
+    FindByIdServiceCatalogUseCase,
+    UpdateServiceCatalogUseCase,
+    DeleteServiceCatalogUseCase,
     // Adapta o repositório de domínio ao contrato (ACL) que service-orders
     // espera para precificar serviços no orçamento.
     {

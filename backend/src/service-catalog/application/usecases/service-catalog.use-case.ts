@@ -1,54 +1,28 @@
-import ServiceCatalogRepositoryInterface from '@service-catalog/domain/contracts/service-catalog-repository.interface';
-import Service from '@service-catalog/domain/entities/service.entity';
-import {
-  ServiceDTO,
-  CreateServiceInputDTO,
-  UpdateServiceInputDTO,
-} from '@service-catalog/application/dtos/service.dtos';
-import ServiceNotFoundException from '@service-catalog/application/exceptions/service-not-found.exception';
+// import ServiceCatalogRepositoryInterface from '@service-catalog/domain/contracts/service-catalog-repository.interface';
+// import Service from '@service-catalog/domain/entities/service.entity';
+// import {
+//   ServiceDTO,
+//   CreateServiceInputDTO,
+//   UpdateServiceInputDTO,
+// } from '@service-catalog/application/dtos/service.dtos';
+// import { CreateServiceCatalogUseCase } from './create-service-catalog.use-case';
+// import { ListServiceCatalogUseCase } from './list-service-catalog.use-case';
+// import { FindByIdServiceCatalogUseCase } from './find-by-id-service-catalog.use-case';
+// import { UpdateServiceCatalogUseCase } from './update-service-catalog.use-case';
+// import { DeleteServiceCatalogUseCase } from './delete-service-catalog.use-case';
 
-export class ServiceCatalogUseCase {
-  constructor(private readonly repository: ServiceCatalogRepositoryInterface) {}
+// export class ServiceCatalogUseCase {
+//   constructor(
+//   private readonly createUseCase: CreateServiceCatalogUseCase,
+//     private readonly listUseCase: ListServiceCatalogUseCase,
+//     private readonly findByIdUseCase: FindByIdServiceCatalogUseCase,
+//     private readonly updateUseCase: UpdateServiceCatalogUseCase,
+//     private readonly deleteUseCase: DeleteServiceCatalogUseCase,
+//   ) {}
 
-  async create(input: CreateServiceInputDTO): Promise<ServiceDTO> {
-    const service = new Service({
-      id: crypto.randomUUID(),
-      name: input.name,
-      description: input.description,
-      price: input.price,
-    });
-    await this.repository.create(service);
-    return ServiceDTO.fromDomain(service);
-  }
-
-  async list(): Promise<ServiceDTO[]> {
-    const services = await this.repository.findAll();
-    return services.map((service) => ServiceDTO.fromDomain(service));
-  }
-
-  async findById(id: string): Promise<ServiceDTO> {
-    const service = await this.repository.findById(id);
-    if (!service) {
-      throw new ServiceNotFoundException();
-    }
-    return ServiceDTO.fromDomain(service);
-  }
-
-  async update(id: string, input: UpdateServiceInputDTO): Promise<ServiceDTO> {
-    const service = await this.repository.findById(id);
-    if (!service) {
-      throw new ServiceNotFoundException();
-    }
-    service.update(input);
-    await this.repository.update(service);
-    return ServiceDTO.fromDomain(service);
-  }
-
-  async delete(id: string): Promise<void> {
-    const service = await this.repository.findById(id);
-    if (!service) {
-      throw new ServiceNotFoundException();
-    }
-    await this.repository.delete(id);
-  }
-}
+//   create(input: CreateServiceInputDTO) { return this.createUseCase.execute(input); }
+//   list() { return this.listUseCase.list(); }
+//   findById(id: string) { return this.findByIdUseCase.findById(id); }
+//   update(id: string, input: UpdateServiceInputDTO) { return this.updateUseCase.update(id, input); }
+//   delete(id: string) { return this.deleteUseCase.delete(id); }
+// }
