@@ -15,7 +15,7 @@ import { plainToInstance } from 'class-transformer';
 import { ServiceOrderNotFoundException } from '@service-orders/application/exceptions/service-order-not-found.exception';
 import { InvalidStatusTransitionException } from '@service-orders/application/exceptions/invalid-status-transition.exception';
 import { ServiceOrderMapper } from '@service-orders/domain/mappers/service-order.mapper';
-import { ServiceOrderPersistenceMapper } from '@service-orders/infra/mappers/service-order-to-persistence.mapper';
+//import { ServiceOrderPersistenceMapper } from '@service-orders/infra/mappers/service-order-to-persistence.mapper';
 
 @Injectable()
 export class MechanicUseCase {
@@ -51,10 +51,7 @@ export class MechanicUseCase {
       );
     }
 
-    const updated = await this.repository.update(
-      id,
-      ServiceOrderPersistenceMapper.toPersistence(serviceOrder),
-    );
+    const updated = await this.repository.update(id, serviceOrder);
     return plainToInstance(ServiceOrderResponseDto, updated, {
       excludeExtraneousValues: true,
     });

@@ -11,7 +11,7 @@ import { ServiceOrderResponseDto } from '@service-orders/application/dto/service
 import { CreateServiceOrderDto } from '@service-orders/application/dto/service-order/create-service-order.dto';
 import { plainToInstance } from 'class-transformer';
 import { ServiceOrderMapper } from '@service-orders/domain/mappers/service-order.mapper';
-import { ServiceOrderPersistenceMapper } from '@service-orders/infra/mappers/service-order-to-persistence.mapper';
+//import { ServiceOrderPersistenceMapper } from '@service-orders/infra/mappers/service-order-to-persistence.mapper';
 import { ServiceOrderNotFoundException } from '@service-orders/application/exceptions/service-order-not-found.exception';
 import { CustomerNotFoundException } from '@service-orders/application/exceptions/customer-not-found.exception';
 import { InvalidStatusTransitionException } from '@service-orders/application/exceptions/invalid-status-transition.exception';
@@ -23,7 +23,7 @@ export class ServiceOrderUseCase {
     private readonly queryService: ServiceOrderQueryServiceInterface,
     @Inject(CustomarManagementInterface)
     private readonly customerManagement: CustomarManagementInterface,
-  ) {}
+  ) { }
 
   async findAll() {
     return this.queryService.findAll();
@@ -73,11 +73,8 @@ export class ServiceOrderUseCase {
     const order = ServiceOrderMapper.toDomain(data);
     try {
       const change = order.startService();
+      const updated = await this.repository.update(id, order);
 
-      const updated = await this.repository.update(
-        id,
-        ServiceOrderPersistenceMapper.toPersistence(order),
-      );
       await this.repository.createStatusHistory({
         serviceOrderId: id,
         previousStatus: change.previousStatus,
@@ -101,11 +98,8 @@ export class ServiceOrderUseCase {
     const order = ServiceOrderMapper.toDomain(data);
     try {
       const change = order.finish(mechanicId);
+      const updated = await this.repository.update(id, order);
 
-      const updated = await this.repository.update(
-        id,
-        ServiceOrderPersistenceMapper.toPersistence(order),
-      );
       await this.repository.createStatusHistory({
         serviceOrderId: id,
         previousStatus: change.previousStatus,
@@ -131,10 +125,7 @@ export class ServiceOrderUseCase {
     try {
       const change = order.deliverVehicle();
 
-      const updated = await this.repository.update(
-        id,
-        ServiceOrderPersistenceMapper.toPersistence(order),
-      );
+      const updated = await this.repository.update(id, order);
       await this.repository.createStatusHistory({
         serviceOrderId: id,
         previousStatus: change.previousStatus,
@@ -159,10 +150,11 @@ export class ServiceOrderUseCase {
     try {
       const change = order.close();
 
-      const updated = await this.repository.update(id, {
-        ...ServiceOrderPersistenceMapper.toPersistence(order),
-        closedAt: new Date(),
-      });
+      // const updated = await this.repository.update(id, {
+      //   ...ServiceOrderPersistenceMapper.toPersistence(order),
+      //   closedAt: new Date(),
+      // });
+      const updated = await this.repository.update(id, order);
       await this.repository.createStatusHistory({
         serviceOrderId: id,
         previousStatus: change.previousStatus,

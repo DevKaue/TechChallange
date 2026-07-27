@@ -5,6 +5,7 @@ import { PersistedEstimate } from '@service-orders/domain/persistence/estimate.p
 import { PersistedServiceOrder } from '@service-orders/domain/persistence/service-order.persistence';
 import { PersistedEstimateItem } from '@service-orders/domain/persistence/estimate-item.persistence';
 import { PersistedStatusHistory } from '@service-orders/domain/persistence/status-history.persistence';
+import { ServiceOrder } from '../entities/service-order.entity';
 
 export type {
   PersistedServiceOrder,
@@ -64,7 +65,8 @@ export abstract class ServiceOrdersRepositoryInterface {
 
   abstract update(
     id: string,
-    data: ServiceOrderUpdateData,
+    //data: ServiceOrderUpdateData,
+    order: ServiceOrder
   ): Promise<PersistedServiceOrder>;
 
   abstract createStatusHistory(data: {

@@ -1,6 +1,7 @@
 import { ServiceOrderStatus } from '@service-orders/domain/enums/service-order-status.enum';
 import { MechanicAssignment } from '@service-orders/domain/value-objects/mechanic-assignment.value-object';
 import { StatusChange } from '@service-orders/domain/value-objects/status-change.value-object';
+import { ServiceOrderUpdateData } from '../contracts/service-orders-repository.interface';
 
 type CreateServiceOrderProps = {
   id: string;
@@ -11,6 +12,7 @@ type CreateServiceOrderProps = {
 export class ServiceOrder {
   private _status: ServiceOrderStatus;
   private _mechanic: MechanicAssignment | null;
+  private _closedAt: Date | null | undefined;
 
   private constructor(
     private readonly _id: string,
@@ -19,6 +21,14 @@ export class ServiceOrder {
   ) {
     this._status = status;
     this._mechanic = mechanic;
+  }
+
+  toUpdateData(): ServiceOrderUpdateData {
+    return {
+      status: this.status,
+      mechanicId: this.mechanicId,
+      closedAt: this._closedAt,
+    };
   }
 
   static create(props: CreateServiceOrderProps): ServiceOrder {
@@ -121,6 +131,7 @@ export class ServiceOrder {
     }
     const previous = this._status;
     this._status = ServiceOrderStatus.CLOSED;
+    this._closedAt = new Date();
     return new StatusChange(previous, this._status);
   }
 

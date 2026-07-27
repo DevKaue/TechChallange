@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ServiceOrdersRepositoryInterface } from '@service-orders/domain/contracts/service-orders-repository.interface';
 import { ServiceOrderMapper } from '@service-orders/domain/mappers/service-order.mapper';
-import { ServiceOrderPersistenceMapper } from '@service-orders/infra/mappers/service-order-to-persistence.mapper';
+//import { ServiceOrderPersistenceMapper } from '@service-orders/infra/mappers/service-order-to-persistence.mapper';
 import { StartDiagnosisDto } from '@service-orders/application/dto/diagnosis/start-diagnosis.dto';
 import { ServiceOrderResponseDto } from '@service-orders/application/dto/service-order/service-order-response.dto';
 import { plainToInstance } from 'class-transformer';
@@ -19,11 +19,8 @@ export class DiagnosisUseCase {
     const order = ServiceOrderMapper.toDomain(data);
     try {
       const change = order.startDiagnosis();
+      const updated = await this.repository.update(id, order);
 
-      const updated = await this.repository.update(
-        id,
-        ServiceOrderPersistenceMapper.toPersistence(order),
-      );
       await this.repository.createStatusHistory({
         serviceOrderId: id,
         previousStatus: change.previousStatus,

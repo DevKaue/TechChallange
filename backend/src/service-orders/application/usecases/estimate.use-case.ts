@@ -10,7 +10,7 @@ import type { PartRepository } from '@service-orders/domain/acls/part-repository
 import { SERVICE_CATALOG_REPOSITORY } from '@service-orders/domain/acls/service-catalog-repository.interface';
 import type { ServiceCatalogRepository } from '@service-orders/domain/acls/service-catalog-repository.interface';
 import { ServiceOrderMapper } from '@service-orders/domain/mappers/service-order.mapper';
-import { ServiceOrderPersistenceMapper } from '@service-orders/infra/mappers/service-order-to-persistence.mapper';
+//import { ServiceOrderPersistenceMapper } from '@service-orders/infra/mappers/service-order-to-persistence.mapper';
 import { Money } from '@service-orders/domain/value-objects/money.value-object';
 import { EstimateStatus } from '@service-orders/domain/enums/estimate-status.enum';
 import {
@@ -55,10 +55,7 @@ export class EstimateUseCase {
           status: EstimateStatus.PENDING,
           totalAmount: 0,
         }),
-        this.repository.update(
-          orderId,
-          ServiceOrderPersistenceMapper.toPersistence(order),
-        ),
+        this.repository.update(orderId, order),
       ]);
 
       await this.repository.createStatusHistory({
@@ -166,10 +163,7 @@ export class EstimateUseCase {
       try {
         const change = order.startService();
 
-        await this.repository.update(
-          order.id,
-          ServiceOrderPersistenceMapper.toPersistence(order),
-        );
+        await this.repository.update(order.id,order);
         await this.repository.createStatusHistory({
           serviceOrderId: order.id,
           previousStatus: change.previousStatus,
@@ -203,10 +197,7 @@ export class EstimateUseCase {
     try {
       const change = order.rejectEstimate();
 
-      const updated = await this.repository.update(
-        id,
-        ServiceOrderPersistenceMapper.toPersistence(order),
-      );
+      const updated = await this.repository.update(id,order);
 
       // Orçamento rejeitado: devolve ao estoque as peças que haviam sido
       // baixadas ao montar o orçamento (evita vazamento de estoque).
