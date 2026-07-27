@@ -1,12 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { DiagnosisUseCase } from './diagnosis.use-case';
 import { ServiceOrdersRepositoryInterface } from '@service-orders/domain/contracts/service-orders-repository.interface';
 import { ServiceOrderStatus } from '@service-orders/domain/enums/service-order-status.enum';
 import { ServiceOrderNotFoundException } from '@service-orders/application/exceptions/service-order-not-found.exception';
 import { InvalidStatusTransitionException } from '@service-orders/application/exceptions/invalid-status-transition.exception';
+import { StartDiagnosisUseCase } from './startDiagnosis.use-case';
 
-describe('DiagnosisUseCase', () => {
-  let useCase: DiagnosisUseCase;
+describe('StartDiagnosisUseCase', () => {
+  let useCase: StartDiagnosisUseCase;
   let repository: jest.Mocked<ServiceOrdersRepositoryInterface>;
 
   const mockOrder: any = {
@@ -46,7 +46,7 @@ describe('DiagnosisUseCase', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        DiagnosisUseCase,
+        StartDiagnosisUseCase,
         {
           provide: ServiceOrdersRepositoryInterface,
           useValue: {
@@ -58,7 +58,7 @@ describe('DiagnosisUseCase', () => {
       ],
     }).compile();
 
-    useCase = module.get(DiagnosisUseCase);
+    useCase = module.get(StartDiagnosisUseCase);
     repository = module.get(ServiceOrdersRepositoryInterface);
   });
 

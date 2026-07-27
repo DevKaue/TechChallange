@@ -15,16 +15,15 @@ import { plainToInstance } from 'class-transformer';
 import { ServiceOrderNotFoundException } from '@service-orders/application/exceptions/service-order-not-found.exception';
 import { InvalidStatusTransitionException } from '@service-orders/application/exceptions/invalid-status-transition.exception';
 import { ServiceOrderMapper } from '@service-orders/domain/mappers/service-order.mapper';
-//import { ServiceOrderPersistenceMapper } from '@service-orders/infra/mappers/service-order-to-persistence.mapper';
 
 @Injectable()
-export class MechanicUseCase {
+export class AssignMechanicUseCase {
   constructor(
     private readonly repository: ServiceOrdersRepositoryInterface,
     @Inject(USER_REPOSITORY) private readonly userRepository: UserRepository,
   ) {}
 
-  async assignMechanic(id: string, dto: AssignMechanicDto) {
+  async execute(id: string, dto: AssignMechanicDto) {
     const data = await this.repository.findById(id);
     if (!data) throw new ServiceOrderNotFoundException(id);
 
@@ -55,9 +54,5 @@ export class MechanicUseCase {
     return plainToInstance(ServiceOrderResponseDto, updated, {
       excludeExtraneousValues: true,
     });
-  }
-
-  async updateMechanicAvailability(mechanicId: string, available: boolean) {
-    await this.userRepository.updateAvailability(mechanicId, available);
   }
 }

@@ -6,15 +6,16 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
-import { MetricsUseCase } from '@service-orders/application/usecases/metrics.use-case';
+//import { MetricsUseCase } from '@/service-orders/application/usecases/metrics/get-avetage-execution-time.use-case';
 
 import { ServiceOrderExceptionFilter } from '@service-orders/presentation/filters/service-order-exception.filter';
+import { GetAverageExecutionTimeUseCase } from '@/service-orders/application/usecases/metrics/get-avetage-execution-time.use-case';
 
 @ApiTags('Service Orders')
 @Controller('service-orders')
 @UseFilters(ServiceOrderExceptionFilter)
 export class MetricsController {
-  constructor(private readonly useCase: MetricsUseCase) {}
+  constructor(private readonly useCase: GetAverageExecutionTimeUseCase) {}
 
   @Get('metrics/average-time')
   @UseGuards(JwtAuthGuard)

@@ -18,7 +18,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import type { AuthenticatedRequest } from '@/access-identity/presentation/authenticated-request';
-import { ServiceOrderUseCase } from '@service-orders/application/usecases/service-order.use-case';
+//import { ServiceOrderUseCase } from '@/service-orders/application/usecases/service-order/service-order.use-case';
 import { CreateServiceOrderDto } from '@service-orders/application/dto/service-order/create-service-order.dto';
 import { FinishServiceOrderDto } from '@service-orders/application/dto/service-order/finish-service-order.dto';
 import { ServiceOrderResponseDto } from '@service-orders/application/dto/service-order/service-order-response.dto';
@@ -28,12 +28,27 @@ import {
   ServiceOrderSummaryResponse,
   ServiceOrderDetailResponse,
 } from '@service-orders/presentation/presenters/service-order.presenter';
+import { CloseServiceOrderUseCase } from '@/service-orders/application/usecases/service-order/close-service-order.use-case';
+import { CreateServiceOrderUseCase } from '@/service-orders/application/usecases/service-order/create-service-order.use-case';
+import { DeliverVehicleUseCase } from '@/service-orders/application/usecases/service-order/deliver-vehicle.use-case';
+import { FindAllServiceOrdersUseCase } from '@/service-orders/application/usecases/service-order/find-all-service-orders.use-case';
+import { FindOneServiceOrderUseCase } from '@/service-orders/application/usecases/service-order/find-one-service-order.use-case';
+import { StartServiceUseCase } from '@/service-orders/application/usecases/service-order/start-service.use-case';
+import { FinishServiceUseCase } from '@/service-orders/application/usecases/service-order/finish-service.use-case';
 
 @ApiTags('Service Orders')
 @Controller('service-orders')
 @UseFilters(ServiceOrderExceptionFilter)
 export class ServiceOrderController {
-  constructor(private readonly useCase: ServiceOrderUseCase) {}
+  constructor(
+    private readonly closeServiceOrderUseCase: CloseServiceOrderUseCase,
+    private readonly createServiceOrderUseCase: CreateServiceOrderUseCase,
+    private readonly deliverVehicleUseCase: DeliverVehicleUseCase,
+    private readonly findAllServiceOrdersUseCase: FindAllServiceOrdersUseCase,
+    private readonly findOneServiceOrderUseCase: FindOneServiceOrderUseCase,
+    private readonly finishServiceOrderUseCase: FinishServiceUseCase,
+    private readonly startServiceUseCase: StartServiceUseCase,
+  ) {}
 
   @Post()
   @UseGuards(JwtAuthGuard)
@@ -41,7 +56,7 @@ export class ServiceOrderController {
   @ApiOperation({ summary: 'Cria uma ordem de serviço' })
   @ApiCreatedResponse({ type: ServiceOrderResponseDto })
   create(@Body() dto: CreateServiceOrderDto) {
-    return this.useCase.create(dto);
+    return this.createServiceOrderUseCase.execute(dto);
   }
 
   @Get()
@@ -50,8 +65,10 @@ export class ServiceOrderController {
   @ApiOperation({ summary: 'Lista as ordens de serviço' })
   @ApiOkResponse({ type: ServiceOrderResponseDto, isArray: true })
   findAll(): Promise<ServiceOrderSummaryResponse[]> {
-    return this.useCase
-      .findAll()
+    // return this.useCase
+    //   .findAll()
+    //   .then((dtos) => ServiceOrderPresenter.presentMany(dtos));
+    return this.findAllServiceOrdersUseCase.execute()
       .then((dtos) => ServiceOrderPresenter.presentMany(dtos));
   }
 
@@ -61,8 +78,10 @@ export class ServiceOrderController {
   @ApiOperation({ summary: 'Detalha uma OS com histórico de status' })
   @ApiOkResponse({ type: ServiceOrderResponseDto })
   findOne(@Param('id') id: string): Promise<ServiceOrderDetailResponse> {
-    return this.useCase
-      .findOne(id)
+    // return this.useCase
+    //   .findOne(id)
+    //   .then((dto) => ServiceOrderPresenter.presentDetail(dto));
+    return this.findOneServiceOrderUseCase.execute(id)
       .then((dto) => ServiceOrderPresenter.presentDetail(dto));
   }
 
@@ -71,7 +90,7 @@ export class ServiceOrderController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Inicia a execução do serviço' })
   startService(@Param('id') id: string) {
-    return this.useCase.startService(id);
+    return this.startServiceUseCase.execute(id);
   }
 
   @Patch(':id/finish')
@@ -84,7 +103,7 @@ export class ServiceOrderController {
     @Body() dto: FinishServiceOrderDto,
     @Req() req: AuthenticatedRequest,
   ) {
-    return this.useCase.finish(id, req.user.userId, dto.notes);
+    return this.finishServiceOrderUseCase.execute(id, req.user.userId, dto.notes);
   }
 
   @Patch(':id/deliver')
@@ -93,7 +112,7 @@ export class ServiceOrderController {
   @ApiOperation({ summary: 'Registra a entrega do veículo' })
   @ApiOkResponse({ type: ServiceOrderResponseDto })
   deliverVehicle(@Param('id') id: string) {
-    return this.useCase.deliverVehicle(id);
+    return this.deliverVehicleUseCase.execute(id);
   }
 
   @Patch(':id/close')
@@ -102,6 +121,6 @@ export class ServiceOrderController {
   @ApiOperation({ summary: 'Encerra a ordem de serviço' })
   @ApiOkResponse({ type: ServiceOrderResponseDto })
   close(@Param('id') id: string) {
-    return this.useCase.close(id);
+    return this.closeServiceOrderUseCase.execute(id);
   }
 }

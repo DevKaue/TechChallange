@@ -1,15 +1,16 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { MetricsUseCase } from './metrics.use-case';
+//import { MetricsUseCase } from './get-avetage-execution-time.use-case';
 import { ServiceOrdersRepositoryInterface } from '@service-orders/domain/contracts/service-orders-repository.interface';
+import { GetAverageExecutionTimeUseCase } from './get-avetage-execution-time.use-case';
 
-describe('MetricsUseCase', () => {
-  let useCase: MetricsUseCase;
+describe('GetAverageExecutionTimeUseCase', () => {
+  let useCase: GetAverageExecutionTimeUseCase;
   let repository: jest.Mocked<ServiceOrdersRepositoryInterface>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        MetricsUseCase,
+        GetAverageExecutionTimeUseCase,
         {
           provide: ServiceOrdersRepositoryInterface,
           useValue: {
@@ -19,7 +20,7 @@ describe('MetricsUseCase', () => {
       ],
     }).compile();
 
-    useCase = module.get(MetricsUseCase);
+    useCase = module.get(GetAverageExecutionTimeUseCase);
     repository = module.get(ServiceOrdersRepositoryInterface);
   });
 

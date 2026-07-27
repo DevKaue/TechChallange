@@ -16,7 +16,7 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
-import { EstimateUseCase } from '@service-orders/application/usecases/estimate.use-case';
+//import { EstimateUseCase } from '@/service-orders/application/usecases/estimate/estimate.use-case';
 import { AddEstimateItemDto } from '@service-orders/application/dto/estimate/add-estimate-item.dto';
 import { UpdateEstimateStatusDto } from '@service-orders/application/dto/estimate/update-estimate-status.dto';
 import { RejectEstimateDto } from '@service-orders/application/dto/estimate/reject-estimate.dto';
@@ -25,12 +25,23 @@ import {
   EstimateItemDto,
 } from '@service-orders/application/dto/estimate/estimate-response.dto';
 import { ServiceOrderResponseDto } from '@service-orders/application/dto/service-order/service-order-response.dto';
+import { CreateEstimateUseCase } from '@/service-orders/application/usecases/estimate/create-estimate.use-case';
+import { AddEstimateItemUseCase } from '@/service-orders/application/usecases/estimate/add-estimate-item.use-case';
+import { RejectEstimateUseCase } from '@/service-orders/application/usecases/estimate/reject-estimate.use-case';
+import { UpdateEstimateStatusUseCase } from '@/service-orders/application/usecases/estimate/update-estimate-status.use-case';
 
 @ApiTags('Service Orders')
 @Controller('service-orders')
 @UseFilters(ServiceOrderExceptionFilter)
 export class EstimateController {
-  constructor(private readonly useCase: EstimateUseCase) {}
+  //constructor(private readonly useCase: EstimateUseCase) {}
+  constructor(
+    private readonly createEstimateUseCase: CreateEstimateUseCase,
+    private readonly addEstimateItemUseCase: AddEstimateItemUseCase,
+    private readonly updateEstimateStatusUseCase: UpdateEstimateStatusUseCase,
+    private readonly rejectEstimateUseCase: RejectEstimateUseCase,
+  ) {}
+
 
   @Post(':id/estimates')
   @UseGuards(JwtAuthGuard)
@@ -38,7 +49,7 @@ export class EstimateController {
   @ApiOperation({ summary: 'Gera o orçamento da OS e envia para aprovação' })
   @ApiCreatedResponse({ type: EstimateResponseDto })
   createEstimate(@Param('id') id: string) {
-    return this.useCase.createEstimate(id);
+    return this.createEstimateUseCase.execute(id);
   }
 
   @Post('estimates/:estimateId/items')
@@ -50,7 +61,7 @@ export class EstimateController {
     @Param('estimateId') estimateId: string,
     @Body() dto: AddEstimateItemDto,
   ) {
-    return this.useCase.addEstimateItem(estimateId, dto);
+    return this.addEstimateItemUseCase.execute(estimateId, dto);
   }
 
   @Patch('estimates/:estimateId/status')
@@ -62,7 +73,7 @@ export class EstimateController {
     @Param('estimateId') estimateId: string,
     @Body() dto: UpdateEstimateStatusDto,
   ) {
-    return this.useCase.updateEstimateStatus(estimateId, dto);
+    return this.updateEstimateStatusUseCase.execute(estimateId, dto);
   }
 
   @Patch(':id/reject')
@@ -73,6 +84,6 @@ export class EstimateController {
   })
   @ApiOkResponse({ type: ServiceOrderResponseDto })
   rejectEstimate(@Param('id') id: string, @Body() dto: RejectEstimateDto) {
-    return this.useCase.rejectEstimate(id, dto);
+    return this.rejectEstimateUseCase.execute(id, dto);
   }
 }

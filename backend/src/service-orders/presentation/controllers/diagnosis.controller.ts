@@ -13,17 +13,18 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
-import { DiagnosisUseCase } from '@service-orders/application/usecases/diagnosis.use-case';
+//import { DiagnosisUseCase } from '@/service-orders/application/usecases/diagnosis/diagnosis.use-case';
 import { StartDiagnosisDto } from '@service-orders/application/dto/diagnosis/start-diagnosis.dto';
 import { ServiceOrderResponseDto } from '@service-orders/application/dto/service-order/service-order-response.dto';
 
 import { ServiceOrderExceptionFilter } from '@service-orders/presentation/filters/service-order-exception.filter';
+import { StartDiagnosisUseCase } from '@/service-orders/application/usecases/diagnosis/startDiagnosis.use-case';
 
 @ApiTags('Service Orders')
 @Controller('service-orders')
 @UseFilters(ServiceOrderExceptionFilter)
 export class DiagnosisController {
-  constructor(private readonly useCase: DiagnosisUseCase) {}
+  constructor(private readonly useCase: StartDiagnosisUseCase) {}
 
   @Patch(':id/diagnosis')
   @UseGuards(JwtAuthGuard)

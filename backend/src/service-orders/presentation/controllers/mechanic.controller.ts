@@ -15,17 +15,22 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import type { AuthenticatedRequest } from '@/access-identity/presentation/authenticated-request';
-import { MechanicUseCase } from '@service-orders/application/usecases/mechanic.use-case';
+//import { MechanicUseCase } from '@/service-orders/application/usecases/mechanic/mechanic.use-case';
 import { AssignMechanicDto } from '@service-orders/application/dto/mechanic/assign-mechanic.dto';
 import { UpdateMechanicAvailabilityDto } from '@service-orders/application/dto/mechanic/update-mechanic-availability.dto';
 import { ServiceOrderResponseDto } from '@service-orders/application/dto/service-order/service-order-response.dto';
 import { ServiceOrderExceptionFilter } from '@service-orders/presentation/filters/service-order-exception.filter';
+import { AssignMechanicUseCase } from '@/service-orders/application/usecases/mechanic/assign-mechanic.use-case';
+import { UpdateMechanicAvailabilityUseCase } from '@/service-orders/application/usecases/mechanic/update-mechanic-availability.use-case';
 
 @ApiTags('Service Orders')
 @UseFilters(ServiceOrderExceptionFilter)
 @Controller('service-orders')
 export class MechanicController {
-  constructor(private readonly useCase: MechanicUseCase) {}
+  constructor(
+    private readonly assignMechanicUseCase: AssignMechanicUseCase,
+    private readonly updateMechanicAvailabilityUseCase: UpdateMechanicAvailabilityUseCase, 
+  ) {}
 
   @Patch(':id/mechanic')
   @UseGuards(JwtAuthGuard)
@@ -33,7 +38,7 @@ export class MechanicController {
   @ApiOperation({ summary: 'Atribui um mecânico à OS' })
   @ApiOkResponse({ type: ServiceOrderResponseDto })
   assignMechanic(@Param('id') id: string, @Body() dto: AssignMechanicDto) {
-    return this.useCase.assignMechanic(id, dto);
+    return this.assignMechanicUseCase.execute(id, dto);
   }
 
   @Patch('me/availability')
@@ -44,7 +49,7 @@ export class MechanicController {
     @Req() req: AuthenticatedRequest,
     @Body() dto: UpdateMechanicAvailabilityDto,
   ) {
-    return this.useCase.updateMechanicAvailability(
+    return this.updateMechanicAvailabilityUseCase.execute(
       req.user.userId,
       dto.available,
     );

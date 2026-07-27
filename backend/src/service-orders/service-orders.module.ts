@@ -4,11 +4,10 @@ import { EstimateController } from './presentation/controllers/estimate.controll
 import { MechanicController } from './presentation/controllers/mechanic.controller';
 import { DiagnosisController } from './presentation/controllers/diagnosis.controller';
 import { MetricsController } from './presentation/controllers/metrics.controller';
-import { ServiceOrderUseCase } from './application/usecases/service-order.use-case';
-import { EstimateUseCase } from './application/usecases/estimate.use-case';
-import { MechanicUseCase } from './application/usecases/mechanic.use-case';
-import { DiagnosisUseCase } from './application/usecases/diagnosis.use-case';
-import { MetricsUseCase } from './application/usecases/metrics.use-case';
+//import { ServiceOrderUseCase } from './application/usecases/service-order/service-order.use-case';
+//import { EstimateUseCase } from './application/usecases/estimate/estimate.use-case';
+//import { MechanicUseCase } from './application/usecases/mechanic/mechanic.use-case';
+//import { MetricsUseCase } from './application/usecases/metrics/get-avetage-execution-time.use-case';
 import { ServiceOrdersRepositoryInterface } from './domain/contracts/service-orders-repository.interface';
 import { PrismaServiceOrdersRepository } from './infra/repositories/prisma-service-orders.repository';
 import { ServiceOrderQueryServiceInterface } from './application/contracts/service-order-query-service.interface';
@@ -19,6 +18,21 @@ import { MaterialsModule } from '@materials/infra/materials.module';
 import { ServiceCatalogModule } from '@service-catalog/infra/service-catalog.module';
 import { CustomerManagementModule } from '@customer-management/infra/customer-management.module';
 import { AccessIdentityModule } from '@access-identity/access-identity.module';
+import { StartDiagnosisUseCase } from './application/usecases/diagnosis/startDiagnosis.use-case';
+import { AddEstimateItemUseCase } from './application/usecases/estimate/add-estimate-item.use-case';
+import { CreateEstimateUseCase } from './application/usecases/estimate/create-estimate.use-case';
+import { RejectEstimateUseCase } from './application/usecases/estimate/reject-estimate.use-case';
+import { UpdateEstimateStatusUseCase } from './application/usecases/estimate/update-estimate-status.use-case';
+import { AssignMechanicUseCase } from './application/usecases/mechanic/assign-mechanic.use-case';
+import { UpdateMechanicAvailabilityUseCase } from './application/usecases/mechanic/update-mechanic-availability.use-case';
+import { GetAverageExecutionTimeUseCase } from './application/usecases/metrics/get-avetage-execution-time.use-case';
+import { CloseServiceOrderUseCase } from './application/usecases/service-order/close-service-order.use-case';
+import { CreateServiceOrderUseCase } from './application/usecases/service-order/create-service-order.use-case';
+import { DeliverVehicleUseCase } from './application/usecases/service-order/deliver-vehicle.use-case';
+import { FindAllServiceOrdersUseCase } from './application/usecases/service-order/find-all-service-orders.use-case';
+import { FindOneServiceOrderUseCase } from './application/usecases/service-order/find-one-service-order.use-case';
+import { FinishServiceUseCase } from './application/usecases/service-order/finish-service.use-case';
+import { StartServiceUseCase } from './application/usecases/service-order/start-service.use-case';
 
 @Module({
   imports: [
@@ -35,11 +49,25 @@ import { AccessIdentityModule } from '@access-identity/access-identity.module';
     MetricsController,
   ],
   providers: [
-    ServiceOrderUseCase,
-    EstimateUseCase,
-    MechanicUseCase,
-    DiagnosisUseCase,
-    MetricsUseCase,
+    // ServiceOrderUseCase,
+    // EstimateUseCase,
+    // MechanicUseCase,
+    // MetricsUseCase,
+    StartDiagnosisUseCase,
+    AddEstimateItemUseCase,
+    CreateEstimateUseCase,
+    RejectEstimateUseCase,
+    UpdateEstimateStatusUseCase,
+    AssignMechanicUseCase,
+    UpdateMechanicAvailabilityUseCase,
+    GetAverageExecutionTimeUseCase,
+    CloseServiceOrderUseCase,
+    CreateServiceOrderUseCase,
+    DeliverVehicleUseCase,
+    FindAllServiceOrdersUseCase,
+    FindOneServiceOrderUseCase, 
+    FinishServiceUseCase,
+    StartServiceUseCase,
     {
       provide: ServiceOrdersRepositoryInterface,
       useClass: PrismaServiceOrdersRepository,
@@ -58,4 +86,4 @@ import { AccessIdentityModule } from '@access-identity/access-identity.module';
   ],
   exports: [SERVICE_ORDERS_INTERFACE],
 })
-export class ServiceOrdersModule {}
+export class ServiceOrdersModule { }
