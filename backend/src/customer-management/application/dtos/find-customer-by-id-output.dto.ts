@@ -1,5 +1,5 @@
-import CustomerDTO from '@customer-management/application/dtos/customer.dto';
+import type CustomerDTO from '@customer-management/application/dtos/customer.dto';
 
-export default class FindCustomerByIdOutputDTO {
-  customer!: CustomerDTO;
+export default interface FindCustomerByIdOutputDTO {
+  customer: CustomerDTO;
 }

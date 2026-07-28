@@ -20,12 +20,12 @@ describe('ListVehicleUseCase', () => {
 
   describe('execute', () => {
     it('should list all vehicles successfully', async () => {
-      const input = new ListVehicleInputDTO({
+      const input = {
         customerId: 'customer-123',
-      });
+      };
 
       const vehiclesDTO = [
-        new VehicleDTO({
+        {
           id: 'vehicle-1',
           licensePlate: 'ABC1234',
           brand: 'Toyota',
@@ -33,8 +33,8 @@ describe('ListVehicleUseCase', () => {
           year: 2022,
           customerId: 'customer-123',
           createdAt: new Date('2024-01-01'),
-        }),
-        new VehicleDTO({
+        },
+        {
           id: 'vehicle-2',
           licensePlate: 'XYZ9876',
           brand: 'Honda',
@@ -42,14 +42,14 @@ describe('ListVehicleUseCase', () => {
           year: 2023,
           customerId: 'customer-123',
           createdAt: new Date('2024-01-02'),
-        }),
+        },
       ];
 
       vehicleQueryServiceMock.findAll.mockResolvedValue(vehiclesDTO);
 
       const result = await useCase.execute(input);
 
-      expect(result).toBeInstanceOf(ListVehicleOutputDTO);
+      expect(result).toHaveProperty('vehicles');
       expect(result.vehicles).toBeDefined();
       expect(result.vehicles).toHaveLength(2);
       expect(result.vehicles[0].licensePlate).toBe('ABC1234');
@@ -58,12 +58,12 @@ describe('ListVehicleUseCase', () => {
 
     it('should filter vehicles by customer id', async () => {
       const customerId = 'customer-456';
-      const input = new ListVehicleInputDTO({
+      const input = {
         customerId,
-      });
+      };
 
       const vehiclesDTO = [
-        new VehicleDTO({
+        {
           id: 'vehicle-3',
           licensePlate: 'DEF5678',
           brand: 'Volkswagen',
@@ -71,7 +71,7 @@ describe('ListVehicleUseCase', () => {
           year: 2021,
           customerId,
           createdAt: new Date(),
-        }),
+        },
       ];
 
       vehicleQueryServiceMock.findAll.mockResolvedValue(vehiclesDTO);
@@ -86,24 +86,24 @@ describe('ListVehicleUseCase', () => {
     });
 
     it('should return empty list when no vehicles exist for customer', async () => {
-      const input = new ListVehicleInputDTO({
+      const input = {
         customerId: 'customer-no-vehicles',
-      });
+      };
 
       vehicleQueryServiceMock.findAll.mockResolvedValue([]);
 
       const result = await useCase.execute(input);
 
-      expect(result).toBeInstanceOf(ListVehicleOutputDTO);
+      expect(result).toHaveProperty('vehicles');
       expect(result.vehicles).toBeDefined();
       expect(result.vehicles).toHaveLength(0);
     });
 
     it('should list vehicles without customer id filter', async () => {
-      const input = new ListVehicleInputDTO({});
+      const input = {};
 
       const vehiclesDTO = [
-        new VehicleDTO({
+        {
           id: 'vehicle-all-1',
           licensePlate: 'AAA1111',
           brand: 'BMW',
@@ -111,8 +111,8 @@ describe('ListVehicleUseCase', () => {
           year: 2024,
           customerId: 'customer-1',
           createdAt: new Date(),
-        }),
-        new VehicleDTO({
+        },
+        {
           id: 'vehicle-all-2',
           licensePlate: 'BBB2222',
           brand: 'Mercedes',
@@ -120,7 +120,7 @@ describe('ListVehicleUseCase', () => {
           year: 2024,
           customerId: 'customer-2',
           createdAt: new Date(),
-        }),
+        },
       ];
 
       vehicleQueryServiceMock.findAll.mockResolvedValue(vehiclesDTO);
@@ -134,12 +134,12 @@ describe('ListVehicleUseCase', () => {
     });
 
     it('should return vehicles with all properties', async () => {
-      const input = new ListVehicleInputDTO({
+      const input = {
         customerId: 'customer-123',
-      });
+      };
 
       const vehiclesDTO = [
-        new VehicleDTO({
+        {
           id: 'vehicle-complete',
           licensePlate: 'GHI2468',
           brand: 'Audi',
@@ -148,7 +148,7 @@ describe('ListVehicleUseCase', () => {
           customerId: 'customer-123',
           createdAt: new Date('2024-01-01'),
           updatedAt: new Date('2024-01-05'),
-        }),
+        },
       ];
 
       vehicleQueryServiceMock.findAll.mockResolvedValue(vehiclesDTO);
@@ -168,12 +168,12 @@ describe('ListVehicleUseCase', () => {
     });
 
     it('should handle vehicles with minimal properties', async () => {
-      const input = new ListVehicleInputDTO({
+      const input = {
         customerId: 'customer-456',
-      });
+      };
 
       const vehiclesDTO = [
-        new VehicleDTO({
+        {
           id: 'vehicle-minimal',
           licensePlate: 'JKL3579',
           brand: 'Fiat',
@@ -181,7 +181,7 @@ describe('ListVehicleUseCase', () => {
           year: 2020,
           customerId: 'customer-456',
           createdAt: new Date(),
-        }),
+        },
       ];
 
       vehicleQueryServiceMock.findAll.mockResolvedValue(vehiclesDTO);
@@ -197,12 +197,12 @@ describe('ListVehicleUseCase', () => {
     });
 
     it('should return multiple vehicles in correct order', async () => {
-      const input = new ListVehicleInputDTO({
+      const input = {
         customerId: 'customer-multi',
-      });
+      };
 
       const vehiclesDTO = [
-        new VehicleDTO({
+        {
           id: 'vehicle-first',
           licensePlate: 'VEH1111',
           brand: 'Toyota',
@@ -210,8 +210,8 @@ describe('ListVehicleUseCase', () => {
           year: 2022,
           customerId: 'customer-multi',
           createdAt: new Date('2024-01-01'),
-        }),
-        new VehicleDTO({
+        },
+        {
           id: 'vehicle-second',
           licensePlate: 'VEH2222',
           brand: 'Honda',
@@ -219,8 +219,8 @@ describe('ListVehicleUseCase', () => {
           year: 2023,
           customerId: 'customer-multi',
           createdAt: new Date('2024-01-02'),
-        }),
-        new VehicleDTO({
+        },
+        {
           id: 'vehicle-third',
           licensePlate: 'VEH3333',
           brand: 'Volkswagen',
@@ -228,7 +228,7 @@ describe('ListVehicleUseCase', () => {
           year: 2024,
           customerId: 'customer-multi',
           createdAt: new Date('2024-01-03'),
-        }),
+        },
       ];
 
       vehicleQueryServiceMock.findAll.mockResolvedValue(vehiclesDTO);

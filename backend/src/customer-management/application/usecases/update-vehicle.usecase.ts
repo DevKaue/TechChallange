@@ -1,10 +1,10 @@
 import VehicleRepositoryInterface from '@customer-management/domain/contracts/vehicle-repository.interface';
 import Year from '@customer-management/domain/value-objects/year.vo';
 import LicensePlate from '@customer-management/domain/value-objects/license-plate.vo';
-import UpdateVehicleInputDTO from '@customer-management/application/dtos/update-vehicle-input.dto';
-import VehicleDTO from '@customer-management/application/dtos/vehicle.dto';
+import type UpdateVehicleInputDTO from '@customer-management/application/dtos/update-vehicle-input.dto';
+import { toVehicleDTO } from '@customer-management/application/dtos/vehicle.dto';
 import VehicleRegistrationChecker from '@/customer-management/domain/services/vehicle-registration-checker.service';
-import UpdateVehicleOutputDTO from '@customer-management/application/dtos/update-vehicle-output.dto';
+import type UpdateVehicleOutputDTO from '@customer-management/application/dtos/update-vehicle-output.dto';
 
 export default class UpdateVehicleUseCase {
   constructor(
@@ -32,9 +32,9 @@ export default class UpdateVehicleUseCase {
 
     await this.vehicleRepository.update(vehicle);
 
-    const output = new UpdateVehicleOutputDTO({
-      vehicle: VehicleDTO.fromDomain(vehicle),
-    });
+    const output: UpdateVehicleOutputDTO = {
+      vehicle: toVehicleDTO(vehicle),
+    };
     return output;
   }
 }

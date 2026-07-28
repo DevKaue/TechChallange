@@ -1,8 +1,8 @@
 import CustomerRepositoryInterface from '@customer-management/domain/contracts/customer-repository.interface';
 import Email from '@customer-management/domain/value-objects/email.vo';
-import UpdateCustomerInputDTO from '@customer-management/application/dtos/update-customer-input.dto';
-import CustomerDTO from '@customer-management/application/dtos/customer.dto';
-import UpdateCustomerOutputDTO from '@customer-management/application/dtos/update-customer-output.dto';
+import type UpdateCustomerInputDTO from '@customer-management/application/dtos/update-customer-input.dto';
+import { toCustomerDTO } from '@customer-management/application/dtos/customer.dto';
+import type UpdateCustomerOutputDTO from '@customer-management/application/dtos/update-customer-output.dto';
 
 export default class UpdateCustomerUseCase {
   constructor(
@@ -30,8 +30,8 @@ export default class UpdateCustomerUseCase {
 
     await this.customerRepository.update(customer);
 
-    return new UpdateCustomerOutputDTO({
-      customer: CustomerDTO.fromDomain(customer),
-    });
+    return {
+      customer: toCustomerDTO(customer),
+    };
   }
 }

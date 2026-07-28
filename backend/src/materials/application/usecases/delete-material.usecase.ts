@@ -1,6 +1,6 @@
-import MaterialDTO from '@materials/application/dtos/material.dto';
-import FindMaterialByIdInputDTO from '@materials/application/dtos/find-material-by-id-input.dto';
-import FindMaterialByIdOutputDTO from '@materials/application/dtos/find-material-by-id-output.dto';
+import { toMaterialDTO } from '@materials/application/dtos/material.dto';
+import type FindMaterialByIdInputDTO from '@materials/application/dtos/find-material-by-id-input.dto';
+import type FindMaterialByIdOutputDTO from '@materials/application/dtos/find-material-by-id-output.dto';
 import MaterialNotFoundException from '@materials/application/exceptions/material-not-found.exception';
 import MaterialRepositoryInterface from '@materials/domain/contracts/material-repository.interface';
 
@@ -21,7 +21,7 @@ export default class DeleteMaterialUseCase {
     await this.materialRepository.delete(material.id);
 
     return {
-      material: MaterialDTO.fromDomain(material),
+      material: toMaterialDTO(material),
     };
   }
 }

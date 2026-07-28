@@ -3,9 +3,9 @@ import CustomerRepositoryInterface from '@/customer-management/domain/contracts/
 
 import VehicleFactory from '@customer-management/domain/factories/vehicle.factory';
 
-import CreateVehicleInputDTO from '@customer-management/application/dtos/create-vehicle-input.dto';
-import CreateVehicleOutputDTO from '@customer-management/application/dtos/create-vehicle-output.dto';
-import VehicleDTO from '@customer-management/application/dtos/vehicle.dto';
+import type CreateVehicleInputDTO from '@customer-management/application/dtos/create-vehicle-input.dto';
+import type CreateVehicleOutputDTO from '@customer-management/application/dtos/create-vehicle-output.dto';
+import { toVehicleDTO } from '@customer-management/application/dtos/vehicle.dto';
 
 import VehicleRegistrationChecker from '@/customer-management/domain/services/vehicle-registration-checker.service';
 
@@ -34,7 +34,7 @@ export class CreateVehicleUseCase {
     await this.vehicleRepository.create(vehicle);
 
     const output: CreateVehicleOutputDTO = {
-      vehicle: VehicleDTO.fromDomain(vehicle),
+      vehicle: toVehicleDTO(vehicle),
     };
 
     return output;

@@ -1,5 +1,5 @@
-import DomainException from "@/materials/domain/exceptions/domain.exception";
-import { CreateServiceCatalogUseCase } from "./create-service-catalog.use-case";
+import DomainException from '@service-catalog/domain/exceptions/domain.exception';
+import { CreateServiceCatalogUseCase } from './create-service-catalog.use-case';
 
 describe('CreateServiceCatalogUseCase', () => {
   const buildRepo = () => ({
@@ -25,8 +25,8 @@ describe('CreateServiceCatalogUseCase', () => {
     const repo = buildRepo();
     const useCase = new CreateServiceCatalogUseCase(repo as any);
 
-    await expect(
-      useCase.execute({ name: 'X', price: -1 })
-    ).rejects.toThrow(DomainException);
+    await expect(useCase.execute({ name: 'X', price: -1 })).rejects.toThrow(
+      DomainException,
+    );
   });
 });

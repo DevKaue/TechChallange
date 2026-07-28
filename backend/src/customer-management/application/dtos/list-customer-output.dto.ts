@@ -1,9 +1,5 @@
-import CustomerDTO from '@customer-management/application/dtos/customer.dto';
+import type CustomerDTO from '@customer-management/application/dtos/customer.dto';
 
-export default class ListCustomerOutputDTO {
-  customers!: CustomerDTO[];
-
-  constructor(props?: Partial<ListCustomerOutputDTO>) {
-    Object.assign(this, props);
-  }
+export default interface ListCustomerOutputDTO {
+  customers: CustomerDTO[];
 }

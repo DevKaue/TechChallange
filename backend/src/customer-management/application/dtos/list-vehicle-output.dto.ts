@@ -1,8 +1,5 @@
-import VehicleDTO from '@customer-management/application/dtos/vehicle.dto';
+import type VehicleDTO from '@customer-management/application/dtos/vehicle.dto';
 
-export default class ListVehicleOutputDTO {
-  vehicles!: VehicleDTO[];
-  constructor(props?: Partial<ListVehicleOutputDTO>) {
-    Object.assign(this, props);
-  }
+export default interface ListVehicleOutputDTO {
+  vehicles: VehicleDTO[];
 }

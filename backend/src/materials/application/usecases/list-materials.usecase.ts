@@ -1,5 +1,5 @@
-import ListMaterialsOutputDTO from '@materials/application/dtos/list-materials-output.dto';
-import MaterialDTO from '@materials/application/dtos/material.dto';
+import type ListMaterialsOutputDTO from '@materials/application/dtos/list-materials-output.dto';
+import { toMaterialDTO } from '@materials/application/dtos/material.dto';
 import MaterialRepositoryInterface from '@materials/domain/contracts/material-repository.interface';
 
 export default class ListMaterialsUseCase {
@@ -11,7 +11,7 @@ export default class ListMaterialsUseCase {
     const materials = await this.materialRepository.findAll();
 
     return {
-      materials: materials.map((material) => MaterialDTO.fromDomain(material)),
+      materials: materials.map((material) => toMaterialDTO(material)),
     };
   }
 }

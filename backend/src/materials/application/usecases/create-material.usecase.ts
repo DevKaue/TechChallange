@@ -1,6 +1,6 @@
-import CreateMaterialInputDTO from '@materials/application/dtos/create-material-input.dto';
-import CreateMaterialOutputDTO from '@materials/application/dtos/create-material-output.dto';
-import MaterialDTO from '@materials/application/dtos/material.dto';
+import type CreateMaterialInputDTO from '@materials/application/dtos/create-material-input.dto';
+import type CreateMaterialOutputDTO from '@materials/application/dtos/create-material-output.dto';
+import { toMaterialDTO } from '@materials/application/dtos/material.dto';
 import MaterialRepositoryInterface from '@materials/domain/contracts/material-repository.interface';
 import MaterialFactory from '@materials/domain/factories/material.factory';
 
@@ -25,7 +25,7 @@ export default class CreateMaterialUseCase {
     await this.materialRepository.create(material);
 
     return {
-      material: MaterialDTO.fromDomain(material),
+      material: toMaterialDTO(material),
     };
   }
 }

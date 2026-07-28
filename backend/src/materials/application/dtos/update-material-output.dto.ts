@@ -1,5 +1,5 @@
-import MaterialDTO from '@materials/application/dtos/material.dto';
+import type MaterialDTO from '@materials/application/dtos/material.dto';
 
-export default class UpdateMaterialOutputDTO {
-  material!: MaterialDTO;
+export default interface UpdateMaterialOutputDTO {
+  material: MaterialDTO;
 }

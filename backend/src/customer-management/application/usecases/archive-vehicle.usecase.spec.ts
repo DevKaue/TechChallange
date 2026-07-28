@@ -24,7 +24,7 @@ describe('ArchiveVehicleUseCase', () => {
 
   describe('execute', () => {
     it('should archive a vehicle successfully', async () => {
-      const input = new ArchiveVehicleInputDTO({ id: 'vehicle-123' });
+      const input = { id: 'vehicle-123' };
 
       const vehicle = new Vehicle({
         id: 'vehicle-123',
@@ -44,7 +44,7 @@ describe('ArchiveVehicleUseCase', () => {
     });
 
     it('should soft delete the vehicle before archiving', async () => {
-      const input = new ArchiveVehicleInputDTO({ id: 'vehicle-123' });
+      const input = { id: 'vehicle-123' };
 
       const vehicle = new Vehicle({
         id: 'vehicle-123',
@@ -64,7 +64,7 @@ describe('ArchiveVehicleUseCase', () => {
     });
 
     it('should throw VehicleNotFoundException when vehicle does not exist', async () => {
-      const input = new ArchiveVehicleInputDTO({ id: 'non-existent-id' });
+      const input = { id: 'non-existent-id' };
 
       vehicleRepositoryMock.getById.mockRejectedValue(
         new VehicleNotFoundException(),
@@ -77,7 +77,7 @@ describe('ArchiveVehicleUseCase', () => {
 
     it('should archive the vehicle returned from repository', async () => {
       const vehicleId = 'vehicle-456';
-      const input = new ArchiveVehicleInputDTO({ id: vehicleId });
+      const input = { id: vehicleId };
 
       const vehicle = new Vehicle({
         id: vehicleId,

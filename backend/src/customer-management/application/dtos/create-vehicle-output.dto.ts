@@ -1,5 +1,5 @@
-import VehicleDTO from '@customer-management/application/dtos/vehicle.dto';
+import type VehicleDTO from '@customer-management/application/dtos/vehicle.dto';
 
-export default class CreateVehicleOutputDTO {
-  vehicle!: VehicleDTO;
+export default interface CreateVehicleOutputDTO {
+  vehicle: VehicleDTO;
 }

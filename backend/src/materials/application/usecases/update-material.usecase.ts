@@ -1,6 +1,6 @@
-import MaterialDTO from '@materials/application/dtos/material.dto';
-import UpdateMaterialInputDTO from '@materials/application/dtos/update-material-input.dto';
-import UpdateMaterialOutputDTO from '@materials/application/dtos/update-material-output.dto';
+import { toMaterialDTO } from '@materials/application/dtos/material.dto';
+import type UpdateMaterialInputDTO from '@materials/application/dtos/update-material-input.dto';
+import type UpdateMaterialOutputDTO from '@materials/application/dtos/update-material-output.dto';
 import MaterialNotFoundException from '@materials/application/exceptions/material-not-found.exception';
 import MaterialRepositoryInterface from '@materials/domain/contracts/material-repository.interface';
 
@@ -31,7 +31,7 @@ export default class UpdateMaterialUseCase {
     await this.materialRepository.update(material);
 
     return {
-      material: MaterialDTO.fromDomain(material),
+      material: toMaterialDTO(material),
     };
   }
 }

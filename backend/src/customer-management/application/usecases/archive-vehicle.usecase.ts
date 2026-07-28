@@ -1,5 +1,5 @@
 import VehicleRepositoryInterface from '@customer-management/domain/contracts/vehicle-repository.interface';
-import ArchiveVehicleInputDTO from '@/customer-management/application/dtos/archive-vehicle-input.dto';
+import type ArchiveVehicleInputDTO from '@/customer-management/application/dtos/archive-vehicle-input.dto';
 
 export default class ArchiveVehicleUseCase {
   constructor(private readonly vehicleRepository: VehicleRepositoryInterface) {}

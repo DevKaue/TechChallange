@@ -1,5 +1,5 @@
 import CustomerQueryServiceInterface from '@customer-management/application/contracts/customer-query-service.interface';
-import ListCustomerOutputDTO from '@customer-management/application/dtos/list-customer-output.dto';
+import type ListCustomerOutputDTO from '@customer-management/application/dtos/list-customer-output.dto';
 
 export default class ListCustomerUseCase {
   constructor(
@@ -8,6 +8,6 @@ export default class ListCustomerUseCase {
 
   async execute(): Promise<ListCustomerOutputDTO> {
     const customers = await this.customerQueryService.findAll();
-    return new ListCustomerOutputDTO({ customers });
+    return { customers };
   }
 }

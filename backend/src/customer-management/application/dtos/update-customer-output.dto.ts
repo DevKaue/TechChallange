@@ -1,8 +1,5 @@
-import CustomerDTO from '@customer-management/application/dtos/customer.dto';
+import type CustomerDTO from '@customer-management/application/dtos/customer.dto';
 
-export default class UpdateCustomerOutputDTO {
-  customer!: CustomerDTO;
-  constructor(props?: Partial<UpdateCustomerOutputDTO>) {
-    Object.assign(this, props);
-  }
+export default interface UpdateCustomerOutputDTO {
+  customer: CustomerDTO;
 }
