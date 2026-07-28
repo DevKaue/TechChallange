@@ -1,8 +1,6 @@
-import { Injectable } from '@nestjs/common';
 import { ServiceOrderQueryServiceInterface } from '@service-orders/application/contracts/service-order-query-service.interface';
 import { ServiceOrderNotFoundException } from '@service-orders/application/exceptions/service-order-not-found.exception';
 
-@Injectable()
 export class FindOneServiceOrderUseCase {
   constructor(
     private readonly queryService: ServiceOrderQueryServiceInterface,

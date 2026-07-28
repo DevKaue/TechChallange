@@ -12,7 +12,12 @@ describe('FindOneServiceOrderUseCase', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        FindOneServiceOrderUseCase,
+        {
+          provide: FindOneServiceOrderUseCase,
+          useFactory: (queryService: ServiceOrderQueryServiceInterface) =>
+            new FindOneServiceOrderUseCase(queryService),
+          inject: [ServiceOrderQueryServiceInterface],
+        },
         {
           provide: ServiceOrderQueryServiceInterface,
           useValue: {

@@ -1,8 +1,8 @@
-import { UnauthorizedException } from '@nestjs/common';
 import { UserRole } from '../../domain/enums/user-role.enum';
 import { AccessIdentityRepository } from '../../domain/contracts/access-identity-repository.interface';
 import { InternalUser } from '../../domain/entities/internal-user.entity';
 import { ValidateAuthenticatedUserUseCase } from './validate-authenticated-user.usecase';
+import { InvalidCredentialsException } from '../../domain/exceptions/invalid-credentials.exception';
 
 describe('ValidateAuthenticatedUserUseCase', () => {
   let useCase: ValidateAuthenticatedUserUseCase;
@@ -39,14 +39,16 @@ describe('ValidateAuthenticatedUserUseCase', () => {
   });
 
   it('should reject a token without subject', async () => {
-    await expect(useCase.execute({})).rejects.toThrow(UnauthorizedException);
+    await expect(useCase.execute({})).rejects.toThrow(
+      InvalidCredentialsException,
+    );
   });
 
   it('should reject a token for a missing user', async () => {
     accessIdentityRepository.findById.mockResolvedValue(null);
 
     await expect(useCase.execute({ sub: 'missing-user' })).rejects.toThrow(
-      UnauthorizedException,
+      InvalidCredentialsException,
     );
   });
 });

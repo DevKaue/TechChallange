@@ -11,7 +11,12 @@ describe('FindAllServiceOrdersUseCase', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        FindAllServiceOrdersUseCase,
+        {
+          provide: FindAllServiceOrdersUseCase,
+          useFactory: (queryService: ServiceOrderQueryServiceInterface) =>
+            new FindAllServiceOrdersUseCase(queryService),
+          inject: [ServiceOrderQueryServiceInterface],
+        },
         {
           provide: ServiceOrderQueryServiceInterface,
           useValue: {

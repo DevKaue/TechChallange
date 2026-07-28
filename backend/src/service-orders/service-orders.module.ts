@@ -18,6 +18,10 @@ import { MaterialsModule } from '@materials/infra/materials.module';
 import { ServiceCatalogModule } from '@service-catalog/infra/service-catalog.module';
 import { CustomerManagementModule } from '@customer-management/infra/customer-management.module';
 import { AccessIdentityModule } from '@access-identity/access-identity.module';
+import { PART_REPOSITORY } from '@service-orders/domain/acls/part-repository.interface';
+import { SERVICE_CATALOG_REPOSITORY } from '@service-orders/domain/acls/service-catalog-repository.interface';
+import { USER_REPOSITORY } from '@service-orders/domain/acls/user-repository.interface';
+import CustomerManagementInterface from '@common/contracts/customer-management.interface';
 import { StartDiagnosisUseCase } from './application/usecases/diagnosis/startDiagnosis.use-case';
 import { AddEstimateItemUseCase } from './application/usecases/estimate/add-estimate-item.use-case';
 import { CreateEstimateUseCase } from './application/usecases/estimate/create-estimate.use-case';
@@ -53,21 +57,114 @@ import { StartServiceUseCase } from './application/usecases/service-order/start-
     // EstimateUseCase,
     // MechanicUseCase,
     // MetricsUseCase,
-    StartDiagnosisUseCase,
-    AddEstimateItemUseCase,
-    CreateEstimateUseCase,
-    RejectEstimateUseCase,
-    UpdateEstimateStatusUseCase,
-    AssignMechanicUseCase,
-    UpdateMechanicAvailabilityUseCase,
-    GetAverageExecutionTimeUseCase,
-    CloseServiceOrderUseCase,
-    CreateServiceOrderUseCase,
-    DeliverVehicleUseCase,
-    FindAllServiceOrdersUseCase,
-    FindOneServiceOrderUseCase, 
-    FinishServiceUseCase,
-    StartServiceUseCase,
+    {
+      provide: StartDiagnosisUseCase,
+      useFactory: (repository: ServiceOrdersRepositoryInterface) =>
+        new StartDiagnosisUseCase(repository),
+      inject: [ServiceOrdersRepositoryInterface],
+    },
+    {
+      provide: CreateEstimateUseCase,
+      useFactory: (repository: ServiceOrdersRepositoryInterface) =>
+        new CreateEstimateUseCase(repository),
+      inject: [ServiceOrdersRepositoryInterface],
+    },
+    {
+      provide: UpdateEstimateStatusUseCase,
+      useFactory: (repository: ServiceOrdersRepositoryInterface) =>
+        new UpdateEstimateStatusUseCase(repository),
+      inject: [ServiceOrdersRepositoryInterface],
+    },
+    {
+      provide: GetAverageExecutionTimeUseCase,
+      useFactory: (repository: ServiceOrdersRepositoryInterface) =>
+        new GetAverageExecutionTimeUseCase(repository),
+      inject: [ServiceOrdersRepositoryInterface],
+    },
+    {
+      provide: CloseServiceOrderUseCase,
+      useFactory: (repository: ServiceOrdersRepositoryInterface) =>
+        new CloseServiceOrderUseCase(repository),
+      inject: [ServiceOrdersRepositoryInterface],
+    },
+    {
+      provide: DeliverVehicleUseCase,
+      useFactory: (repository: ServiceOrdersRepositoryInterface) =>
+        new DeliverVehicleUseCase(repository),
+      inject: [ServiceOrdersRepositoryInterface],
+    },
+    {
+      provide: FindAllServiceOrdersUseCase,
+      useFactory: (queryService: ServiceOrderQueryServiceInterface) =>
+        new FindAllServiceOrdersUseCase(queryService),
+      inject: [ServiceOrderQueryServiceInterface],
+    },
+    {
+      provide: FindOneServiceOrderUseCase,
+      useFactory: (queryService: ServiceOrderQueryServiceInterface) =>
+        new FindOneServiceOrderUseCase(queryService),
+      inject: [ServiceOrderQueryServiceInterface],
+    },
+    {
+      provide: FinishServiceUseCase,
+      useFactory: (repository: ServiceOrdersRepositoryInterface) =>
+        new FinishServiceUseCase(repository),
+      inject: [ServiceOrdersRepositoryInterface],
+    },
+    {
+      provide: StartServiceUseCase,
+      useFactory: (repository: ServiceOrdersRepositoryInterface) =>
+        new StartServiceUseCase(repository),
+      inject: [ServiceOrdersRepositoryInterface],
+    },
+    {
+      provide: AddEstimateItemUseCase,
+      useFactory: (
+        repository: ServiceOrdersRepositoryInterface,
+        partRepository: any,
+        serviceCatalogRepository?: any,
+      ) =>
+        new AddEstimateItemUseCase(
+          repository,
+          partRepository,
+          serviceCatalogRepository,
+        ),
+      inject: [
+        ServiceOrdersRepositoryInterface,
+        PART_REPOSITORY,
+        SERVICE_CATALOG_REPOSITORY,
+      ],
+    },
+    {
+      provide: RejectEstimateUseCase,
+      useFactory: (
+        repository: ServiceOrdersRepositoryInterface,
+        partRepository: any,
+      ) => new RejectEstimateUseCase(repository, partRepository),
+      inject: [ServiceOrdersRepositoryInterface, PART_REPOSITORY],
+    },
+    {
+      provide: AssignMechanicUseCase,
+      useFactory: (
+        repository: ServiceOrdersRepositoryInterface,
+        userRepository: any,
+      ) => new AssignMechanicUseCase(repository, userRepository),
+      inject: [ServiceOrdersRepositoryInterface, USER_REPOSITORY],
+    },
+    {
+      provide: UpdateMechanicAvailabilityUseCase,
+      useFactory: (userRepository: any) =>
+        new UpdateMechanicAvailabilityUseCase(userRepository),
+      inject: [USER_REPOSITORY],
+    },
+    {
+      provide: CreateServiceOrderUseCase,
+      useFactory: (
+        repository: ServiceOrdersRepositoryInterface,
+        customerManagement: CustomerManagementInterface,
+      ) => new CreateServiceOrderUseCase(repository, customerManagement),
+      inject: [ServiceOrdersRepositoryInterface, CustomerManagementInterface],
+    },
     {
       provide: ServiceOrdersRepositoryInterface,
       useClass: PrismaServiceOrdersRepository,

@@ -18,7 +18,12 @@ describe('StartServiceUseCase', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        StartServiceUseCase,
+        {
+          provide: StartServiceUseCase,
+          useFactory: (repository: ServiceOrdersRepositoryInterface) =>
+            new StartServiceUseCase(repository),
+          inject: [ServiceOrdersRepositoryInterface],
+        },
         {
           provide: ServiceOrdersRepositoryInterface,
           useValue: {

@@ -1,8 +1,7 @@
-import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { UserRole } from '../../domain/enums/user-role.enum';
-import { ACCESS_IDENTITY_REPOSITORY } from '../../domain/contracts/access-identity-repository.interface';
 import type { AccessIdentityRepository } from '../../domain/contracts/access-identity-repository.interface';
 import { AuthenticatedUser } from '../../domain/entities/authenticated-user.entity';
+import { InvalidCredentialsException } from '../../domain/exceptions/invalid-credentials.exception';
 
 export type ValidateAuthenticatedUserInput = {
   sub?: string;
@@ -10,10 +9,8 @@ export type ValidateAuthenticatedUserInput = {
   role?: UserRole;
 };
 
-@Injectable()
 export class ValidateAuthenticatedUserUseCase {
   constructor(
-    @Inject(ACCESS_IDENTITY_REPOSITORY)
     private readonly accessIdentityRepository: AccessIdentityRepository,
   ) {}
 
@@ -21,13 +18,13 @@ export class ValidateAuthenticatedUserUseCase {
     payload: ValidateAuthenticatedUserInput,
   ): Promise<AuthenticatedUser> {
     if (!payload.sub) {
-      throw new UnauthorizedException();
+      throw new InvalidCredentialsException();
     }
 
     const user = await this.accessIdentityRepository.findById(payload.sub);
 
     if (!user) {
-      throw new UnauthorizedException();
+      throw new InvalidCredentialsException();
     }
 
     return user.toAuthenticatedUser();

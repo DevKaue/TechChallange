@@ -1,10 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { BadRequestException } from '@nestjs/common';
 import { CreateServiceOrderUseCase } from './create-service-order.use-case';
 import { ServiceOrdersRepositoryInterface } from '@service-orders/domain/contracts/service-orders-repository.interface';
 import CustomerManagementInterface from '@/common/contracts/customer-management.interface';
 import { ServiceOrderStatus } from '@service-orders/domain/enums/service-order-status.enum';
 import { CustomerNotFoundException } from '@service-orders/application/exceptions/customer-not-found.exception';
+import { VehicleNotFoundException } from '@service-orders/application/exceptions/vehicle-not-found.exception';
+import { VehicleOwnerMismatchException } from '@service-orders/application/exceptions/vehicle-owner-mismatch.exception';
 
 describe('CreateServiceOrderUseCase', () => {
   let useCase: CreateServiceOrderUseCase;
@@ -23,7 +24,14 @@ describe('CreateServiceOrderUseCase', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        CreateServiceOrderUseCase,
+        {
+          provide: CreateServiceOrderUseCase,
+          useFactory: (
+            repository: ServiceOrdersRepositoryInterface,
+            customerManagement: CustomerManagementInterface,
+          ) => new CreateServiceOrderUseCase(repository, customerManagement),
+          inject: [ServiceOrdersRepositoryInterface, CustomerManagementInterface],
+        },
         {
           provide: ServiceOrdersRepositoryInterface,
           useValue: {
@@ -77,7 +85,7 @@ describe('CreateServiceOrderUseCase', () => {
 
     await expect(
       useCase.execute({ customerId: 'client-1', vehicleId: 'x' }),
-    ).rejects.toThrow(BadRequestException);
+    ).rejects.toThrow(VehicleNotFoundException);
     expect(repository.create).not.toHaveBeenCalled();
   });
 
@@ -99,7 +107,7 @@ describe('CreateServiceOrderUseCase', () => {
 
     await expect(
       useCase.execute({ customerId: 'client-1', vehicleId: 'vehicle-1' }),
-    ).rejects.toThrow(BadRequestException);
+    ).rejects.toThrow(VehicleOwnerMismatchException);
     expect(repository.create).not.toHaveBeenCalled();
   });
 });

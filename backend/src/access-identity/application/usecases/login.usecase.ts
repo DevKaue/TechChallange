@@ -1,16 +1,10 @@
-import {
-  ForbiddenException,
-  Inject,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
-import { UserRole } from '../../domain/enums/user-role.enum';
-import { ACCESS_IDENTITY_REPOSITORY } from '../../domain/contracts/access-identity-repository.interface';
+import { Injectable } from '@nestjs/common';
 import type { AccessIdentityRepository } from '../../domain/contracts/access-identity-repository.interface';
-import { PASSWORD_HASHER } from '../../domain/contracts/password-hasher.interface';
 import type { PasswordHasher } from '../../domain/contracts/password-hasher.interface';
-import { TOKEN_SERVICE } from '../../domain/contracts/token-service.interface';
 import type { TokenService } from '../../domain/contracts/token-service.interface';
+import { InvalidCredentialsException } from '../../domain/exceptions/invalid-credentials.exception';
+import { ForbiddenRoleException } from '../../domain/exceptions/forbidden-role.exception';
+import { UserRole } from '../../domain/enums/user-role.enum';
 
 export const tokenExpiresInSeconds = 60 * 60;
 
@@ -34,11 +28,8 @@ export type LoginUseCaseOutput = {
 @Injectable()
 export class LoginUseCase {
   constructor(
-    @Inject(ACCESS_IDENTITY_REPOSITORY)
     private readonly accessIdentityRepository: AccessIdentityRepository,
-    @Inject(PASSWORD_HASHER)
     private readonly passwordHasher: PasswordHasher,
-    @Inject(TOKEN_SERVICE)
     private readonly tokenService: TokenService,
   ) {}
 
@@ -50,7 +41,7 @@ export class LoginUseCase {
     const user = await this.accessIdentityRepository.findByEmail(email);
 
     if (!user?.passwordHash) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new InvalidCredentialsException();
     }
 
     const isPasswordValid = await this.passwordHasher.verify(
@@ -59,11 +50,11 @@ export class LoginUseCase {
     );
 
     if (!isPasswordValid) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new InvalidCredentialsException();
     }
 
     if (requiredRole && user.role !== requiredRole) {
-      throw new ForbiddenException('Insufficient role for admin access');
+      throw new ForbiddenRoleException();
     }
 
     return {

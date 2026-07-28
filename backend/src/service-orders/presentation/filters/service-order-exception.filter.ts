@@ -5,6 +5,9 @@ import { InvalidStatusTransitionException } from '@service-orders/application/ex
 import { UnauthorizedMechanicException } from '@service-orders/application/exceptions/unauthorized-mechanic.exception';
 import { ServiceCatalogNotFoundException } from '@service-orders/application/exceptions/service-catalog-not-found.exception';
 import { PartNotFoundException } from '@service-orders/application/exceptions/part-not-found.exception';
+import { InsufficientStockException } from '@service-orders/application/exceptions/insufficient-stock.exception';
+import { VehicleNotFoundException } from '@service-orders/application/exceptions/vehicle-not-found.exception';
+import { VehicleOwnerMismatchException } from '@service-orders/application/exceptions/vehicle-owner-mismatch.exception';
 import { InvalidMaterialDataException } from '@service-orders/application/exceptions/invalid-material-data.exception';
 import { CustomerNotFoundException } from '@service-orders/application/exceptions/customer-not-found.exception';
 
@@ -14,6 +17,9 @@ import { CustomerNotFoundException } from '@service-orders/application/exception
   UnauthorizedMechanicException,
   ServiceCatalogNotFoundException,
   PartNotFoundException,
+  InsufficientStockException,
+  VehicleNotFoundException,
+  VehicleOwnerMismatchException,
   InvalidMaterialDataException,
   CustomerNotFoundException,
 )
@@ -39,6 +45,15 @@ export class ServiceOrderExceptionFilter implements ExceptionFilter {
       message = exception.message;
     } else if (exception instanceof PartNotFoundException) {
       status = 404;
+      message = exception.message;
+    } else if (exception instanceof InsufficientStockException) {
+      status = 409;
+      message = exception.message;
+    } else if (exception instanceof VehicleNotFoundException) {
+      status = 404;
+      message = exception.message;
+    } else if (exception instanceof VehicleOwnerMismatchException) {
+      status = 400;
       message = exception.message;
     } else if (exception instanceof InvalidMaterialDataException) {
       status = 400;
