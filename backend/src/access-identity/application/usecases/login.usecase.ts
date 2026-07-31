@@ -1,4 +1,3 @@
-import { Injectable } from '@nestjs/common';
 import type { AccessIdentityRepository } from '../../domain/contracts/access-identity-repository.interface';
 import type { PasswordHasher } from '../../domain/contracts/password-hasher.interface';
 import type { TokenService } from '../../domain/contracts/token-service.interface';
@@ -25,7 +24,6 @@ export type LoginUseCaseOutput = {
   };
 };
 
-@Injectable()
 export class LoginUseCase {
   constructor(
     private readonly accessIdentityRepository: AccessIdentityRepository,
