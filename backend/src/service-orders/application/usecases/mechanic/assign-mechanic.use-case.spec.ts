@@ -1,10 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { AssignMechanicUseCase } from './assign-mechanic.use-case';
 import { ServiceOrdersRepositoryInterface } from '@service-orders/domain/contracts/service-orders-repository.interface';
 import { USER_REPOSITORY } from '@service-orders/domain/acls/user-repository.interface';
 import { ServiceOrderStatus } from '@service-orders/domain/enums/service-order-status.enum';
 import { ServiceOrderNotFoundException } from '@service-orders/application/exceptions/service-order-not-found.exception';
+import { UserNotMechanicException } from '@service-orders/domain/exceptions/user-not-mechanic.exception';
 
 describe('AssignMechanicUseCase', () => {
   let useCase: AssignMechanicUseCase;
@@ -52,7 +52,14 @@ describe('AssignMechanicUseCase', () => {
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        AssignMechanicUseCase,
+        {
+          provide: AssignMechanicUseCase,
+          useFactory: (
+            repository: ServiceOrdersRepositoryInterface,
+            userRepository: { findById: jest.Mock },
+          ) => new AssignMechanicUseCase(repository, userRepository),
+          inject: [ServiceOrdersRepositoryInterface, USER_REPOSITORY],
+        },
         {
           provide: ServiceOrdersRepositoryInterface,
           useValue: {
@@ -107,7 +114,7 @@ describe('AssignMechanicUseCase', () => {
     userRepository.findById.mockResolvedValue(null);
     await expect(
       useCase.execute('order-1', { mechanicId: 'ghost' }),
-    ).rejects.toThrow(NotFoundException);
+    ).rejects.toThrow(UserNotMechanicException);
   });
 
   it('should throw if user is not a mechanic', async () => {
@@ -120,6 +127,6 @@ describe('AssignMechanicUseCase', () => {
     });
     await expect(
       useCase.execute('order-1', { mechanicId: 'user-2' }),
-    ).rejects.toThrow(BadRequestException);
+    ).rejects.toThrow(UserNotMechanicException);
   });
 });

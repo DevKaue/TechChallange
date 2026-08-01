@@ -41,7 +41,30 @@ export class HttpExceptionFilter implements ExceptionFilter {
       });
     }
 
-    const stack = exception instanceof Error && exception.stack ? exception.stack : '';
+    // Erros de autenticação/autorização de domínio → status correto.
+    if (exception instanceof Error) {
+      switch (exception.name) {
+        case 'InvalidCredentialsException':
+          this.logger.warn(`${request.method} ${request.url} → 401`);
+          return response.status(401).json({
+            path: request.url,
+            status_code: 401,
+            error: exception.name,
+            message: exception.message,
+          });
+        case 'ForbiddenRoleException':
+          this.logger.warn(`${request.method} ${request.url} → 403`);
+          return response.status(403).json({
+            path: request.url,
+            status_code: 403,
+            error: exception.name,
+            message: exception.message,
+          });
+      }
+    }
+
+    const stack =
+      exception instanceof Error && exception.stack ? exception.stack : '';
     this.logger.error(
       `Unhandled exception on ${request.method} ${request.url}`,
       stack,

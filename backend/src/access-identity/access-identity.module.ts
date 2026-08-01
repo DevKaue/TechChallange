@@ -7,8 +7,14 @@ import { LoginUseCase } from './application/usecases/login.usecase';
 import { ValidateAuthenticatedUserUseCase } from './application/usecases/validate-authenticated-user.usecase';
 import { ACCESS_IDENTITY_REPOSITORY } from './domain/contracts/access-identity-repository.interface';
 import type { AccessIdentityRepository } from './domain/contracts/access-identity-repository.interface';
-import { PASSWORD_HASHER } from './domain/contracts/password-hasher.interface';
-import { TOKEN_SERVICE } from './domain/contracts/token-service.interface';
+import {
+  PASSWORD_HASHER,
+  PasswordHasher,
+} from './domain/contracts/password-hasher.interface';
+import {
+  TOKEN_SERVICE,
+  TokenService,
+} from './domain/contracts/token-service.interface';
 import { PrismaAccessIdentityRepository } from './infra/repositories/prisma-access-identity.repository';
 import { JwtTokenService } from './infra/security/jwt-token.service';
 import { ScryptPasswordHasher } from './infra/security/scrypt-password-hasher';
@@ -26,8 +32,26 @@ import { JwtStrategy } from './presentation/strategies/jwt.strategy';
     }),
   ],
   providers: [
-    LoginUseCase,
-    ValidateAuthenticatedUserUseCase,
+    {
+      provide: LoginUseCase,
+      useFactory: (
+        accessIdentityRepository: AccessIdentityRepository,
+        passwordHasher: PasswordHasher,
+        tokenService: TokenService,
+      ) =>
+        new LoginUseCase(
+          accessIdentityRepository,
+          passwordHasher,
+          tokenService,
+        ),
+      inject: [ACCESS_IDENTITY_REPOSITORY, PASSWORD_HASHER, TOKEN_SERVICE],
+    },
+    {
+      provide: ValidateAuthenticatedUserUseCase,
+      useFactory: (accessIdentityRepository: AccessIdentityRepository) =>
+        new ValidateAuthenticatedUserUseCase(accessIdentityRepository),
+      inject: [ACCESS_IDENTITY_REPOSITORY],
+    },
     JwtStrategy,
     JwtAuthGuard,
     RolesGuard,

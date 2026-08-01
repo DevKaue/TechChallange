@@ -1,4 +1,4 @@
-import DomainException from "@/materials/domain/exceptions/domain.exception";
+import DomainException from '@service-catalog/domain/exceptions/domain.exception';
 import { CreateServiceCatalogUseCase } from "./create-service-catalog.use-case";
 
 describe('CreateServiceCatalogUseCase', () => {

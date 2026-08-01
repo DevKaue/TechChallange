@@ -1,10 +1,10 @@
-import { UnauthorizedException } from '@nestjs/common';
 import { UserRole } from '../../domain/enums/user-role.enum';
 import { AccessIdentityRepository } from '../../domain/contracts/access-identity-repository.interface';
 import { PasswordHasher } from '../../domain/contracts/password-hasher.interface';
 import { TokenService } from '../../domain/contracts/token-service.interface';
 import { InternalUser } from '../../domain/entities/internal-user.entity';
 import { LoginUseCase } from './login.usecase';
+import { InvalidCredentialsException } from '../../domain/exceptions/invalid-credentials.exception';
 
 describe('LoginUseCase', () => {
   let useCase: LoginUseCase;
@@ -85,7 +85,7 @@ describe('LoginUseCase', () => {
         email: 'missing@oficina.com',
         password: 'Tech@123',
       }),
-    ).rejects.toThrow(UnauthorizedException);
+    ).rejects.toThrow(InvalidCredentialsException);
   });
 
   it('should reject an invalid password', async () => {
@@ -105,6 +105,6 @@ describe('LoginUseCase', () => {
         email: 'ana.santos@oficina.com',
         password: 'Wrong@123',
       }),
-    ).rejects.toThrow(UnauthorizedException);
+    ).rejects.toThrow(InvalidCredentialsException);
   });
 });

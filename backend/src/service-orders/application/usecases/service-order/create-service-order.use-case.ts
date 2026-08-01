@@ -1,4 +1,3 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { ServiceOrdersRepositoryInterface } from '@service-orders/domain/contracts/service-orders-repository.interface';
 import CustomarManagementInterface from '@common/contracts/customer-management.interface';
 import { ServiceOrderStatus } from '@service-orders/domain/enums/service-order-status.enum';
@@ -6,12 +5,12 @@ import { ServiceOrderResponseDto } from '@service-orders/application/dto/service
 import { CreateServiceOrderDto } from '@service-orders/application/dto/service-order/create-service-order.dto';
 import { plainToInstance } from 'class-transformer';
 import { CustomerNotFoundException } from '@service-orders/application/exceptions/customer-not-found.exception';
+import { VehicleNotFoundException } from '@service-orders/application/exceptions/vehicle-not-found.exception';
+import { VehicleOwnerMismatchException } from '@service-orders/application/exceptions/vehicle-owner-mismatch.exception';
 
-@Injectable()
 export class CreateServiceOrderUseCase {
   constructor(
     private readonly repository: ServiceOrdersRepositoryInterface,
-    @Inject(CustomarManagementInterface)
     private readonly customerManagement: CustomarManagementInterface,
   ) {}
 
@@ -25,12 +24,10 @@ export class CreateServiceOrderUseCase {
       id: dto.vehicleId,
     });
     if (!vehicle) {
-      throw new BadRequestException('Vehicle not found');
+      throw new VehicleNotFoundException(dto.vehicleId);
     }
     if (vehicle.customerId !== dto.customerId) {
-      throw new BadRequestException(
-        'Vehicle does not belong to the specified client',
-      );
+      throw new VehicleOwnerMismatchException(vehicle.id, dto.customerId);
     }
 
     const order = await this.repository.create({

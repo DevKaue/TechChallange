@@ -13,7 +13,12 @@ describe('UpdateMechanicAvailabilityUseCase', () => {
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        UpdateMechanicAvailabilityUseCase,
+        {
+          provide: UpdateMechanicAvailabilityUseCase,
+          useFactory: (userRepository: any) =>
+            new UpdateMechanicAvailabilityUseCase(userRepository),
+          inject: [USER_REPOSITORY],
+        },
         {
           provide: USER_REPOSITORY,
           useValue: userRepository,
@@ -26,7 +31,7 @@ describe('UpdateMechanicAvailabilityUseCase', () => {
 
   it('should delegate to the user repository', async () => {
     await useCase.execute('user-1', false);
-    
+
     expect(userRepository.updateAvailability).toHaveBeenCalledWith(
       'user-1',
       false,

@@ -1,13 +1,5 @@
-import {
-  Injectable,
-  Inject,
-  Optional,
-  ConflictException,
-} from '@nestjs/common';
 import { ServiceOrdersRepositoryInterface } from '@service-orders/domain/contracts/service-orders-repository.interface';
-import { PART_REPOSITORY } from '@service-orders/domain/acls/part-repository.interface';
 import type { PartRepository } from '@service-orders/domain/acls/part-repository.interface';
-import { SERVICE_CATALOG_REPOSITORY } from '@service-orders/domain/acls/service-catalog-repository.interface';
 import type { ServiceCatalogRepository } from '@service-orders/domain/acls/service-catalog-repository.interface';
 import { Money } from '@service-orders/domain/value-objects/money.value-object';
 import { EstimateItemDto } from '@service-orders/application/dto/estimate/estimate-response.dto';
@@ -15,18 +7,16 @@ import { AddEstimateItemDto } from '@service-orders/application/dto/estimate/add
 import { plainToInstance } from 'class-transformer';
 import { ServiceCatalogNotFoundException } from '@service-orders/application/exceptions/service-catalog-not-found.exception';
 import { PartNotFoundException } from '@service-orders/application/exceptions/part-not-found.exception';
+import { InsufficientStockException } from '@service-orders/application/exceptions/insufficient-stock.exception';
 import { InvalidMaterialDataException } from '@service-orders/application/exceptions/invalid-material-data.exception';
 import InsufficientMaterialStockException from '@materials/domain/exceptions/insufficient-material-stock.exception';
 import DomainException from '@materials/domain/exceptions/domain.exception';
 import { ServiceOrderItemType } from '@service-orders/domain/enums/service-order-item-type.enum';
 
-@Injectable()
 export class AddEstimateItemUseCase {
   constructor(
     private readonly repository: ServiceOrdersRepositoryInterface,
-    @Inject(PART_REPOSITORY) private readonly partRepository: PartRepository,
-    @Optional()
-    @Inject(SERVICE_CATALOG_REPOSITORY)
+    private readonly partRepository: PartRepository,
     private readonly serviceCatalogRepository?: ServiceCatalogRepository,
   ) {}
 
@@ -56,9 +46,7 @@ export class AddEstimateItemUseCase {
       }
 
       if (part.stockQuantity < dto.quantity) {
-        throw new ConflictException(
-          `Insufficient stock for part ${part.name}. Available: ${part.stockQuantity}`,
-        );
+        throw new InsufficientStockException(part.name, part.stockQuantity);
       }
 
       unitPriceMoney = Money.fromFloat(part.price);
@@ -68,7 +56,7 @@ export class AddEstimateItemUseCase {
         await this.partRepository.decrementStock(part.id, dto.quantity);
       } catch (error: unknown) {
         if (error instanceof InsufficientMaterialStockException) {
-          throw new ConflictException(error.message);
+          throw new InsufficientStockException(part.name, part.stockQuantity);
         }
 
         if (error instanceof DomainException) {
