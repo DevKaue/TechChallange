@@ -2,13 +2,13 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@/prisma/prisma.service';
 import {
   ServiceOrdersRepositoryInterface,
-  ServiceOrderUpdateData,
   ServiceOrderWithRelations,
   PersistedServiceOrder,
   PersistedEstimate,
   PersistedEstimateItem,
   PersistedStatusHistory,
 } from '@service-orders/domain/contracts/service-orders-repository.interface';
+import { ServiceOrder } from '@service-orders/domain/entities/service-order.entity';
 import { ServiceOrderStatus } from '@service-orders/domain/enums/service-order-status.enum';
 import { EstimateStatus } from '@service-orders/domain/enums/estimate-status.enum';
 import { ServiceOrderItemType } from '@service-orders/domain/enums/service-order-item-type.enum';
@@ -60,11 +60,11 @@ export class PrismaServiceOrdersRepository extends ServiceOrdersRepositoryInterf
 
   async update(
     id: string,
-    data: ServiceOrderUpdateData,
+    order: ServiceOrder,
   ): Promise<PersistedServiceOrder> {
     const serviceOrder = await this.prisma.serviceOrder.update({
       where: { id },
-      data,
+      data: order.toUpdateData(),
       include: { mechanic: { select: { id: true, name: true } } },
     });
 
