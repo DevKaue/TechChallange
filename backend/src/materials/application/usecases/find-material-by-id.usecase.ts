@@ -1,17 +1,22 @@
-import type FindMaterialByIdInputDTO from '@materials/application/dtos/find-material-by-id-input.dto';
-import type FindMaterialByIdOutputDTO from '@materials/application/dtos/find-material-by-id-output.dto';
 import { toMaterialDTO } from '@materials/application/dtos/material.dto';
+import type MaterialDTO from '@materials/application/dtos/material.dto';
 import MaterialNotFoundException from '@materials/application/exceptions/material-not-found.exception';
 import MaterialRepositoryInterface from '@materials/domain/contracts/material-repository.interface';
+
+export type FindMaterialByIdInput = {
+  id: string;
+};
+
+export type FindMaterialByIdOutput = {
+  material: MaterialDTO;
+};
 
 export default class FindMaterialByIdUseCase {
   constructor(
     private readonly materialRepository: MaterialRepositoryInterface,
   ) {}
 
-  async execute(
-    input: FindMaterialByIdInputDTO,
-  ): Promise<FindMaterialByIdOutputDTO> {
+  async execute(input: FindMaterialByIdInput): Promise<FindMaterialByIdOutput> {
     const material = await this.materialRepository.findById(input.id);
 
     if (!material) {

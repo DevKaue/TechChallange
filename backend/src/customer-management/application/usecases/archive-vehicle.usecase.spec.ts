@@ -1,6 +1,5 @@
 import ArchiveVehicleUseCase from './archive-vehicle.usecase';
 import VehicleRepositoryInterface from '@customer-management/domain/contracts/vehicle-repository.interface';
-import ArchiveVehicleInputDTO from '@/customer-management/application/dtos/archive-vehicle-input.dto';
 import VehicleNotFoundException from '@/customer-management/domain/exceptions/vehicle-not-found.exception';
 import Vehicle from '@customer-management/domain/entities/vehicle.entity';
 import LicensePlate from '@customer-management/domain/value-objects/license-plate.vo';

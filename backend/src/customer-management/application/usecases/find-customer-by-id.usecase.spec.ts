@@ -1,8 +1,5 @@
 import FindCustomerByIdUseCase from './find-customer-by-id.usecase';
 import CustomerQueryServiceInterface from '@customer-management/application/contracts/customer-query-service.interface';
-import FindCustomerByIdInputDTO from '@customer-management/application/dtos/find-customer-by-id-input.dto';
-import FindCustomerByIdOutputDTO from '@customer-management/application/dtos/find-customer-by-id-output.dto';
-import CustomerDTO from '@customer-management/application/dtos/customer.dto';
 import CustomerNotFoundException from '@/customer-management/domain/exceptions/customer-not-found.exception';
 import { DocumentType } from '@customer-management/domain/enums/document-type.enum';
 

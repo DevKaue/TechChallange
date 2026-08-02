@@ -27,14 +27,14 @@ import { RolesGuard } from '@/access-identity/presentation/guards/roles.guard';
 import { Roles } from '@/access-identity/presentation/decorators/roles.decorator';
 import { UserRole } from '@/access-identity/domain/enums/user-role.enum';
 
-import CreateCustomerInputDTO from '@customer-management/application/dtos/create-customer-input.dto';
-import FindCustomerByIdInputDTO from '@/customer-management/application/dtos/find-customer-by-id-input.dto';
-import UpdateCustomerInputDTO from '@customer-management/application/dtos/update-customer-input.dto';
-import ArchiveCustomerInputDTO from '@/customer-management/application/dtos/archive-customer-input.dto';
-import CreateCustomerUseCase from '@customer-management/application/usecases/create-customer.usecase';
+import CreateCustomerUseCase, {
+  type CreateCustomerInput,
+} from '@customer-management/application/usecases/create-customer.usecase';
 import FindCustomerByIdUseCase from '@/customer-management/application/usecases/find-customer-by-id.usecase';
 import ListCustomerUseCase from '@/customer-management/application/usecases/list-customer.usecase';
-import UpdateCustomerUseCase from '@customer-management/application/usecases/update-customer.usecase';
+import UpdateCustomerUseCase, {
+  type UpdateCustomerInput,
+} from '@customer-management/application/usecases/update-customer.usecase';
 import ArchiveCustomerUseCase from '@/customer-management/application/usecases/archive-customer.usecase';
 
 import { CustomerExceptionFilter } from '@customer-management/presentation/filters/customer-exception.filter';
@@ -95,7 +95,7 @@ export class CustomerController {
     type: CreateCustomerSwaggerConflictResponse,
   })
   async create(
-    @BodyCamelCase() input: CreateCustomerInputDTO,
+    @BodyCamelCase() input: CreateCustomerInput,
   ): Promise<CustomerResponse> {
     const output = await this.createCustomerUseCase.execute(input);
 
@@ -113,8 +113,7 @@ export class CustomerController {
     type: CustomerNotFoundSwaggerResponse,
   })
   async findById(@Param('id') id: string): Promise<CustomerResponse> {
-    const input = new FindCustomerByIdInputDTO({ id });
-    const output = await this.findCustomerByIdUseCase.execute(input);
+    const output = await this.findCustomerByIdUseCase.execute({ id });
     return JsonCustomerPresenter.present(output.customer);
   }
 
@@ -135,11 +134,9 @@ export class CustomerController {
   })
   async update(
     @Param('id') id: string,
-    @BodyCamelCase() input: UpdateCustomerInputDTO,
+    @BodyCamelCase() input: Omit<UpdateCustomerInput, 'id'>,
   ): Promise<CustomerResponse> {
-    const output = await this.updateCustomerUseCase.execute(
-      new UpdateCustomerInputDTO({ ...input, id }),
-    );
+    const output = await this.updateCustomerUseCase.execute({ ...input, id });
     return JsonCustomerPresenter.present(output.customer);
   }
 
@@ -152,7 +149,6 @@ export class CustomerController {
     type: CustomerNotFoundSwaggerResponse,
   })
   async delete(@Param('id') id: string): Promise<void> {
-    const input = new ArchiveCustomerInputDTO({ id });
-    await this.archiveCustomerUseCase.execute(input);
+    await this.archiveCustomerUseCase.execute({ id });
   }
 }

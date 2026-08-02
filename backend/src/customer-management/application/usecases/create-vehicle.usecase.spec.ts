@@ -2,13 +2,9 @@ import { CreateVehicleUseCase } from './create-vehicle.usecase';
 import VehicleRepositoryInterface from '@customer-management/domain/contracts/vehicle-repository.interface';
 import CustomerRepositoryInterface from '@/customer-management/domain/contracts/customer-repository.interface';
 import VehicleRegistrationChecker from '@/customer-management/domain/services/vehicle-registration-checker.service';
-import CreateVehicleInputDTO from '@customer-management/application/dtos/create-vehicle-input.dto';
-import CreateVehicleOutputDTO from '@customer-management/application/dtos/create-vehicle-output.dto';
 import Vehicle from '@customer-management/domain/entities/vehicle.entity';
 import Customer from '@customer-management/domain/entities/customer.entity';
 import Document from '@customer-management/domain/value-objects/document.vo';
-import LicensePlate from '@customer-management/domain/value-objects/license-plate.vo';
-import Year from '@customer-management/domain/value-objects/year.vo';
 import { DocumentType } from '@customer-management/domain/enums/document-type.enum';
 
 describe('CreateVehicleUseCase', () => {

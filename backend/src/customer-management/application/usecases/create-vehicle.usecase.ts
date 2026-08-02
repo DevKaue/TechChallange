@@ -3,11 +3,22 @@ import CustomerRepositoryInterface from '@/customer-management/domain/contracts/
 
 import VehicleFactory from '@customer-management/domain/factories/vehicle.factory';
 
-import type CreateVehicleInputDTO from '@customer-management/application/dtos/create-vehicle-input.dto';
-import type CreateVehicleOutputDTO from '@customer-management/application/dtos/create-vehicle-output.dto';
 import { toVehicleDTO } from '@customer-management/application/dtos/vehicle.dto';
+import type VehicleDTO from '@customer-management/application/dtos/vehicle.dto';
 
 import VehicleRegistrationChecker from '@/customer-management/domain/services/vehicle-registration-checker.service';
+
+export type CreateVehicleInput = {
+  licensePlate: string;
+  brand: string;
+  model: string;
+  year: number;
+  customerId: string;
+};
+
+export type CreateVehicleOutput = {
+  vehicle: VehicleDTO;
+};
 
 export class CreateVehicleUseCase {
   constructor(
@@ -16,7 +27,7 @@ export class CreateVehicleUseCase {
     private readonly registrationChecker: VehicleRegistrationChecker,
   ) {}
 
-  async execute(input: CreateVehicleInputDTO): Promise<CreateVehicleOutputDTO> {
+  async execute(input: CreateVehicleInput): Promise<CreateVehicleOutput> {
     const existingCustomer = await this.customerRepository.getById(
       input.customerId,
     );
@@ -33,7 +44,7 @@ export class CreateVehicleUseCase {
 
     await this.vehicleRepository.create(vehicle);
 
-    const output: CreateVehicleOutputDTO = {
+    const output: CreateVehicleOutput = {
       vehicle: toVehicleDTO(vehicle),
     };
 

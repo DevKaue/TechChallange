@@ -19,15 +19,3 @@ export function toServiceDTO(entity: Service): ServiceDTO {
     updatedAt: entity.updatedAt,
   };
 }
-
-export interface CreateServiceInputDTO {
-  name: string;
-  description?: string;
-  price: number;
-}
-
-export interface UpdateServiceInputDTO {
-  name?: string;
-  description?: string;
-  price?: number;
-}

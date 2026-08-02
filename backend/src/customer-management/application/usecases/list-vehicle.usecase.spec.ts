@@ -1,8 +1,5 @@
 import ListVehicleUseCase from './list-vehicle.usecase';
 import VehicleQueryServiceInterface from '@customer-management/application/contracts/vehicle-query-service.interface';
-import ListVehicleInputDTO from '@customer-management/application/dtos/list-vehicle-input.dto';
-import ListVehicleOutputDTO from '@customer-management/application/dtos/list-vehicle-output.dto';
-import VehicleDTO from '@customer-management/application/dtos/vehicle.dto';
 
 describe('ListVehicleUseCase', () => {
   let useCase: ListVehicleUseCase;

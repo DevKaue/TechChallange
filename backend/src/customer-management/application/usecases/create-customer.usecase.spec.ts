@@ -1,12 +1,8 @@
 import CreateCustomerUseCase from './create-customer.usecase';
 import CustomerRepositoryInterface from '@customer-management/domain/contracts/customer-repository.interface';
 import CustomerRegistrationChecker from '@/customer-management/domain/services/customer-registration-checker.service';
-import CreateCustomerInputDTO from '@customer-management/application/dtos/create-customer-input.dto';
-import CreateCustomerOutputDTO from '@customer-management/application/dtos/create-customer-output.dto';
 import { DocumentType } from '@customer-management/domain/enums/document-type.enum';
 import Customer from '@customer-management/domain/entities/customer.entity';
-import Document from '@customer-management/domain/value-objects/document.vo';
-import Email from '@customer-management/domain/value-objects/email.vo';
 
 describe('CreateCustomerUseCase', () => {
   let useCase: CreateCustomerUseCase;

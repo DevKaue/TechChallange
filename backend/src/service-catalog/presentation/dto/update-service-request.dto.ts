@@ -6,8 +6,9 @@ import {
   IsString,
   Min,
 } from 'class-validator';
+import type { UpdateServiceInput } from '@service-catalog/application/usecases/update-service-catalog.use-case';
 
-export class UpdateServiceRequestDto {
+export class UpdateServiceRequestDto implements UpdateServiceInput {
   @ApiPropertyOptional({ example: 'Troca de óleo' })
   @IsOptional()
   @IsString()

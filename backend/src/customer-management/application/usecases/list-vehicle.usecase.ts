@@ -1,13 +1,20 @@
 import VehicleQueryServiceInterface from '@customer-management/application/contracts/vehicle-query-service.interface';
-import type ListVehicleInputDTO from '@customer-management/application/dtos/list-vehicle-input.dto';
-import type ListVehicleOutputDTO from '@customer-management/application/dtos/list-vehicle-output.dto';
+import type VehicleDTO from '@customer-management/application/dtos/vehicle.dto';
+
+export type ListVehicleInput = {
+  customerId?: string;
+};
+
+export type ListVehicleOutput = {
+  vehicles: VehicleDTO[];
+};
 
 export default class ListVehicleUseCase {
   constructor(
     private readonly vehicleQueryService: VehicleQueryServiceInterface,
   ) {}
 
-  async execute(input: ListVehicleInputDTO): Promise<ListVehicleOutputDTO> {
+  async execute(input: ListVehicleInput): Promise<ListVehicleOutput> {
     const vehicles = await this.vehicleQueryService.findAll({
       customerId: input.customerId,
     });

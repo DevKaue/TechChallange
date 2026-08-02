@@ -1,18 +1,23 @@
 import VehicleQueryServiceInterface from '@customer-management/application/contracts/vehicle-query-service.interface';
-import type FindVehicleByIdInputDTO from '@customer-management/application/dtos/find-vehicle-by-id-input.dto';
-import type FindVehicleByIdOutputDTO from '@customer-management/application/dtos/find-vehicle-by-id-output.dto';
+import type VehicleDTO from '@customer-management/application/dtos/vehicle.dto';
+
+export type FindVehicleByIdInput = {
+  id: string;
+};
+
+export type FindVehicleByIdOutput = {
+  vehicle: VehicleDTO;
+};
 
 export default class FindVehicleByIdUseCase {
   constructor(
     private readonly vehicleQueryService: VehicleQueryServiceInterface,
   ) {}
 
-  async execute(
-    input: FindVehicleByIdInputDTO,
-  ): Promise<FindVehicleByIdOutputDTO> {
+  async execute(input: FindVehicleByIdInput): Promise<FindVehicleByIdOutput> {
     const vehicle = await this.vehicleQueryService.getById({ id: input.id });
 
-    const output: FindVehicleByIdOutputDTO = {
+    const output: FindVehicleByIdOutput = {
       vehicle,
     };
 

@@ -1,12 +1,18 @@
 import ServiceCatalogRepositoryInterface from '@/service-catalog/domain/contracts/service-catalog-repository.interface';
 import { toServiceDTO } from '../dtos/service.dtos';
-import type { CreateServiceInputDTO, ServiceDTO } from '../dtos/service.dtos';
+import type { ServiceDTO } from '../dtos/service.dtos';
 import Service from '@/service-catalog/domain/entities/service.entity';
+
+export type CreateServiceInput = {
+  name: string;
+  description?: string;
+  price: number;
+};
 
 export class CreateServiceCatalogUseCase {
   constructor(private readonly repository: ServiceCatalogRepositoryInterface) {}
 
-  async execute(input: CreateServiceInputDTO): Promise<ServiceDTO> {
+  async execute(input: CreateServiceInput): Promise<ServiceDTO> {
     const service = new Service({
       id: crypto.randomUUID(),
       name: input.name,

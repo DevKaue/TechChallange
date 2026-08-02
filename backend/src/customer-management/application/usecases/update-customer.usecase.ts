@@ -1,17 +1,25 @@
 import CustomerRepositoryInterface from '@customer-management/domain/contracts/customer-repository.interface';
 import Email from '@customer-management/domain/value-objects/email.vo';
-import type UpdateCustomerInputDTO from '@customer-management/application/dtos/update-customer-input.dto';
 import { toCustomerDTO } from '@customer-management/application/dtos/customer.dto';
-import type UpdateCustomerOutputDTO from '@customer-management/application/dtos/update-customer-output.dto';
+import type CustomerDTO from '@customer-management/application/dtos/customer.dto';
+
+export type UpdateCustomerInput = {
+  id: string;
+  name?: string;
+  phone?: string | null;
+  email?: string | null;
+};
+
+export type UpdateCustomerOutput = {
+  customer: CustomerDTO;
+};
 
 export default class UpdateCustomerUseCase {
   constructor(
     private readonly customerRepository: CustomerRepositoryInterface,
   ) {}
 
-  async execute(
-    input: UpdateCustomerInputDTO,
-  ): Promise<UpdateCustomerOutputDTO> {
+  async execute(input: UpdateCustomerInput): Promise<UpdateCustomerOutput> {
     const customer = await this.customerRepository.getById(input.id);
 
     if (input.name != null) {

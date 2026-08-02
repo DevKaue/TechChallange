@@ -1,10 +1,21 @@
 import VehicleRepositoryInterface from '@customer-management/domain/contracts/vehicle-repository.interface';
 import Year from '@customer-management/domain/value-objects/year.vo';
 import LicensePlate from '@customer-management/domain/value-objects/license-plate.vo';
-import type UpdateVehicleInputDTO from '@customer-management/application/dtos/update-vehicle-input.dto';
 import { toVehicleDTO } from '@customer-management/application/dtos/vehicle.dto';
+import type VehicleDTO from '@customer-management/application/dtos/vehicle.dto';
 import VehicleRegistrationChecker from '@/customer-management/domain/services/vehicle-registration-checker.service';
-import type UpdateVehicleOutputDTO from '@customer-management/application/dtos/update-vehicle-output.dto';
+
+export type UpdateVehicleInput = {
+  id: string;
+  brand?: string;
+  model?: string;
+  year?: number;
+  licensePlate?: string;
+};
+
+export type UpdateVehicleOutput = {
+  vehicle: VehicleDTO;
+};
 
 export default class UpdateVehicleUseCase {
   constructor(
@@ -12,7 +23,7 @@ export default class UpdateVehicleUseCase {
     private readonly registrationChecker: VehicleRegistrationChecker,
   ) {}
 
-  async execute(input: UpdateVehicleInputDTO): Promise<UpdateVehicleOutputDTO> {
+  async execute(input: UpdateVehicleInput): Promise<UpdateVehicleOutput> {
     const vehicle = await this.vehicleRepository.getById(input.id);
 
     if (input.licensePlate != null) {
@@ -32,7 +43,7 @@ export default class UpdateVehicleUseCase {
 
     await this.vehicleRepository.update(vehicle);
 
-    const output: UpdateVehicleOutputDTO = {
+    const output: UpdateVehicleOutput = {
       vehicle: toVehicleDTO(vehicle),
     };
     return output;

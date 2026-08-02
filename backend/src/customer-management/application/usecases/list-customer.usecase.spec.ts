@@ -1,7 +1,5 @@
 import ListCustomerUseCase from './list-customer.usecase';
 import CustomerQueryServiceInterface from '@customer-management/application/contracts/customer-query-service.interface';
-import ListCustomerOutputDTO from '@customer-management/application/dtos/list-customer-output.dto';
-import CustomerDTO from '@customer-management/application/dtos/customer.dto';
 import { DocumentType } from '@customer-management/domain/enums/document-type.enum';
 
 describe('ListCustomerUseCase', () => {

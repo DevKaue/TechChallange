@@ -1,11 +1,9 @@
 import CustomerDTO from '@/common/dtos/customer.dto';
 import VehicleDTO from '@/common/dtos/vehicle.dto';
 import FindCustomerByIdUseCase from '@/customer-management/application/usecases/find-customer-by-id.usecase';
-import FindCustomerByIdInputDTO from '@/customer-management/application/dtos/find-customer-by-id-input.dto';
 import CustomerNotFoundException from '@/customer-management/domain/exceptions/customer-not-found.exception';
 import FindVehicleByIdUseCase from '@/customer-management/application/usecases/find-vehicle-by-id.usecase';
 import VehicleNotFoundException from '@/customer-management/domain/exceptions/vehicle-not-found.exception';
-import FindVehicleByIdInputDTO from '@/customer-management/application/dtos/find-vehicle-by-id-input.dto';
 import CustomerManagementInterface from '@/common/contracts/customer-management.interface';
 
 export default class CustomerManagementFacade implements CustomerManagementInterface {
@@ -16,8 +14,9 @@ export default class CustomerManagementFacade implements CustomerManagementInter
 
   async findCustomerById(prop: { id: string }): Promise<CustomerDTO | null> {
     try {
-      const input = new FindCustomerByIdInputDTO({ id: prop.id });
-      const output = await this.findCustomerByIdUseCase.execute(input);
+      const output = await this.findCustomerByIdUseCase.execute({
+        id: prop.id,
+      });
       const customerDTO = new CustomerDTO(output.customer);
       return customerDTO;
     } catch (error) {
@@ -30,8 +29,9 @@ export default class CustomerManagementFacade implements CustomerManagementInter
 
   async findVehicleById(prop: { id: string }): Promise<VehicleDTO | null> {
     try {
-      const input = new FindVehicleByIdInputDTO({ id: prop.id });
-      const output = await this.findVehicleByIdUseCase.execute(input);
+      const output = await this.findVehicleByIdUseCase.execute({
+        id: prop.id,
+      });
       const vehicleDTO = new VehicleDTO(output.vehicle);
       return vehicleDTO;
     } catch (error) {

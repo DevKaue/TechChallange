@@ -8,11 +8,11 @@ import {
   IsString,
   Min,
 } from 'class-validator';
-import CreateMaterialInputDTO from '@materials/application/dtos/create-material-input.dto';
+import type { CreateMaterialInput } from '@materials/application/usecases/create-material.usecase';
 import { MaterialType } from '@materials/domain/enums/material-type.enum';
 import { StockUnit } from '@materials/domain/enums/stock-unit.enum';
 
-export default class CreateMaterialRequestDto implements CreateMaterialInputDTO {
+export default class CreateMaterialRequestDto implements CreateMaterialInput {
   @ApiProperty({ description: 'Material name', example: 'Filtro de oleo' })
   @IsString()
   @IsNotEmpty()

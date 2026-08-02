@@ -2,7 +2,6 @@ import ArchiveCustomerUseCase from './archive-customer.usecase';
 import CustomerRepositoryInterface from '@customer-management/domain/contracts/customer-repository.interface';
 import VehicleRepositoryInterface from '@customer-management/domain/contracts/vehicle-repository.interface';
 import UnitOfWorkServiceInterface from '@customer-management/application/contracts/unit-of-work-service.interface';
-import ArchiveCustomerInputDTO from '@/customer-management/application/dtos/archive-customer-input.dto';
 import CustomerNotFoundException from '@/customer-management/domain/exceptions/customer-not-found.exception';
 import Customer from '@customer-management/domain/entities/customer.entity';
 import Document from '@customer-management/domain/value-objects/document.vo';

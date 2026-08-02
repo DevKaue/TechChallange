@@ -1,9 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNumber, Min } from 'class-validator';
-import AddMaterialStockInputDTO from '@materials/application/dtos/add-material-stock-input.dto';
+import type { AddMaterialStockInput } from '@materials/application/usecases/add-material-stock.usecase';
 
 export default class AddMaterialStockRequestDto implements Omit<
-  AddMaterialStockInputDTO,
+  AddMaterialStockInput,
   'id'
 > {
   @ApiProperty({ description: 'Quantity to add to stock', example: 5 })

@@ -1,8 +1,5 @@
 import FindVehicleByIdUseCase from './find-vehicle-by-id.usecase';
 import VehicleQueryServiceInterface from '@customer-management/application/contracts/vehicle-query-service.interface';
-import FindVehicleByIdInputDTO from '@customer-management/application/dtos/find-vehicle-by-id-input.dto';
-import FindVehicleByIdOutputDTO from '@customer-management/application/dtos/find-vehicle-by-id-output.dto';
-import VehicleDTO from '@customer-management/application/dtos/vehicle.dto';
 import VehicleNotFoundException from '@/customer-management/domain/exceptions/vehicle-not-found.exception';
 
 describe('FindVehicleByIdUseCase', () => {
