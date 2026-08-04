@@ -1,11 +1,4 @@
-import {
-  BadRequestException,
-  Inject,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
 import { ServiceOrdersRepositoryInterface } from '@service-orders/domain/contracts/service-orders-repository.interface';
-import { USER_REPOSITORY } from '@service-orders/domain/acls/user-repository.interface';
 import type { UserRepository } from '@service-orders/domain/acls/user-repository.interface';
 import { MechanicAssignment } from '@service-orders/domain/value-objects/mechanic-assignment.value-object';
 import { UserRole } from '@service-orders/domain/enums/user-role.enum';
@@ -15,12 +8,12 @@ import { plainToInstance } from 'class-transformer';
 import { ServiceOrderNotFoundException } from '@service-orders/application/exceptions/service-order-not-found.exception';
 import { InvalidStatusTransitionException } from '@service-orders/application/exceptions/invalid-status-transition.exception';
 import { ServiceOrderMapper } from '@service-orders/domain/mappers/service-order.mapper';
+import { UserNotMechanicException } from '@service-orders/domain/exceptions/user-not-mechanic.exception';
 
-@Injectable()
 export class AssignMechanicUseCase {
   constructor(
     private readonly repository: ServiceOrdersRepositoryInterface,
-    @Inject(USER_REPOSITORY) private readonly userRepository: UserRepository,
+    private readonly userRepository: UserRepository,
   ) {}
 
   async execute(id: string, dto: AssignMechanicDto) {
@@ -31,10 +24,10 @@ export class AssignMechanicUseCase {
 
     const user = await this.userRepository.findById(dto.mechanicId);
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new UserNotMechanicException(dto.mechanicId);
     }
     if ((user.role as UserRole) !== UserRole.MECHANIC) {
-      throw new BadRequestException('User is not a mechanic');
+      throw new UserNotMechanicException(dto.mechanicId);
     }
 
     try {

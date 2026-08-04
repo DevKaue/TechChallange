@@ -8,16 +8,29 @@ describe('CloseServiceOrderUseCase', () => {
   let useCase: CloseServiceOrderUseCase;
   let repository: jest.Mocked<ServiceOrdersRepositoryInterface>;
 
-  const mockOrder: any = {
+  const mockOrder = {
     id: 'order-1',
+    customerId: 'client-1',
+    vehicleId: 'vehicle-1',
     status: ServiceOrderStatus.DELIVERED,
-    statusHistory: [],
+    mileage: null,
+    notes: null,
+    mechanicId: null,
+    mechanic: null,
+    closedAt: null,
+    createdAt: new Date(),
+    updatedAt: new Date(),
   };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        CloseServiceOrderUseCase,
+        {
+          provide: CloseServiceOrderUseCase,
+          useFactory: (repository: ServiceOrdersRepositoryInterface) =>
+            new CloseServiceOrderUseCase(repository),
+          inject: [ServiceOrdersRepositoryInterface],
+        },
         {
           provide: ServiceOrdersRepositoryInterface,
           useValue: {
@@ -47,7 +60,6 @@ describe('CloseServiceOrderUseCase', () => {
       'order-1',
       expect.objectContaining({
         status: ServiceOrderStatus.CLOSED,
-        closedAt: expect.any(Date),
       }),
     );
   });

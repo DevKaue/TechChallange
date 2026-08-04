@@ -1,6 +1,4 @@
-import { Injectable, Inject } from '@nestjs/common';
 import { ServiceOrdersRepositoryInterface } from '@service-orders/domain/contracts/service-orders-repository.interface';
-import { PART_REPOSITORY } from '@service-orders/domain/acls/part-repository.interface';
 import type { PartRepository } from '@service-orders/domain/acls/part-repository.interface';
 import { ServiceOrderMapper } from '@service-orders/domain/mappers/service-order.mapper';
 import { EstimateStatus } from '@service-orders/domain/enums/estimate-status.enum';
@@ -11,11 +9,10 @@ import { ServiceOrderNotFoundException } from '@service-orders/application/excep
 import { InvalidStatusTransitionException } from '@service-orders/application/exceptions/invalid-status-transition.exception';
 import { ServiceOrderItemType } from '@service-orders/domain/enums/service-order-item-type.enum';
 
-@Injectable()
 export class RejectEstimateUseCase {
   constructor(
     private readonly repository: ServiceOrdersRepositoryInterface,
-    @Inject(PART_REPOSITORY) private readonly partRepository: PartRepository,
+    private readonly partRepository: PartRepository,
   ) {}
 
   async execute(id: string, dto: RejectEstimateDto) {

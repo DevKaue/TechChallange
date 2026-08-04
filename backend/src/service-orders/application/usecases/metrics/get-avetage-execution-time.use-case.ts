@@ -1,7 +1,5 @@
-import { Injectable } from '@nestjs/common';
 import { ServiceOrdersRepositoryInterface } from '@service-orders/domain/contracts/service-orders-repository.interface';
 
-@Injectable()
 export class GetAverageExecutionTimeUseCase {
   constructor(private readonly repository: ServiceOrdersRepositoryInterface) {}
 

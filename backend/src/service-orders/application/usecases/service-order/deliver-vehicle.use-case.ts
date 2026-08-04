@@ -1,4 +1,3 @@
-import { Injectable } from '@nestjs/common';
 import { ServiceOrdersRepositoryInterface } from '@service-orders/domain/contracts/service-orders-repository.interface';
 import { ServiceOrderMapper } from '@service-orders/domain/mappers/service-order.mapper';
 import { ServiceOrderResponseDto } from '@service-orders/application/dto/service-order/service-order-response.dto';
@@ -6,11 +5,8 @@ import { plainToInstance } from 'class-transformer';
 import { ServiceOrderNotFoundException } from '@service-orders/application/exceptions/service-order-not-found.exception';
 import { InvalidStatusTransitionException } from '@service-orders/application/exceptions/invalid-status-transition.exception';
 
-@Injectable()
 export class DeliverVehicleUseCase {
-  constructor(
-    private readonly repository: ServiceOrdersRepositoryInterface,
-  ) {}
+  constructor(private readonly repository: ServiceOrdersRepositoryInterface) {}
 
   async execute(id: string) {
     const data = await this.repository.findById(id);

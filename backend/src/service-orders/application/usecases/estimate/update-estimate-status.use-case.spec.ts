@@ -20,7 +20,12 @@ describe('UpdateEstimateStatusUseCase', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        UpdateEstimateStatusUseCase,
+        {
+          provide: UpdateEstimateStatusUseCase,
+          useFactory: (repository: ServiceOrdersRepositoryInterface) =>
+            new UpdateEstimateStatusUseCase(repository),
+          inject: [ServiceOrdersRepositoryInterface],
+        },
         {
           provide: ServiceOrdersRepositoryInterface,
           useValue: {

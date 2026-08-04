@@ -17,7 +17,12 @@ describe('DeliverVehicleUseCase', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        DeliverVehicleUseCase,
+        {
+          provide: DeliverVehicleUseCase,
+          useFactory: (repository: ServiceOrdersRepositoryInterface) =>
+            new DeliverVehicleUseCase(repository),
+          inject: [ServiceOrdersRepositoryInterface],
+        },
         {
           provide: ServiceOrdersRepositoryInterface,
           useValue: {

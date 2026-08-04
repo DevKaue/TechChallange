@@ -10,7 +10,12 @@ describe('GetAverageExecutionTimeUseCase', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        GetAverageExecutionTimeUseCase,
+        {
+          provide: GetAverageExecutionTimeUseCase,
+          useFactory: (repository: ServiceOrdersRepositoryInterface) =>
+            new GetAverageExecutionTimeUseCase(repository),
+          inject: [ServiceOrdersRepositoryInterface],
+        },
         {
           provide: ServiceOrdersRepositoryInterface,
           useValue: {

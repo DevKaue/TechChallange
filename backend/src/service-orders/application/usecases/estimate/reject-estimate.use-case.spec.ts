@@ -27,7 +27,14 @@ describe('RejectEstimateUseCase', () => {
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        RejectEstimateUseCase,
+        {
+          provide: RejectEstimateUseCase,
+          useFactory: (
+            repository: ServiceOrdersRepositoryInterface,
+            partRepository: { incrementStock: jest.Mock },
+          ) => new RejectEstimateUseCase(repository, partRepository),
+          inject: [ServiceOrdersRepositoryInterface, PART_REPOSITORY],
+        },
         {
           provide: ServiceOrdersRepositoryInterface,
           useValue: {
