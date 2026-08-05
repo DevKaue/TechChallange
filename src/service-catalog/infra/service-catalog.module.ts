@@ -19,11 +19,36 @@ import { DeleteServiceCatalogUseCase } from '../application/usecases/delete-serv
       provide: ServiceCatalogRepositoryInterface,
       useClass: PrismaServiceCatalogRepository,
     },
-    CreateServiceCatalogUseCase,
-    ListServiceCatalogUseCase,
-    FindByIdServiceCatalogUseCase,
-    UpdateServiceCatalogUseCase,
-    DeleteServiceCatalogUseCase,
+    {
+      provide: CreateServiceCatalogUseCase,
+      useFactory: (repository: ServiceCatalogRepositoryInterface) =>
+        new CreateServiceCatalogUseCase(repository),
+      inject: [ServiceCatalogRepositoryInterface],
+    },
+    {
+      provide: ListServiceCatalogUseCase,
+      useFactory: (repository: ServiceCatalogRepositoryInterface) =>
+        new ListServiceCatalogUseCase(repository),
+      inject: [ServiceCatalogRepositoryInterface],
+    },
+    {
+      provide: FindByIdServiceCatalogUseCase,
+      useFactory: (repository: ServiceCatalogRepositoryInterface) =>
+        new FindByIdServiceCatalogUseCase(repository),
+      inject: [ServiceCatalogRepositoryInterface],
+    },
+    {
+      provide: UpdateServiceCatalogUseCase,
+      useFactory: (repository: ServiceCatalogRepositoryInterface) =>
+        new UpdateServiceCatalogUseCase(repository),
+      inject: [ServiceCatalogRepositoryInterface],
+    },
+    {
+      provide: DeleteServiceCatalogUseCase,
+      useFactory: (repository: ServiceCatalogRepositoryInterface) =>
+        new DeleteServiceCatalogUseCase(repository),
+      inject: [ServiceCatalogRepositoryInterface],
+    },
     // Adapta o repositório de domínio ao contrato (ACL) que service-orders
     // espera para precificar serviços no orçamento.
     {
