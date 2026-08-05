@@ -5,17 +5,17 @@ echo "=== SonarQube Analysis (tests in container, scanner via sidecar) ==="
 
 PROJECT_KEY="tech-challenge-oficina"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-BACKEND_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 # Detectar se está dentro do container
 if [ -f /.dockerenv ] || getent hosts sonarqube >/dev/null 2>&1; then
   IN_CONTAINER=true
   SONAR_URL="http://sonarqube:9000"
-  APP_DIR="$BACKEND_DIR"
+  APP_DIR="$ROOT_DIR"
 else
   IN_CONTAINER=false
   SONAR_URL="http://localhost:9000"
-  APP_DIR="$BACKEND_DIR"
+  APP_DIR="$ROOT_DIR"
 fi
 
 # 1. Verificar SonarQube
@@ -66,7 +66,7 @@ if [ "$IN_CONTAINER" = true ]; then
   echo "    sonar-scanner -Dsonar.host.url=http://localhost:9000 -Dsonar.token=\$SONAR_TOKEN"
 else
   echo "  On host — running scanner..."
-  cd "$(cd "$BACKEND_DIR/.." && pwd)"
+  cd "$ROOT_DIR"
   sonar-scanner -Dsonar.host.url=http://localhost:9000 -Dsonar.token=squ_ece4455f374071d59b177a199450d69840e945a8
 fi
 

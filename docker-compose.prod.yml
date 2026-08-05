@@ -19,7 +19,7 @@ services:
 
   api:
     build:
-      context: ./backend
+      context: .
       dockerfile: Dockerfile
       target: production
     container_name: techchallenge_api_prod

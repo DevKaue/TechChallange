@@ -51,20 +51,19 @@ RECEIVED -> IN_DIAGNOSTICS -> WAITING_APPROVAL -> IN_PROGRESS -> FINISHED -> DEL
 
 ```text
 .
-├── backend/
-│   ├── prisma/                 # schema, migrations e config do Prisma
-│   ├── src/
-│   │   ├── access-identity/    # identidade de acesso, JWT + Passport
-│   │   ├── clients/            # clientes
-│   │   ├── vehicles/           # veículos
-│   │   ├── parts/              # peças e estoque
-│   │   ├── service-catalog/    # catálogo de serviços
-│   │   ├── service-orders/     # ordens de serviço
-│   │   ├── common/validators/  # validadores CPF/CNPJ e placa
-│   │   └── prisma/             # PrismaService global
-│   └── test/                   # testes e2e com Supertest
-├── docker-compose.yml          # API, PostgreSQL e perfil opcional do SonarQube
-└── sonar-project.properties    # configuração do scan SonarQube
+├── prisma/                 # schema, migrations e config do Prisma
+├── src/
+│   ├── access-identity/    # identidade de acesso, JWT + Passport
+│   ├── clients/            # clientes
+│   ├── vehicles/           # veículos
+│   ├── parts/              # peças e estoque
+│   ├── service-catalog/    # catálogo de serviços
+│   ├── service-orders/     # ordens de serviço
+│   ├── common/validators/  # validadores CPF/CNPJ e placa
+│   └── prisma/             # PrismaService global
+├── test/                   # testes e2e com Supertest
+├── docker-compose.yml      # API, PostgreSQL e perfil opcional do SonarQube
+└── sonar-project.properties # configuração do scan SonarQube
 ```
 
 ## Como rodar com Docker (API + Banco)
@@ -134,4 +133,4 @@ docker compose exec -it api sh
 npm run test:all
 npm run test:all:cov
 ```
-- Depois abra o arquivo `backend/coverage/lcov-report/index.html` no seu navegador
+- Depois abra o arquivo `coverage/lcov-report/index.html` no seu navegador
