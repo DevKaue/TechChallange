@@ -1,12 +1,8 @@
 import CreateCustomerUseCase from './create-customer.usecase';
 import CustomerRepositoryInterface from '@customer-management/domain/contracts/customer-repository.interface';
 import CustomerRegistrationChecker from '@/customer-management/domain/services/customer-registration-checker.service';
-import CreateCustomerInputDTO from '@customer-management/application/dtos/create-customer-input.dto';
-import CreateCustomerOutputDTO from '@customer-management/application/dtos/create-customer-output.dto';
 import { DocumentType } from '@customer-management/domain/enums/document-type.enum';
 import Customer from '@customer-management/domain/entities/customer.entity';
-import Document from '@customer-management/domain/value-objects/document.vo';
-import Email from '@customer-management/domain/value-objects/email.vo';
 
 describe('CreateCustomerUseCase', () => {
   let useCase: CreateCustomerUseCase;
@@ -33,13 +29,13 @@ describe('CreateCustomerUseCase', () => {
 
   describe('execute', () => {
     it('should create a customer successfully', async () => {
-      const input = new CreateCustomerInputDTO({
+      const input = {
         documentType: DocumentType.CPF,
         documentNumber: '11144477735',
         name: 'John Doe',
         email: 'john@example.com',
         phone: '11999999999',
-      });
+      };
 
       const result = await useCase.execute(input);
 
@@ -53,13 +49,13 @@ describe('CreateCustomerUseCase', () => {
     });
 
     it('should check uniqueness of customer document before creating', async () => {
-      const input = new CreateCustomerInputDTO({
+      const input = {
         documentType: DocumentType.CNPJ,
         documentNumber: '11222333000181',
         name: 'Company Inc',
         email: 'company@example.com',
         phone: '1133333333',
-      });
+      };
 
       await useCase.execute(input);
 
@@ -67,13 +63,13 @@ describe('CreateCustomerUseCase', () => {
     });
 
     it('should save the customer in the repository', async () => {
-      const input = new CreateCustomerInputDTO({
+      const input = {
         documentType: DocumentType.CPF,
         documentNumber: '11144477735',
         name: 'Jane Doe',
         email: 'jane@example.com',
         phone: '11988888888',
-      });
+      };
 
       await useCase.execute(input);
 
@@ -83,13 +79,13 @@ describe('CreateCustomerUseCase', () => {
     });
 
     it('should return customer output DTO with correct properties', async () => {
-      const input = new CreateCustomerInputDTO({
+      const input = {
         documentType: DocumentType.CPF,
         documentNumber: '11144477735',
         name: 'Test Customer',
         email: 'test@example.com',
         phone: '11912345678',
-      });
+      };
 
       const result = await useCase.execute(input);
 
@@ -100,13 +96,13 @@ describe('CreateCustomerUseCase', () => {
     });
 
     it('should throw error if document is not unique', async () => {
-      const input = new CreateCustomerInputDTO({
+      const input = {
         documentType: DocumentType.CPF,
         documentNumber: '11144477735',
         name: 'John Doe',
         email: 'john@example.com',
         phone: '11999999999',
-      });
+      };
 
       const error = new Error('Document already exists');
       registrationCheckerMock.checkUniqueness.mockRejectedValue(error);
@@ -117,13 +113,13 @@ describe('CreateCustomerUseCase', () => {
     });
 
     it('should create customer with all required fields', async () => {
-      const input = new CreateCustomerInputDTO({
+      const input = {
         documentType: DocumentType.CPF,
         documentNumber: '11144477735',
         name: 'Complete Customer',
         email: 'complete@example.com',
         phone: '11987654321',
-      });
+      };
 
       const result = await useCase.execute(input);
 

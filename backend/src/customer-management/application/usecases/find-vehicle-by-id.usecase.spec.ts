@@ -1,8 +1,5 @@
 import FindVehicleByIdUseCase from './find-vehicle-by-id.usecase';
 import VehicleQueryServiceInterface from '@customer-management/application/contracts/vehicle-query-service.interface';
-import FindVehicleByIdInputDTO from '@customer-management/application/dtos/find-vehicle-by-id-input.dto';
-import FindVehicleByIdOutputDTO from '@customer-management/application/dtos/find-vehicle-by-id-output.dto';
-import VehicleDTO from '@customer-management/application/dtos/vehicle.dto';
 import VehicleNotFoundException from '@/customer-management/domain/exceptions/vehicle-not-found.exception';
 
 describe('FindVehicleByIdUseCase', () => {
@@ -20,9 +17,9 @@ describe('FindVehicleByIdUseCase', () => {
 
   describe('execute', () => {
     it('should find a vehicle by id successfully', async () => {
-      const input = new FindVehicleByIdInputDTO({ id: 'vehicle-123' });
+      const input = { id: 'vehicle-123' };
 
-      const vehicleDTO = new VehicleDTO({
+      const vehicleDTO = {
         id: 'vehicle-123',
         licensePlate: 'ABC1234',
         brand: 'Toyota',
@@ -30,7 +27,7 @@ describe('FindVehicleByIdUseCase', () => {
         year: 2022,
         customerId: 'customer-123',
         createdAt: new Date('2024-01-01'),
-      });
+      };
 
       vehicleQueryServiceMock.getById.mockResolvedValue(vehicleDTO);
 
@@ -44,9 +41,9 @@ describe('FindVehicleByIdUseCase', () => {
 
     it('should call query service with correct id', async () => {
       const vehicleId = 'vehicle-456';
-      const input = new FindVehicleByIdInputDTO({ id: vehicleId });
+      const input = { id: vehicleId };
 
-      const vehicleDTO = new VehicleDTO({
+      const vehicleDTO = {
         id: vehicleId,
         licensePlate: 'XYZ9876',
         brand: 'Honda',
@@ -54,7 +51,7 @@ describe('FindVehicleByIdUseCase', () => {
         year: 2023,
         customerId: 'customer-456',
         createdAt: new Date('2024-01-15'),
-      });
+      };
 
       vehicleQueryServiceMock.getById.mockResolvedValue(vehicleDTO);
 
@@ -66,9 +63,9 @@ describe('FindVehicleByIdUseCase', () => {
     });
 
     it('should return output DTO with vehicle data', async () => {
-      const input = new FindVehicleByIdInputDTO({ id: 'vehicle-789' });
+      const input = { id: 'vehicle-789' };
 
-      const vehicleDTO = new VehicleDTO({
+      const vehicleDTO = {
         id: 'vehicle-789',
         licensePlate: 'DEF5678',
         brand: 'Volkswagen',
@@ -76,7 +73,7 @@ describe('FindVehicleByIdUseCase', () => {
         year: 2021,
         customerId: 'customer-789',
         createdAt: new Date('2024-02-01'),
-      });
+      };
 
       vehicleQueryServiceMock.getById.mockResolvedValue(vehicleDTO);
 
@@ -91,7 +88,7 @@ describe('FindVehicleByIdUseCase', () => {
     });
 
     it('should throw VehicleNotFoundException when vehicle does not exist', async () => {
-      const input = new FindVehicleByIdInputDTO({ id: 'non-existent-id' });
+      const input = { id: 'non-existent-id' };
 
       vehicleQueryServiceMock.getById.mockRejectedValue(
         new VehicleNotFoundException(),
@@ -103,9 +100,9 @@ describe('FindVehicleByIdUseCase', () => {
     });
 
     it('should return vehicle with all properties', async () => {
-      const input = new FindVehicleByIdInputDTO({ id: 'vehicle-complete' });
+      const input = { id: 'vehicle-complete' };
 
-      const vehicleDTO = new VehicleDTO({
+      const vehicleDTO = {
         id: 'vehicle-complete',
         licensePlate: 'GHI2468',
         brand: 'BMW',
@@ -114,7 +111,7 @@ describe('FindVehicleByIdUseCase', () => {
         customerId: 'customer-complete',
         createdAt: new Date('2024-03-01'),
         updatedAt: new Date('2024-03-05'),
-      });
+      };
 
       vehicleQueryServiceMock.getById.mockResolvedValue(vehicleDTO);
 
@@ -131,9 +128,9 @@ describe('FindVehicleByIdUseCase', () => {
     });
 
     it('should handle vehicle with minimal properties', async () => {
-      const input = new FindVehicleByIdInputDTO({ id: 'vehicle-minimal' });
+      const input = { id: 'vehicle-minimal' };
 
-      const vehicleDTO = new VehicleDTO({
+      const vehicleDTO = {
         id: 'vehicle-minimal',
         licensePlate: 'JKL3579',
         brand: 'Fiat',
@@ -141,7 +138,7 @@ describe('FindVehicleByIdUseCase', () => {
         year: 2020,
         customerId: 'customer-minimal',
         createdAt: new Date('2024-04-01'),
-      });
+      };
 
       vehicleQueryServiceMock.getById.mockResolvedValue(vehicleDTO);
 
@@ -154,9 +151,9 @@ describe('FindVehicleByIdUseCase', () => {
     });
 
     it('should handle different vehicle brands and models', async () => {
-      const input = new FindVehicleByIdInputDTO({ id: 'vehicle-luxury' });
+      const input = { id: 'vehicle-luxury' };
 
-      const vehicleDTO = new VehicleDTO({
+      const vehicleDTO = {
         id: 'vehicle-luxury',
         licensePlate: 'MNO4680',
         brand: 'Mercedes-Benz',
@@ -164,7 +161,7 @@ describe('FindVehicleByIdUseCase', () => {
         year: 2024,
         customerId: 'customer-luxury',
         createdAt: new Date('2024-05-01'),
-      });
+      };
 
       vehicleQueryServiceMock.getById.mockResolvedValue(vehicleDTO);
 

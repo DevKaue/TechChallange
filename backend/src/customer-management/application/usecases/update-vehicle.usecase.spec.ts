@@ -1,9 +1,6 @@
 import UpdateVehicleUseCase from './update-vehicle.usecase';
 import VehicleRepositoryInterface from '@customer-management/domain/contracts/vehicle-repository.interface';
 import VehicleRegistrationChecker from '@/customer-management/domain/services/vehicle-registration-checker.service';
-import UpdateVehicleInputDTO from '@customer-management/application/dtos/update-vehicle-input.dto';
-import UpdateVehicleOutputDTO from '@customer-management/application/dtos/update-vehicle-output.dto';
-import VehicleDTO from '@customer-management/application/dtos/vehicle.dto';
 import Vehicle from '@customer-management/domain/entities/vehicle.entity';
 import LicensePlate from '@customer-management/domain/value-objects/license-plate.vo';
 import Year from '@customer-management/domain/value-objects/year.vo';
@@ -34,10 +31,10 @@ describe('UpdateVehicleUseCase', () => {
 
   describe('execute', () => {
     it('should update vehicle license plate successfully', async () => {
-      const input = new UpdateVehicleInputDTO({
+      const input = {
         id: 'vehicle-123',
         licensePlate: 'XYZ9876',
-      });
+      };
 
       const vehicle = new Vehicle({
         id: 'vehicle-123',
@@ -52,16 +49,16 @@ describe('UpdateVehicleUseCase', () => {
 
       const result = await useCase.execute(input);
 
-      expect(result).toBeInstanceOf(UpdateVehicleOutputDTO);
+      expect(result).toHaveProperty('vehicle');
       expect(result.vehicle).toBeDefined();
       expect(vehicleRepositoryMock.update).toHaveBeenCalledWith(vehicle);
     });
 
     it('should check uniqueness when updating license plate', async () => {
-      const input = new UpdateVehicleInputDTO({
+      const input = {
         id: 'vehicle-456',
         licensePlate: 'NEW1234',
-      });
+      };
 
       const vehicle = new Vehicle({
         id: 'vehicle-456',
@@ -80,10 +77,10 @@ describe('UpdateVehicleUseCase', () => {
     });
 
     it('should not check uniqueness when license plate is not updated', async () => {
-      const input = new UpdateVehicleInputDTO({
+      const input = {
         id: 'vehicle-789',
         brand: 'Volkswagen',
-      });
+      };
 
       const vehicle = new Vehicle({
         id: 'vehicle-789',
@@ -102,10 +99,10 @@ describe('UpdateVehicleUseCase', () => {
     });
 
     it('should update vehicle brand successfully', async () => {
-      const input = new UpdateVehicleInputDTO({
+      const input = {
         id: 'vehicle-brand-update',
         brand: 'BMW',
-      });
+      };
 
       const vehicle = new Vehicle({
         id: 'vehicle-brand-update',
@@ -120,16 +117,16 @@ describe('UpdateVehicleUseCase', () => {
 
       const result = await useCase.execute(input);
 
-      expect(result).toBeInstanceOf(UpdateVehicleOutputDTO);
+      expect(result).toHaveProperty('vehicle');
       expect(result.vehicle).toBeDefined();
       expect(vehicleRepositoryMock.update).toHaveBeenCalledWith(vehicle);
     });
 
     it('should update vehicle model successfully', async () => {
-      const input = new UpdateVehicleInputDTO({
+      const input = {
         id: 'vehicle-model-update',
         model: 'Civic EX',
-      });
+      };
 
       const vehicle = new Vehicle({
         id: 'vehicle-model-update',
@@ -144,16 +141,16 @@ describe('UpdateVehicleUseCase', () => {
 
       const result = await useCase.execute(input);
 
-      expect(result).toBeInstanceOf(UpdateVehicleOutputDTO);
+      expect(result).toHaveProperty('vehicle');
       expect(result.vehicle).toBeDefined();
       expect(vehicleRepositoryMock.update).toHaveBeenCalledWith(vehicle);
     });
 
     it('should update vehicle year successfully', async () => {
-      const input = new UpdateVehicleInputDTO({
+      const input = {
         id: 'vehicle-year-update',
         year: 2024,
-      });
+      };
 
       const vehicle = new Vehicle({
         id: 'vehicle-year-update',
@@ -168,19 +165,19 @@ describe('UpdateVehicleUseCase', () => {
 
       const result = await useCase.execute(input);
 
-      expect(result).toBeInstanceOf(UpdateVehicleOutputDTO);
+      expect(result).toHaveProperty('vehicle');
       expect(result.vehicle).toBeDefined();
       expect(vehicleRepositoryMock.update).toHaveBeenCalledWith(vehicle);
     });
 
     it('should update multiple vehicle fields', async () => {
-      const input = new UpdateVehicleInputDTO({
+      const input = {
         id: 'vehicle-multiple-update',
         licensePlate: 'MUL1234',
         brand: 'Audi',
         model: 'A4',
         year: 2024,
-      });
+      };
 
       const vehicle = new Vehicle({
         id: 'vehicle-multiple-update',
@@ -195,16 +192,16 @@ describe('UpdateVehicleUseCase', () => {
 
       const result = await useCase.execute(input);
 
-      expect(result).toBeInstanceOf(UpdateVehicleOutputDTO);
+      expect(result).toHaveProperty('vehicle');
       expect(result.vehicle).toBeDefined();
       expect(vehicleRepositoryMock.update).toHaveBeenCalledWith(vehicle);
     });
 
     it('should not update fields when they are undefined', async () => {
-      const input = new UpdateVehicleInputDTO({
+      const input = {
         id: 'vehicle-partial-update',
         brand: 'Fiat',
-      });
+      };
 
       const vehicle = new Vehicle({
         id: 'vehicle-partial-update',
@@ -224,10 +221,10 @@ describe('UpdateVehicleUseCase', () => {
 
     it('should fetch vehicle from repository before updating', async () => {
       const vehicleId = 'vehicle-fetch-test';
-      const input = new UpdateVehicleInputDTO({
+      const input = {
         id: vehicleId,
         brand: 'Suzuki',
-      });
+      };
 
       const vehicle = new Vehicle({
         id: vehicleId,
@@ -246,11 +243,11 @@ describe('UpdateVehicleUseCase', () => {
     });
 
     it('should return updated vehicle DTO', async () => {
-      const input = new UpdateVehicleInputDTO({
+      const input = {
         id: 'vehicle-return-test',
         brand: 'Hyundai',
         model: 'Elantra',
-      });
+      };
 
       const vehicle = new Vehicle({
         id: 'vehicle-return-test',
@@ -265,16 +262,16 @@ describe('UpdateVehicleUseCase', () => {
 
       const result = await useCase.execute(input);
 
-      expect(result).toBeInstanceOf(UpdateVehicleOutputDTO);
+      expect(result).toHaveProperty('vehicle');
       expect(result.vehicle.id).toBe(vehicle.id);
       expect(result.vehicle.licensePlate).toBe(vehicle.licensePlate.value);
     });
 
     it('should throw error if license plate already exists', async () => {
-      const input = new UpdateVehicleInputDTO({
+      const input = {
         id: 'vehicle-error-test',
         licensePlate: 'EXI1234',
-      });
+      };
 
       const vehicle = new Vehicle({
         id: 'vehicle-error-test',

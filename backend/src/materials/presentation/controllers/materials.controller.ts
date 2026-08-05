@@ -19,9 +19,6 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '@/access-identity/presentation/guards/jwt-auth.guard';
-import AddMaterialStockInputDTO from '@materials/application/dtos/add-material-stock-input.dto';
-import FindMaterialByIdInputDTO from '@materials/application/dtos/find-material-by-id-input.dto';
-import UpdateMaterialInputDTO from '@materials/application/dtos/update-material-input.dto';
 import AddMaterialStockUseCase from '@materials/application/usecases/add-material-stock.usecase';
 import CreateMaterialUseCase from '@materials/application/usecases/create-material.usecase';
 import DeleteMaterialUseCase from '@materials/application/usecases/delete-material.usecase';
@@ -89,9 +86,7 @@ export class MaterialsController {
   })
   @ApiNotFoundResponse({ description: 'Material nao encontrado' })
   async findById(@Param('id') id: string): Promise<MaterialResponse> {
-    const output = await this.findMaterialByIdUseCase.execute(
-      new FindMaterialByIdInputDTO({ id }),
-    );
+    const output = await this.findMaterialByIdUseCase.execute({ id });
 
     return JsonMaterialPresenter.present(output.material);
   }
@@ -111,7 +106,7 @@ export class MaterialsController {
     const output = await this.addMaterialStockUseCase.execute({
       id,
       quantity: input.quantity,
-    } satisfies AddMaterialStockInputDTO);
+    });
 
     return JsonMaterialPresenter.present(output.material);
   }
@@ -131,7 +126,7 @@ export class MaterialsController {
     const output = await this.updateMaterialUseCase.execute({
       id,
       ...input,
-    } satisfies UpdateMaterialInputDTO);
+    });
 
     return JsonMaterialPresenter.present(output.material);
   }
@@ -144,9 +139,7 @@ export class MaterialsController {
   })
   @ApiNotFoundResponse({ description: 'Material nao encontrado' })
   async remove(@Param('id') id: string): Promise<MaterialResponse> {
-    const output = await this.deleteMaterialUseCase.execute(
-      new FindMaterialByIdInputDTO({ id }),
-    );
+    const output = await this.deleteMaterialUseCase.execute({ id });
 
     return JsonMaterialPresenter.present(output.material);
   }

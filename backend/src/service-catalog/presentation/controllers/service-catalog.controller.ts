@@ -17,7 +17,7 @@ import { RolesGuard } from '@/access-identity/presentation/guards/roles.guard';
 import { Roles } from '@/access-identity/presentation/decorators/roles.decorator';
 import { UserRole } from '@/access-identity/domain/enums/user-role.enum';
 //import { ServiceCatalogUseCase } from '@service-catalog/application/usecases/service-catalog.use-case';
-import { ServiceDTO } from '@service-catalog/application/dtos/service.dtos';
+import type { ServiceDTO } from '@service-catalog/application/dtos/service.dtos';
 import { CreateServiceRequestDto } from '@service-catalog/presentation/dto/create-service-request.dto';
 import { UpdateServiceRequestDto } from '@service-catalog/presentation/dto/update-service-request.dto';
 import { ServiceCatalogExceptionFilter } from '@service-catalog/presentation/filters/service-catalog-exception.filter';

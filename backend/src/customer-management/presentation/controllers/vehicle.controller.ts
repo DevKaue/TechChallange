@@ -28,15 +28,16 @@ import { JwtAuthGuard } from '@/access-identity/presentation/guards/jwt-auth.gua
 import { RolesGuard } from '@/access-identity/presentation/guards/roles.guard';
 import { Roles } from '@/access-identity/presentation/decorators/roles.decorator';
 import { UserRole } from '@/access-identity/domain/enums/user-role.enum';
-import { CreateVehicleUseCase } from '@customer-management/application/usecases/create-vehicle.usecase';
+import {
+  CreateVehicleUseCase,
+  type CreateVehicleInput,
+} from '@customer-management/application/usecases/create-vehicle.usecase';
 import FindVehicleByIdUseCase from '@customer-management/application/usecases/find-vehicle-by-id.usecase';
 import ListVehicleUseCase from '@/customer-management/application/usecases/list-vehicle.usecase';
-import UpdateVehicleUseCase from '@customer-management/application/usecases/update-vehicle.usecase';
+import UpdateVehicleUseCase, {
+  type UpdateVehicleInput,
+} from '@customer-management/application/usecases/update-vehicle.usecase';
 import ArchiveVehicleUseCase from '@/customer-management/application/usecases/archive-vehicle.usecase';
-import CreateVehicleInputDTO from '@customer-management/application/dtos/create-vehicle-input.dto';
-import FindVehicleByIdInputDTO from '@customer-management/application/dtos/find-vehicle-by-id-input.dto';
-import UpdateVehicleInputDTO from '@customer-management/application/dtos/update-vehicle-input.dto';
-import ArchiveVehicleInputDTO from '@/customer-management/application/dtos/archive-vehicle-input.dto';
 import {
   JsonVehiclePresenter,
   VehicleResponse,
@@ -58,7 +59,6 @@ import { CustomerNotFoundSwaggerResponse } from '@/customer-management/presentat
 import { HttpErrorSwaggerResponse } from '@customer-management/presentation/swaggers/http-error.swagger';
 import { VehicleExceptionFilter } from '@customer-management/presentation/filters/vehicle-exception.filter';
 import { CustomerExceptionFilter } from '@customer-management/presentation/filters/customer-exception.filter';
-import ListVehicleInputDTO from '@/customer-management/application/dtos/list-vehicle-input.dto';
 
 @ApiTags('Vehicles')
 @ApiBearerAuth()
@@ -82,9 +82,9 @@ export class VehicleController {
   async list(
     @Query('customerId') customerId?: string,
   ): Promise<VehicleResponse[]> {
-    const input = new ListVehicleInputDTO({
+    const input = {
       customerId: customerId ?? undefined,
-    });
+    };
     const output = await this.listVehiclesUseCase.execute(input);
     return JsonVehiclePresenter.presentMany(output.vehicles);
   }
@@ -109,7 +109,7 @@ export class VehicleController {
   })
   async create(
     @Param('customerId') customerId: string,
-    @BodyCamelCase() input: CreateVehicleInputDTO,
+    @BodyCamelCase() input: Omit<CreateVehicleInput, 'customerId'>,
   ): Promise<VehicleResponse> {
     const output = await this.createVehicleUseCase.execute({
       ...input,
@@ -130,8 +130,7 @@ export class VehicleController {
     type: VehicleNotFoundSwaggerResponse,
   })
   async findById(@Param('id') id: string): Promise<VehicleResponse> {
-    const input = new FindVehicleByIdInputDTO({ id });
-    const output = await this.findVehicleByIdUseCase.execute(input);
+    const output = await this.findVehicleByIdUseCase.execute({ id });
     return JsonVehiclePresenter.present(output.vehicle);
   }
 
@@ -156,11 +155,9 @@ export class VehicleController {
   })
   async update(
     @Param('id') id: string,
-    @BodyCamelCase() input: UpdateVehicleInputDTO,
+    @BodyCamelCase() input: Omit<UpdateVehicleInput, 'id'>,
   ): Promise<VehicleResponse> {
-    const output = await this.updateVehicleUseCase.execute(
-      new UpdateVehicleInputDTO({ ...input, id }),
-    );
+    const output = await this.updateVehicleUseCase.execute({ ...input, id });
     return JsonVehiclePresenter.present(output.vehicle);
   }
 
@@ -175,7 +172,6 @@ export class VehicleController {
     type: VehicleNotFoundSwaggerResponse,
   })
   async delete(@Param('id') id: string): Promise<void> {
-    const input = new ArchiveVehicleInputDTO({ id });
-    await this.archiveVehicleUseCase.execute(input);
+    await this.archiveVehicleUseCase.execute({ id });
   }
 }

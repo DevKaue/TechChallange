@@ -1,11 +1,22 @@
 import CustomerRepositoryInterface from '@customer-management/domain/contracts/customer-repository.interface';
 import CustomerFactory from '@customer-management/domain/factories/customer.factory';
 
-import CreateCustomerInputDTO from '@customer-management/application/dtos/create-customer-input.dto';
-import CreateCustomerOutputDTO from '@customer-management/application/dtos/create-customer-output.dto';
-import CustomerDTO from '@customer-management/application/dtos/customer.dto';
+import { toCustomerDTO } from '@customer-management/application/dtos/customer.dto';
+import type CustomerDTO from '@customer-management/application/dtos/customer.dto';
 
 import CustomerRegistrationChecker from '@/customer-management/domain/services/customer-registration-checker.service';
+
+export type CreateCustomerInput = {
+  documentType: string;
+  documentNumber: string;
+  name: string;
+  phone: string;
+  email: string;
+};
+
+export type CreateCustomerOutput = {
+  customer: CustomerDTO;
+};
 
 export default class CreateCustomerUseCase {
   constructor(
@@ -13,9 +24,7 @@ export default class CreateCustomerUseCase {
     private readonly registrationChecker: CustomerRegistrationChecker,
   ) {}
 
-  async execute(
-    input: CreateCustomerInputDTO,
-  ): Promise<CreateCustomerOutputDTO> {
+  async execute(input: CreateCustomerInput): Promise<CreateCustomerOutput> {
     const customer = CustomerFactory.create({
       documentType: input.documentType,
       documentNumber: input.documentNumber,
@@ -28,8 +37,8 @@ export default class CreateCustomerUseCase {
 
     await this.customerRepository.create(customer);
 
-    const output: CreateCustomerOutputDTO = {
-      customer: CustomerDTO.fromDomain(customer),
+    const output: CreateCustomerOutput = {
+      customer: toCustomerDTO(customer),
     };
 
     return output;

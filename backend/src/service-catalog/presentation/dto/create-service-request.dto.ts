@@ -6,8 +6,9 @@ import {
   IsString,
   Min,
 } from 'class-validator';
+import type { CreateServiceInput } from '@service-catalog/application/usecases/create-service-catalog.use-case';
 
-export class CreateServiceRequestDto {
+export class CreateServiceRequestDto implements CreateServiceInput {
   @ApiProperty({ example: 'Troca de óleo' })
   @IsString()
   @IsNotEmpty()

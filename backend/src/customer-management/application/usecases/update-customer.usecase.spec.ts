@@ -1,8 +1,5 @@
 import UpdateCustomerUseCase from './update-customer.usecase';
 import CustomerRepositoryInterface from '@customer-management/domain/contracts/customer-repository.interface';
-import UpdateCustomerInputDTO from '@customer-management/application/dtos/update-customer-input.dto';
-import UpdateCustomerOutputDTO from '@customer-management/application/dtos/update-customer-output.dto';
-import CustomerDTO from '@customer-management/application/dtos/customer.dto';
 import Customer from '@customer-management/domain/entities/customer.entity';
 import Document from '@customer-management/domain/value-objects/document.vo';
 import Email from '@customer-management/domain/value-objects/email.vo';
@@ -25,10 +22,10 @@ describe('UpdateCustomerUseCase', () => {
 
   describe('execute', () => {
     it('should update customer name successfully', async () => {
-      const input = new UpdateCustomerInputDTO({
+      const input = {
         id: 'customer-123',
         name: 'Jane Doe Updated',
-      });
+      };
 
       const customer = new Customer({
         id: 'customer-123',
@@ -42,16 +39,16 @@ describe('UpdateCustomerUseCase', () => {
 
       const result = await useCase.execute(input);
 
-      expect(result).toBeInstanceOf(UpdateCustomerOutputDTO);
+      expect(result).toHaveProperty('customer');
       expect(result.customer).toBeDefined();
       expect(customerRepositoryMock.update).toHaveBeenCalledWith(customer);
     });
 
     it('should update customer phone successfully', async () => {
-      const input = new UpdateCustomerInputDTO({
+      const input = {
         id: 'customer-456',
         phone: '11988888888',
-      });
+      };
 
       const customer = new Customer({
         id: 'customer-456',
@@ -64,16 +61,16 @@ describe('UpdateCustomerUseCase', () => {
 
       const result = await useCase.execute(input);
 
-      expect(result).toBeInstanceOf(UpdateCustomerOutputDTO);
+      expect(result).toHaveProperty('customer');
       expect(result.customer).toBeDefined();
       expect(customerRepositoryMock.update).toHaveBeenCalledWith(customer);
     });
 
     it('should update customer email successfully', async () => {
-      const input = new UpdateCustomerInputDTO({
+      const input = {
         id: 'customer-789',
         email: 'newemail@example.com',
-      });
+      };
 
       const customer = new Customer({
         id: 'customer-789',
@@ -86,18 +83,18 @@ describe('UpdateCustomerUseCase', () => {
 
       const result = await useCase.execute(input);
 
-      expect(result).toBeInstanceOf(UpdateCustomerOutputDTO);
+      expect(result).toHaveProperty('customer');
       expect(result.customer).toBeDefined();
       expect(customerRepositoryMock.update).toHaveBeenCalledWith(customer);
     });
 
     it('should update multiple customer fields', async () => {
-      const input = new UpdateCustomerInputDTO({
+      const input = {
         id: 'customer-complete',
         name: 'New Name',
         phone: '11987654321',
         email: 'updated@example.com',
-      });
+      };
 
       const customer = new Customer({
         id: 'customer-complete',
@@ -111,16 +108,16 @@ describe('UpdateCustomerUseCase', () => {
 
       const result = await useCase.execute(input);
 
-      expect(result).toBeInstanceOf(UpdateCustomerOutputDTO);
+      expect(result).toHaveProperty('customer');
       expect(result.customer).toBeDefined();
       expect(customerRepositoryMock.update).toHaveBeenCalledWith(customer);
     });
 
     it('should not update fields when they are undefined', async () => {
-      const input = new UpdateCustomerInputDTO({
+      const input = {
         id: 'customer-partial',
         name: 'Updated Name',
-      });
+      };
 
       const customer = new Customer({
         id: 'customer-partial',
@@ -138,10 +135,10 @@ describe('UpdateCustomerUseCase', () => {
     });
 
     it('should clear email when null is provided', async () => {
-      const input = new UpdateCustomerInputDTO({
+      const input = {
         id: 'customer-remove-email',
         email: null,
-      });
+      };
 
       const customer = new Customer({
         id: 'customer-remove-email',
@@ -160,10 +157,10 @@ describe('UpdateCustomerUseCase', () => {
     });
 
     it('should clear phone when undefined is provided', async () => {
-      const input = new UpdateCustomerInputDTO({
+      const input = {
         id: 'customer-remove-phone',
         phone: undefined,
-      });
+      };
 
       const customer = new Customer({
         id: 'customer-remove-phone',
@@ -181,10 +178,10 @@ describe('UpdateCustomerUseCase', () => {
 
     it('should fetch customer from repository before updating', async () => {
       const customerId = 'customer-fetch-test';
-      const input = new UpdateCustomerInputDTO({
+      const input = {
         id: customerId,
         name: 'New Name',
-      });
+      };
 
       const customer = new Customer({
         id: customerId,
@@ -200,12 +197,12 @@ describe('UpdateCustomerUseCase', () => {
     });
 
     it('should return updated customer DTO', async () => {
-      const input = new UpdateCustomerInputDTO({
+      const input = {
         id: 'customer-return-test',
         name: 'Updated Name',
         phone: '11912345678',
         email: 'updated@test.com',
-      });
+      };
 
       const customer = new Customer({
         id: 'customer-return-test',
@@ -219,7 +216,7 @@ describe('UpdateCustomerUseCase', () => {
 
       const result = await useCase.execute(input);
 
-      expect(result).toBeInstanceOf(UpdateCustomerOutputDTO);
+      expect(result).toHaveProperty('customer');
       expect(result.customer.id).toBe(customer.id);
       expect(result.customer.documentType).toBe(customer.document.type);
     });

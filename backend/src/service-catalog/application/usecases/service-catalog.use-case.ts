@@ -2,8 +2,8 @@
 // import Service from '@service-catalog/domain/entities/service.entity';
 // import {
 //   ServiceDTO,
-//   CreateServiceInputDTO,
-//   UpdateServiceInputDTO,
+//   CreateServiceInput,
+//   UpdateServiceInput,
 // } from '@service-catalog/application/dtos/service.dtos';
 // import { CreateServiceCatalogUseCase } from './create-service-catalog.use-case';
 // import { ListServiceCatalogUseCase } from './list-service-catalog.use-case';
@@ -20,9 +20,9 @@
 //     private readonly deleteUseCase: DeleteServiceCatalogUseCase,
 //   ) {}
 
-//   create(input: CreateServiceInputDTO) { return this.createUseCase.execute(input); }
+//   create(input: CreateServiceInput) { return this.createUseCase.execute(input); }
 //   list() { return this.listUseCase.list(); }
 //   findById(id: string) { return this.findByIdUseCase.findById(id); }
-//   update(id: string, input: UpdateServiceInputDTO) { return this.updateUseCase.update(id, input); }
+//   update(id: string, input: UpdateServiceInput) { return this.updateUseCase.update(id, input); }
 //   delete(id: string) { return this.deleteUseCase.delete(id); }
 // }

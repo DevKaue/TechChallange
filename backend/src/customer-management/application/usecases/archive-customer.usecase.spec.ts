@@ -2,7 +2,6 @@ import ArchiveCustomerUseCase from './archive-customer.usecase';
 import CustomerRepositoryInterface from '@customer-management/domain/contracts/customer-repository.interface';
 import VehicleRepositoryInterface from '@customer-management/domain/contracts/vehicle-repository.interface';
 import UnitOfWorkServiceInterface from '@customer-management/application/contracts/unit-of-work-service.interface';
-import ArchiveCustomerInputDTO from '@/customer-management/application/dtos/archive-customer-input.dto';
 import CustomerNotFoundException from '@/customer-management/domain/exceptions/customer-not-found.exception';
 import Customer from '@customer-management/domain/entities/customer.entity';
 import Document from '@customer-management/domain/value-objects/document.vo';
@@ -43,7 +42,7 @@ describe('ArchiveCustomerUseCase', () => {
 
   describe('execute', () => {
     it('should archive a customer successfully', async () => {
-      const input = new ArchiveCustomerInputDTO({ id: 'customer-123' });
+      const input = { id: 'customer-123' };
 
       const customer = new Customer({
         id: 'customer-123',
@@ -66,7 +65,7 @@ describe('ArchiveCustomerUseCase', () => {
     });
 
     it('should soft delete the customer before archiving', async () => {
-      const input = new ArchiveCustomerInputDTO({ id: 'customer-123' });
+      const input = { id: 'customer-123' };
 
       const customer = new Customer({
         id: 'customer-123',
@@ -84,7 +83,7 @@ describe('ArchiveCustomerUseCase', () => {
 
     it('should archive all vehicles for the customer', async () => {
       const customerId = 'customer-123';
-      const input = new ArchiveCustomerInputDTO({ id: customerId });
+      const input = { id: customerId };
 
       const customer = new Customer({
         id: customerId,
@@ -102,7 +101,7 @@ describe('ArchiveCustomerUseCase', () => {
     });
 
     it('should throw CustomerNotFoundException when customer does not exist', async () => {
-      const input = new ArchiveCustomerInputDTO({ id: 'non-existent-id' });
+      const input = { id: 'non-existent-id' };
 
       customerRepositoryMock.getById.mockRejectedValue(
         new CustomerNotFoundException(),
@@ -114,7 +113,7 @@ describe('ArchiveCustomerUseCase', () => {
     });
 
     it('should run archive in a transaction', async () => {
-      const input = new ArchiveCustomerInputDTO({ id: 'customer-123' });
+      const input = { id: 'customer-123' };
 
       const customer = new Customer({
         id: 'customer-123',

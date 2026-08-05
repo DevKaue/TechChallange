@@ -2,13 +2,9 @@ import { CreateVehicleUseCase } from './create-vehicle.usecase';
 import VehicleRepositoryInterface from '@customer-management/domain/contracts/vehicle-repository.interface';
 import CustomerRepositoryInterface from '@/customer-management/domain/contracts/customer-repository.interface';
 import VehicleRegistrationChecker from '@/customer-management/domain/services/vehicle-registration-checker.service';
-import CreateVehicleInputDTO from '@customer-management/application/dtos/create-vehicle-input.dto';
-import CreateVehicleOutputDTO from '@customer-management/application/dtos/create-vehicle-output.dto';
 import Vehicle from '@customer-management/domain/entities/vehicle.entity';
 import Customer from '@customer-management/domain/entities/customer.entity';
 import Document from '@customer-management/domain/value-objects/document.vo';
-import LicensePlate from '@customer-management/domain/value-objects/license-plate.vo';
-import Year from '@customer-management/domain/value-objects/year.vo';
 import { DocumentType } from '@customer-management/domain/enums/document-type.enum';
 
 describe('CreateVehicleUseCase', () => {
@@ -46,13 +42,13 @@ describe('CreateVehicleUseCase', () => {
 
   describe('execute', () => {
     it('should create a vehicle successfully', async () => {
-      const input = new CreateVehicleInputDTO({
+      const input = {
         licensePlate: 'ABC1234',
         brand: 'Toyota',
         model: 'Corolla',
         year: 2022,
         customerId: 'customer-123',
-      });
+      };
 
       const customer = new Customer({
         id: 'customer-123',
@@ -73,13 +69,13 @@ describe('CreateVehicleUseCase', () => {
     });
 
     it('should verify customer exists before creating vehicle', async () => {
-      const input = new CreateVehicleInputDTO({
+      const input = {
         licensePlate: 'XYZ9876',
         brand: 'Honda',
         model: 'Civic',
         year: 2023,
         customerId: 'customer-456',
-      });
+      };
 
       const customer = new Customer({
         id: 'customer-456',
@@ -97,13 +93,13 @@ describe('CreateVehicleUseCase', () => {
     });
 
     it('should check uniqueness of license plate before creating', async () => {
-      const input = new CreateVehicleInputDTO({
+      const input = {
         licensePlate: 'ABC1234',
         brand: 'Toyota',
         model: 'Corolla',
         year: 2022,
         customerId: 'customer-123',
-      });
+      };
 
       const customer = new Customer({
         id: 'customer-123',
@@ -119,13 +115,13 @@ describe('CreateVehicleUseCase', () => {
     });
 
     it('should save the vehicle in the repository', async () => {
-      const input = new CreateVehicleInputDTO({
+      const input = {
         licensePlate: 'DEF5678',
         brand: 'Volkswagen',
         model: 'Golf',
         year: 2021,
         customerId: 'customer-789',
-      });
+      };
 
       const customer = new Customer({
         id: 'customer-789',
@@ -143,13 +139,13 @@ describe('CreateVehicleUseCase', () => {
     });
 
     it('should throw error if customer does not exist', async () => {
-      const input = new CreateVehicleInputDTO({
+      const input = {
         licensePlate: 'ABC1234',
         brand: 'Toyota',
         model: 'Corolla',
         year: 2022,
         customerId: 'non-existent-customer',
-      });
+      };
 
       const error = new Error('Customer not found');
       customerRepositoryMock.getById.mockRejectedValue(error);
@@ -160,13 +156,13 @@ describe('CreateVehicleUseCase', () => {
     });
 
     it('should throw error if license plate is not unique', async () => {
-      const input = new CreateVehicleInputDTO({
+      const input = {
         licensePlate: 'ABC1234',
         brand: 'Toyota',
         model: 'Corolla',
         year: 2022,
         customerId: 'customer-123',
-      });
+      };
 
       const customer = new Customer({
         id: 'customer-123',
@@ -184,13 +180,13 @@ describe('CreateVehicleUseCase', () => {
     });
 
     it('should return vehicle output DTO with correct properties', async () => {
-      const input = new CreateVehicleInputDTO({
+      const input = {
         licensePlate: 'GHI2468',
         brand: 'BMW',
         model: '320i',
         year: 2024,
         customerId: 'customer-999',
-      });
+      };
 
       const customer = new Customer({
         id: 'customer-999',

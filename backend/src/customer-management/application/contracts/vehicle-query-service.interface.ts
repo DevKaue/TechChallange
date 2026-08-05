@@ -1,4 +1,4 @@
-import VehicleDTO from '@customer-management/application/dtos/vehicle.dto';
+import type VehicleDTO from '@customer-management/application/dtos/vehicle.dto';
 
 export default abstract class VehicleQueryServiceInterface {
   abstract getById(props: { id: string }): Promise<VehicleDTO>;

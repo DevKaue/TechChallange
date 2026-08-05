@@ -1,18 +1,23 @@
 import CustomerQueryServiceInterface from '@customer-management/application/contracts/customer-query-service.interface';
-import FindCustomerByIdInputDTO from '@customer-management/application/dtos/find-customer-by-id-input.dto';
-import FindCustomerByIdOutputDTO from '@customer-management/application/dtos/find-customer-by-id-output.dto';
+import type CustomerDTO from '@customer-management/application/dtos/customer.dto';
+
+export type FindCustomerByIdInput = {
+  id: string;
+};
+
+export type FindCustomerByIdOutput = {
+  customer: CustomerDTO;
+};
 
 export default class FindCustomerByIdUseCase {
   constructor(
     private readonly customerQueryService: CustomerQueryServiceInterface,
   ) {}
 
-  async execute(
-    input: FindCustomerByIdInputDTO,
-  ): Promise<FindCustomerByIdOutputDTO> {
+  async execute(input: FindCustomerByIdInput): Promise<FindCustomerByIdOutput> {
     const customer = await this.customerQueryService.getById({ id: input.id });
 
-    const output: FindCustomerByIdOutputDTO = {
+    const output: FindCustomerByIdOutput = {
       customer,
     };
 
