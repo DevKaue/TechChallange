@@ -69,7 +69,7 @@ try {
     stdio: 'inherit'
   });
 
-  console.log('[merge-coverage] Merged coverage report generated successfully under backend/coverage/lcov-report/index.html');
+  console.log('[merge-coverage] Merged coverage report generated successfully under coverage/lcov-report/index.html');
 
   // Generate combined-coverage/lcov.info with adjusted paths for SonarQube
   const mergedLcovPath = path.join(rootDir, 'coverage', 'lcov.info');
@@ -82,8 +82,8 @@ try {
       fs.mkdirSync(combinedDir, { recursive: true });
     }
     let lcovContent = fs.readFileSync(mergedLcovPath, 'utf8');
-    // Replace 'SF:src/' with 'SF:backend/src/' for SonarQube
-    lcovContent = lcovContent.replace(/^SF:src\//gm, 'SF:backend/src/');
+    // Normalize absolute file system paths to project-relative paths for SonarQube
+    lcovContent = lcovContent.replace(/^SF:.*\/src\//gm, 'SF:src/');
     fs.writeFileSync(combinedLcovPath, lcovContent, 'utf8');
     console.log('[merge-coverage] Combined coverage ready at combined-coverage/lcov.info');
   }

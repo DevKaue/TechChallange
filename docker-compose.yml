@@ -11,7 +11,7 @@ services:
       - '0.0.0.0:5433:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./backend/scripts/init-test-db.sql:/docker-entrypoint-initdb.d/init-test-db.sql
+      - ./scripts/init-test-db.sql:/docker-entrypoint-initdb.d/init-test-db.sql
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U admin -d oficinadb']
       interval: 10s
@@ -20,7 +20,7 @@ services:
 
   api:
     build:
-      context: ./backend
+      context: .
       dockerfile: Dockerfile
       target: development
     container_name: techchallenge_api
@@ -50,16 +50,16 @@ services:
       retries: 3
       start_period: 120s
     volumes:
-      - ./backend/src:/usr/src/app/src
-      - ./backend/prisma:/usr/src/app/prisma
-      - ./backend/test:/usr/src/app/test
-      - ./backend/coverage:/usr/src/app/coverage
-      - ./backend/coverage-integration:/usr/src/app/coverage-integration
-      - ./backend/coverage-e2e:/usr/src/app/coverage-e2e
-      - ./backend/combined-coverage:/usr/src/app/combined-coverage
-      - ./backend/scripts:/usr/src/app/scripts
-      - ./backend/package.json:/usr/src/app/package.json
-      - ./backend/package-lock.json:/usr/src/app/package-lock.json
+      - ./src:/usr/src/app/src
+      - ./prisma:/usr/src/app/prisma
+      - ./test:/usr/src/app/test
+      - ./coverage:/usr/src/app/coverage
+      - ./coverage-integration:/usr/src/app/coverage-integration
+      - ./coverage-e2e:/usr/src/app/coverage-e2e
+      - ./combined-coverage:/usr/src/app/combined-coverage
+      - ./scripts:/usr/src/app/scripts
+      - ./package.json:/usr/src/app/package.json
+      - ./package-lock.json:/usr/src/app/package-lock.json
       - /usr/src/app/node_modules
 
   sonar_db:
