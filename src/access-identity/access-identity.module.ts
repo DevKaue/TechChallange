@@ -19,8 +19,8 @@ import { PrismaAccessIdentityRepository } from './infra/repositories/prisma-acce
 import { JwtTokenService } from './infra/security/jwt-token.service';
 import { ScryptPasswordHasher } from './infra/security/scrypt-password-hasher';
 import { AuthController } from './presentation/controllers/auth.controller';
-import { JwtAuthGuard } from './presentation/guards/jwt-auth.guard';
-import { RolesGuard } from './presentation/guards/roles.guard';
+import { JwtAuthGuard } from './infra/guards/jwt-auth.guard';
+import { RolesGuard } from './infra/guards/roles.guard';
 import { JwtStrategy } from './presentation/strategies/jwt.strategy';
 
 @Module({

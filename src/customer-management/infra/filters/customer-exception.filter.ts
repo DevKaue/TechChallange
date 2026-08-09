@@ -1,16 +1,14 @@
 import {
-  ExceptionFilter,
-  Catch,
   ArgumentsHost,
+  Catch,
+  ExceptionFilter,
   HttpStatus,
 } from '@nestjs/common';
 import CustomerAlreadyExistsException from '@/customer-management/domain/exceptions/customer-already-exists.exception';
-import DomainException from '@customer-management/domain/exceptions/domain.exception';
-import { Response } from 'express';
-import CustomerNotFoundException from '@/customer-management/domain/exceptions/customer-not-found.exception';
 import CustomerIsArchivedException from '@/customer-management/domain/exceptions/customer-is-archived.exception';
+import CustomerNotFoundException from '@/customer-management/domain/exceptions/customer-not-found.exception';
+import DomainException from '@/customer-management/domain/exceptions/domain.exception';
 
-// 1. Passe todas as exceções que este filtro deve interceptar aqui dentro
 @Catch(
   CustomerAlreadyExistsException,
   DomainException,
@@ -25,9 +23,9 @@ export class CustomerExceptionFilter implements ExceptionFilter {
       | CustomerNotFoundException
       | CustomerIsArchivedException,
     host: ArgumentsHost,
-  ) {
+  ): void {
     const ctx = host.switchToHttp();
-    const response = ctx.getResponse<Response>();
+    const response = ctx.getResponse();
 
     let statusCode = HttpStatus.BAD_REQUEST;
     let errorTitle = 'Bad Request';
@@ -43,11 +41,11 @@ export class CustomerExceptionFilter implements ExceptionFilter {
       errorTitle = 'Customer Is Archived';
     }
 
-    const errorCode = (exception as any).errorCode || null;
+    const withErrorCode = exception as { errorCode?: string };
 
     response.status(statusCode).json({
       error: errorTitle,
-      ...(errorCode ? { error_code: errorCode } : {}),
+      ...(withErrorCode.errorCode ? { error_code: withErrorCode.errorCode } : {}),
       message: exception.message,
     });
   }

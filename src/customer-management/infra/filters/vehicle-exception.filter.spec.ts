@@ -1,12 +1,12 @@
-import { VehicleExceptionFilter } from './vehicle-exception.filter';
 import { ArgumentsHost } from '@nestjs/common';
-import VehicleAlreadyExistsException from '@customer-management/domain/exceptions/vehicle-already-exists.exception';
-import VehicleNotFoundException from '@customer-management/domain/exceptions/vehicle-not-found.exception';
-import DomainException from '@customer-management/domain/exceptions/domain.exception';
+import DomainException from '@/customer-management/domain/exceptions/domain.exception';
+import VehicleAlreadyExistsException from '@/customer-management/domain/exceptions/vehicle-already-exists.exception';
+import VehicleNotFoundException from '@/customer-management/domain/exceptions/vehicle-not-found.exception';
+import { VehicleExceptionFilter } from '@/customer-management/infra/filters/vehicle-exception.filter';
 
 describe('VehicleExceptionFilter', () => {
   let filter: VehicleExceptionFilter;
-  let mockResponse: any;
+  let mockResponse: { status: jest.Mock; json: jest.Mock };
   let mockHost: ArgumentsHost;
 
   beforeEach(() => {
@@ -17,7 +17,7 @@ describe('VehicleExceptionFilter', () => {
     };
     mockHost = {
       switchToHttp: () => ({ getResponse: () => mockResponse }),
-    } as any;
+    } as unknown as ArgumentsHost;
   });
 
   it('maps VehicleAlreadyExistsException to 409', () => {

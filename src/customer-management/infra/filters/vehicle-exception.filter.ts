@@ -1,13 +1,12 @@
 import {
-  ExceptionFilter,
-  Catch,
   ArgumentsHost,
+  Catch,
+  ExceptionFilter,
   HttpStatus,
 } from '@nestjs/common';
+import DomainException from '@/customer-management/domain/exceptions/domain.exception';
 import VehicleAlreadyExistsException from '@/customer-management/domain/exceptions/vehicle-already-exists.exception';
 import VehicleNotFoundException from '@/customer-management/domain/exceptions/vehicle-not-found.exception';
-import DomainException from '@customer-management/domain/exceptions/domain.exception';
-import { Response } from 'express';
 
 @Catch(VehicleAlreadyExistsException, DomainException, VehicleNotFoundException)
 export class VehicleExceptionFilter implements ExceptionFilter {
@@ -17,9 +16,9 @@ export class VehicleExceptionFilter implements ExceptionFilter {
       | DomainException
       | VehicleNotFoundException,
     host: ArgumentsHost,
-  ) {
+  ): void {
     const ctx = host.switchToHttp();
-    const response = ctx.getResponse<Response>();
+    const response = ctx.getResponse();
 
     let statusCode = HttpStatus.BAD_REQUEST;
     let errorTitle = 'Bad Request';
@@ -32,11 +31,11 @@ export class VehicleExceptionFilter implements ExceptionFilter {
       errorTitle = 'Vehicle Not Found';
     }
 
-    const errorCode = (exception as any).errorCode || null;
+    const withErrorCode = exception as { errorCode?: string };
 
     response.status(statusCode).json({
       error: errorTitle,
-      ...(errorCode ? { error_code: errorCode } : {}),
+      ...(withErrorCode.errorCode ? { error_code: withErrorCode.errorCode } : {}),
       message: exception.message,
     });
   }

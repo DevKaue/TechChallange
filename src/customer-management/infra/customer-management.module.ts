@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { PrismaModule } from '@/prisma/prisma.module';
-import { CustomerController } from '@customer-management/presentation/controllers/customer.controller';
-import { VehicleController } from '@customer-management/presentation/controllers/vehicle.controller';
+import { CustomerInfraController } from '@/customer-management/infra/controllers/customer.controller';
+import { VehicleInfraController } from '@/customer-management/infra/controllers/vehicle.controller';
 import CreateCustomerUseCase from '@customer-management/application/usecases/create-customer.usecase';
 import { CreateVehicleUseCase } from '@customer-management/application/usecases/create-vehicle.usecase';
 import FindVehicleByIdUseCase from '@customer-management/application/usecases/find-vehicle-by-id.usecase';
@@ -28,10 +28,20 @@ import UnitOfWorkServiceInterface from '@customer-management/application/contrac
 import PrismaUnitOfWorkService from '@customer-management/infra/services/prisma-unit-of-work.service';
 import CustomerRegistrationChecker from '../domain/services/customer-registration-checker.service';
 import VehicleRegistrationChecker from '../domain/services/vehicle-registration-checker.service';
+import CreateCustomerController from '@/customer-management/presentation/controllers/create-customer.controller';
+import FindCustomerByIdController from '@/customer-management/presentation/controllers/find-customer-by-id.controller';
+import ListCustomersController from '@/customer-management/presentation/controllers/list-customers.controller';
+import UpdateCustomerController from '@/customer-management/presentation/controllers/update-customer.controller';
+import ArchiveCustomerController from '@/customer-management/presentation/controllers/archive-customer.controller';
+import CreateVehicleController from '@/customer-management/presentation/controllers/create-vehicle.controller';
+import FindVehicleByIdController from '@/customer-management/presentation/controllers/find-vehicle-by-id.controller';
+import ListVehiclesController from '@/customer-management/presentation/controllers/list-vehicles.controller';
+import UpdateVehicleController from '@/customer-management/presentation/controllers/update-vehicle.controller';
+import ArchiveVehicleController from '@/customer-management/presentation/controllers/archive-vehicle.controller';
 
 @Module({
   imports: [PrismaModule],
-  controllers: [CustomerController, VehicleController],
+  controllers: [CustomerInfraController, VehicleInfraController],
   providers: [
     PrismaUnitOfWorkService,
     CustomerRegistrationChecker,
@@ -198,6 +208,78 @@ import VehicleRegistrationChecker from '../domain/services/vehicle-registration-
         );
       },
       inject: [FindCustomerByIdUseCase, FindVehicleByIdUseCase],
+    },
+
+    {
+      provide: CreateCustomerController,
+      useFactory: (createCustomerUseCase: CreateCustomerUseCase) => {
+        return new CreateCustomerController(createCustomerUseCase);
+      },
+      inject: [CreateCustomerUseCase],
+    },
+    {
+      provide: FindCustomerByIdController,
+      useFactory: (findCustomerByIdUseCase: FindCustomerByIdUseCase) => {
+        return new FindCustomerByIdController(findCustomerByIdUseCase);
+      },
+      inject: [FindCustomerByIdUseCase],
+    },
+    {
+      provide: ListCustomersController,
+      useFactory: (listCustomerUseCase: ListCustomerUseCase) => {
+        return new ListCustomersController(listCustomerUseCase);
+      },
+      inject: [ListCustomerUseCase],
+    },
+    {
+      provide: UpdateCustomerController,
+      useFactory: (updateCustomerUseCase: UpdateCustomerUseCase) => {
+        return new UpdateCustomerController(updateCustomerUseCase);
+      },
+      inject: [UpdateCustomerUseCase],
+    },
+    {
+      provide: ArchiveCustomerController,
+      useFactory: (archiveCustomerUseCase: ArchiveCustomerUseCase) => {
+        return new ArchiveCustomerController(archiveCustomerUseCase);
+      },
+      inject: [ArchiveCustomerUseCase],
+    },
+
+    {
+      provide: CreateVehicleController,
+      useFactory: (createVehicleUseCase: CreateVehicleUseCase) => {
+        return new CreateVehicleController(createVehicleUseCase);
+      },
+      inject: [CreateVehicleUseCase],
+    },
+    {
+      provide: FindVehicleByIdController,
+      useFactory: (findVehicleByIdUseCase: FindVehicleByIdUseCase) => {
+        return new FindVehicleByIdController(findVehicleByIdUseCase);
+      },
+      inject: [FindVehicleByIdUseCase],
+    },
+    {
+      provide: ListVehiclesController,
+      useFactory: (listVehicleUseCase: ListVehicleUseCase) => {
+        return new ListVehiclesController(listVehicleUseCase);
+      },
+      inject: [ListVehicleUseCase],
+    },
+    {
+      provide: UpdateVehicleController,
+      useFactory: (updateVehicleUseCase: UpdateVehicleUseCase) => {
+        return new UpdateVehicleController(updateVehicleUseCase);
+      },
+      inject: [UpdateVehicleUseCase],
+    },
+    {
+      provide: ArchiveVehicleController,
+      useFactory: (archiveVehicleUseCase: ArchiveVehicleUseCase) => {
+        return new ArchiveVehicleController(archiveVehicleUseCase);
+      },
+      inject: [ArchiveVehicleUseCase],
     },
   ],
   exports: [

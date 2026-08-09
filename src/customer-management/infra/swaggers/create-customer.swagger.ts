@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { CustomerResponseData } from '@customer-management/presentation/swaggers/customer.swagger';
+import { CustomerResponseData } from '@/customer-management/infra/swaggers/customer.swagger';
 
 export class CreateCustomerSwaggerResponse extends CustomerResponseData {}
 

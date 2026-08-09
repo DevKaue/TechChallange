@@ -12,7 +12,7 @@ import {
   AuthenticatedUserDto,
   LoginResponseDto,
 } from '../dto/login-response.dto';
-import { JwtAuthGuard } from '../guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../../infra/guards/jwt-auth.guard';
 import type { RequestWithUser } from '../interfaces/authenticated-user.interface';
 
 @ApiTags('Auth')

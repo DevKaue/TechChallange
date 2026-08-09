@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { VehicleResponseData } from '@customer-management/presentation/swaggers/vehicle.swagger';
+import { VehicleResponseData } from '@/customer-management/infra/swaggers/vehicle.swagger';
 
 export class UpdateVehicleSwaggerResponse extends VehicleResponseData {}
 

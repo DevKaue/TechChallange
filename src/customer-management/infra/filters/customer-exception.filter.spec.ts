@@ -1,13 +1,13 @@
-import { CustomerExceptionFilter } from './customer-exception.filter';
 import { ArgumentsHost } from '@nestjs/common';
-import CustomerAlreadyExistsException from '@customer-management/domain/exceptions/customer-already-exists.exception';
-import CustomerNotFoundException from '@customer-management/domain/exceptions/customer-not-found.exception';
-import CustomerIsArchivedException from '@customer-management/domain/exceptions/customer-is-archived.exception';
-import DomainException from '@customer-management/domain/exceptions/domain.exception';
+import CustomerAlreadyExistsException from '@/customer-management/domain/exceptions/customer-already-exists.exception';
+import CustomerIsArchivedException from '@/customer-management/domain/exceptions/customer-is-archived.exception';
+import CustomerNotFoundException from '@/customer-management/domain/exceptions/customer-not-found.exception';
+import DomainException from '@/customer-management/domain/exceptions/domain.exception';
+import { CustomerExceptionFilter } from '@/customer-management/infra/filters/customer-exception.filter';
 
 describe('CustomerExceptionFilter', () => {
   let filter: CustomerExceptionFilter;
-  let mockResponse: any;
+  let mockResponse: { status: jest.Mock; json: jest.Mock };
   let mockHost: ArgumentsHost;
 
   beforeEach(() => {
@@ -18,7 +18,7 @@ describe('CustomerExceptionFilter', () => {
     };
     mockHost = {
       switchToHttp: () => ({ getResponse: () => mockResponse }),
-    } as any;
+    } as unknown as ArgumentsHost;
   });
 
   it('maps CustomerAlreadyExistsException to 409', () => {
