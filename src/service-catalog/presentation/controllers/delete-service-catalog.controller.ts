@@ -1,5 +1,5 @@
-import { Controller } from '@/common/contracts/controller';
-import { HttpRequest, HttpResponse } from '@/common/contracts/http';
+import { Controller } from '@/common/application/contracts/controller';
+import { HttpRequest, HttpResponse } from '@/common/application/contracts/http';
 import { DeleteServiceCatalogUseCase } from '@service-catalog/application/usecases/delete-service-catalog.use-case';
 
 type DeleteServiceCatalogRequest = HttpRequest<undefined, { id: string }, undefined>;

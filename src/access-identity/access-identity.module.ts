@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
-import { PrismaService } from '@/prisma/prisma.service';
+import { PrismaService } from '@/common/infra/prisma/prisma.service';
 import { USER_REPOSITORY } from '@service-orders/domain/acls/user-repository.interface';
 import { LoginUseCase } from './application/usecases/login.usecase';
 import { ValidateAuthenticatedUserUseCase } from './application/usecases/validate-authenticated-user.usecase';

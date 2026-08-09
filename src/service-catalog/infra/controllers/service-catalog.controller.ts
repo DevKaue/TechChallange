@@ -16,7 +16,7 @@ import { JwtAuthGuard } from '@/access-identity/infra/guards/jwt-auth.guard';
 import { RolesGuard } from '@/access-identity/infra/guards/roles.guard';
 import { Roles } from '@/access-identity/infra/decorators/roles.decorator';
 import { UserRole } from '@/access-identity/domain/enums/user-role.enum';
-import { adaptNestRoute } from '@/common/adapters/nest-route.adapter';
+import { adaptNestRoute } from '@/common/presentation/adapters/nest-route.adapter';
 import { DomainExceptionFilter } from '@/common/infra/filters/domain-exception.filter';
 import type { ServiceDTO } from '@service-catalog/application/dtos/service.dtos';
 import { CreateServiceRequestDto } from '@service-catalog/presentation/dto/create-service-request.dto';

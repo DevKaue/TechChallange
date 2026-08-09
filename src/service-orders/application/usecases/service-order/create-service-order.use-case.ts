@@ -1,5 +1,5 @@
 import { ServiceOrdersRepositoryInterface } from '@service-orders/domain/contracts/service-orders-repository.interface';
-import CustomarManagementInterface from '@common/contracts/customer-management.interface';
+import CustomarManagementInterface from '@common/application/contracts/customer-management.interface';
 import { ServiceOrderStatus } from '@service-orders/domain/enums/service-order-status.enum';
 import { ServiceOrderResponseDto } from '@service-orders/application/dto/service-order/service-order-response.dto';
 import { CreateServiceOrderDto } from '@service-orders/application/dto/service-order/create-service-order.dto';

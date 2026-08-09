@@ -21,7 +21,7 @@ import { AccessIdentityModule } from '@access-identity/access-identity.module';
 import { PART_REPOSITORY } from '@service-orders/domain/acls/part-repository.interface';
 import { SERVICE_CATALOG_REPOSITORY } from '@service-orders/domain/acls/service-catalog-repository.interface';
 import { USER_REPOSITORY } from '@service-orders/domain/acls/user-repository.interface';
-import CustomerManagementInterface from '@common/contracts/customer-management.interface';
+import CustomerManagementInterface from '@common/application/contracts/customer-management.interface';
 import { StartDiagnosisUseCase } from './application/usecases/diagnosis/startDiagnosis.use-case';
 import { AddEstimateItemUseCase } from './application/usecases/estimate/add-estimate-item.use-case';
 import { CreateEstimateUseCase } from './application/usecases/estimate/create-estimate.use-case';

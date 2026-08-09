@@ -20,7 +20,7 @@ import {
 import type { Response } from 'express';
 import type { AuthenticatedRequest } from '@/access-identity/presentation/authenticated-request';
 import { JwtAuthGuard } from '@/access-identity/infra/guards/jwt-auth.guard';
-import { adaptNestRoute } from '@/common/adapters/nest-route.adapter';
+import { adaptNestRoute } from '@/common/presentation/adapters/nest-route.adapter';
 import { DomainExceptionFilter } from '@/common/infra/filters/domain-exception.filter';
 import { CreateServiceOrderDto } from '@service-orders/application/dto/service-order/create-service-order.dto';
 import { FinishServiceOrderDto } from '@service-orders/application/dto/service-order/finish-service-order.dto';

@@ -5,9 +5,9 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { AppModule } from '@/app.module';
-import { PrismaService } from '@/prisma/prisma.service';
-import { HttpExceptionFilter } from '@/common/filters/http-exception.filter';
-import { LoggingInterceptor } from '@/common/interceptors/logging.interceptor';
+import { PrismaService } from '@/common/infra/prisma/prisma.service';
+import { HttpExceptionFilter } from '@/common/infra/filters/http-exception.filter';
+import { LoggingInterceptor } from '@/common/infra/interceptors/logging.interceptor';
 import { truncateAll } from './db-cleaner';
 
 export interface TestApp {

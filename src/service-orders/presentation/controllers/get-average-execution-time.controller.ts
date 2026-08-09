@@ -1,5 +1,5 @@
-import { Controller } from '@/common/contracts/controller';
-import { HttpRequest, HttpResponse } from '@/common/contracts/http';
+import { Controller } from '@/common/application/contracts/controller';
+import { HttpRequest, HttpResponse } from '@/common/application/contracts/http';
 import { GetAverageExecutionTimeUseCase } from '@service-orders/application/usecases/metrics/get-avetage-execution-time.use-case';
 
 type GetAverageExecutionTimeOutput = {

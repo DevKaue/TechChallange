@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { PrismaModule } from '@/prisma/prisma.module';
+import { PrismaModule } from '@/common/infra/prisma/prisma.module';
 import { CustomerInfraController } from '@/customer-management/infra/controllers/customer.controller';
 import { VehicleInfraController } from '@/customer-management/infra/controllers/vehicle.controller';
 import CreateCustomerUseCase from '@customer-management/application/usecases/create-customer.usecase';
@@ -8,7 +8,7 @@ import FindVehicleByIdUseCase from '@customer-management/application/usecases/fi
 import ArchiveVehicleUseCase from '@/customer-management/application/usecases/archive-vehicle.usecase';
 import ArchiveCustomerUseCase from '@/customer-management/application/usecases/archive-customer.usecase';
 import CustomerManagementFacade from '@customer-management/infra/integrations/customer-management.facade';
-import CustomerManagementInterface from '@/common/contracts/customer-management.interface';
+import CustomerManagementInterface from '@/common/application/contracts/customer-management.interface';
 
 import CustomerRepositoryInterface from '@customer-management/domain/contracts/customer-repository.interface';
 import VehicleRepositoryInterface from '@customer-management/domain/contracts/vehicle-repository.interface';

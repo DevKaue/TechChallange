@@ -3,8 +3,8 @@ import {
   CustomerResponse,
   JsonCustomerPresenter,
 } from '@/customer-management/presentation/presenters/json-customer.presenter';
-import { Controller } from '@/common/contracts/controller';
-import { HttpRequest, HttpResponse } from '@/common/contracts/http';
+import { Controller } from '@/common/application/contracts/controller';
+import { HttpRequest, HttpResponse } from '@/common/application/contracts/http';
 
 type ListCustomersRequest = HttpRequest<undefined, undefined, undefined>;
 

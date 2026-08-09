@@ -7,7 +7,7 @@ import {
   loginAsMechanic,
   authHeader,
 } from './setup/auth.helper';
-import { PrismaService } from '@/prisma/prisma.service';
+import { PrismaService } from '@/common/infra/prisma/prisma.service';
 import { ServiceOrderStatus } from '@/service-orders/domain/enums/service-order-status.enum';
 
 describe('Service Orders (e2e)', () => {

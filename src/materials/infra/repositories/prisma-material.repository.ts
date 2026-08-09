@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import type { Material as PrismaMaterialModel } from '@prisma/client';
-import { PrismaService } from '@/prisma/prisma.service';
+import { PrismaService } from '@/common/infra/prisma/prisma.service';
 import MaterialRepositoryInterface from '@materials/domain/contracts/material-repository.interface';
 import Material from '@materials/domain/entities/material.entity';
 import InsufficientMaterialStockException from '@materials/domain/exceptions/insufficient-material-stock.exception';

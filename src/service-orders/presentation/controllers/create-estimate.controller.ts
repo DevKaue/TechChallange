@@ -1,5 +1,5 @@
-import { Controller } from '@/common/contracts/controller';
-import { HttpRequest, HttpResponse } from '@/common/contracts/http';
+import { Controller } from '@/common/application/contracts/controller';
+import { HttpRequest, HttpResponse } from '@/common/application/contracts/http';
 import { EstimateResponseDto } from '@service-orders/application/dto/estimate/estimate-response.dto';
 import { CreateEstimateUseCase } from '@service-orders/application/usecases/estimate/create-estimate.use-case';
 

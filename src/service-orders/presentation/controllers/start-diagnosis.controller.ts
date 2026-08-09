@@ -1,5 +1,5 @@
-import { Controller } from '@/common/contracts/controller';
-import { HttpRequest, HttpResponse } from '@/common/contracts/http';
+import { Controller } from '@/common/application/contracts/controller';
+import { HttpRequest, HttpResponse } from '@/common/application/contracts/http';
 import { StartDiagnosisDto } from '@service-orders/application/dto/diagnosis/start-diagnosis.dto';
 import { ServiceOrderResponseDto } from '@service-orders/application/dto/service-order/service-order-response.dto';
 import { StartDiagnosisUseCase } from '@service-orders/application/usecases/diagnosis/startDiagnosis.use-case';

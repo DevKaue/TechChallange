@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { PrismaModule } from '@/prisma/prisma.module';
+import { PrismaModule } from '@/common/infra/prisma/prisma.module';
 import { PART_REPOSITORY } from '@service-orders/domain/acls/part-repository.interface';
 import AddMaterialStockUseCase from '@materials/application/usecases/add-material-stock.usecase';
 import CreateMaterialUseCase from '@materials/application/usecases/create-material.usecase';

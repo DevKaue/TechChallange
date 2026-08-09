@@ -3,8 +3,8 @@ import {
   JsonVehiclePresenter,
   VehicleResponse,
 } from '@/customer-management/presentation/presenters/json-vehicle.presenter';
-import { Controller } from '@/common/contracts/controller';
-import { HttpRequest, HttpResponse } from '@/common/contracts/http';
+import { Controller } from '@/common/application/contracts/controller';
+import { HttpRequest, HttpResponse } from '@/common/application/contracts/http';
 
 type ListVehiclesRequest = HttpRequest<
   undefined,

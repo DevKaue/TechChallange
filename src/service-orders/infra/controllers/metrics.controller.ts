@@ -8,7 +8,7 @@ import {
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import type { Response } from 'express';
 import { JwtAuthGuard } from '@/access-identity/infra/guards/jwt-auth.guard';
-import { adaptNestRoute } from '@/common/adapters/nest-route.adapter';
+import { adaptNestRoute } from '@/common/presentation/adapters/nest-route.adapter';
 import { DomainExceptionFilter } from '@/common/infra/filters/domain-exception.filter';
 import GetAverageExecutionTimeController from '@service-orders/presentation/controllers/get-average-execution-time.controller';
 

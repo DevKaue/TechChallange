@@ -1,5 +1,5 @@
-import { Controller } from '@/common/contracts/controller';
-import { HttpRequest, HttpResponse } from '@/common/contracts/http';
+import { Controller } from '@/common/application/contracts/controller';
+import { HttpRequest, HttpResponse } from '@/common/application/contracts/http';
 import { FindAllServiceOrdersUseCase } from '@service-orders/application/usecases/service-order/find-all-service-orders.use-case';
 import {
   ServiceOrderPresenter,

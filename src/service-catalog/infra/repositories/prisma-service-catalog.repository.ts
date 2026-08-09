@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import type { ServiceCatalog as PrismaServiceCatalog } from '@prisma/client';
-import { PrismaService } from '@/prisma/prisma.service';
+import { PrismaService } from '@/common/infra/prisma/prisma.service';
 import ServiceCatalogRepositoryInterface from '@service-catalog/domain/contracts/service-catalog-repository.interface';
 import Service from '@service-catalog/domain/entities/service.entity';
 

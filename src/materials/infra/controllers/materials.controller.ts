@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import type { Response } from 'express';
 import { JwtAuthGuard } from '@/access-identity/infra/guards/jwt-auth.guard';
-import { adaptNestRoute } from '@/common/adapters/nest-route.adapter';
+import { adaptNestRoute } from '@/common/presentation/adapters/nest-route.adapter';
 import { DomainExceptionFilter } from '@/common/infra/filters/domain-exception.filter';
 import AddMaterialStockController from '@materials/presentation/controllers/add-material-stock.controller';
 import CreateMaterialController from '@materials/presentation/controllers/create-material.controller';
