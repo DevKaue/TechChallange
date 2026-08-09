@@ -53,6 +53,14 @@ export class DomainExceptionFilter implements ExceptionFilter {
       return HttpStatus.FORBIDDEN;
     }
 
+    if (exceptionName.endsWith('InvalidCredentialsException')) {
+      return HttpStatus.UNAUTHORIZED;
+    }
+
+    if (exceptionName.endsWith('ForbiddenRoleException')) {
+      return HttpStatus.FORBIDDEN;
+    }
+
     if (exceptionName.endsWith('NotFoundException')) {
       return HttpStatus.NOT_FOUND;
     }
@@ -90,6 +98,14 @@ export class DomainExceptionFilter implements ExceptionFilter {
 
     if (statusCode === HttpStatus.CONFLICT) {
       return 'Conflict';
+    }
+
+    if (statusCode === HttpStatus.UNAUTHORIZED) {
+      return 'Unauthorized';
+    }
+
+    if (statusCode === HttpStatus.FORBIDDEN) {
+      return 'Forbidden';
     }
 
     if (statusCode === HttpStatus.BAD_REQUEST) {

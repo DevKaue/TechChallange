@@ -18,7 +18,10 @@ import {
 import { PrismaAccessIdentityRepository } from './infra/repositories/prisma-access-identity.repository';
 import { JwtTokenService } from './infra/security/jwt-token.service';
 import { ScryptPasswordHasher } from './infra/security/scrypt-password-hasher';
-import { AuthController } from './presentation/controllers/auth.controller';
+import { AuthInfraController } from './infra/controllers/auth.controller';
+import LoginController from './presentation/controllers/login.controller';
+import LoginAdminController from './presentation/controllers/login-admin.controller';
+import GetAuthenticatedUserController from './presentation/controllers/get-authenticated-user.controller';
 import { JwtAuthGuard } from './infra/guards/jwt-auth.guard';
 import { RolesGuard } from './infra/guards/roles.guard';
 import { JwtStrategy } from './presentation/strategies/jwt.strategy';
@@ -67,6 +70,27 @@ import { JwtStrategy } from './presentation/strategies/jwt.strategy';
       provide: TOKEN_SERVICE,
       useClass: JwtTokenService,
     },
+    {
+      provide: LoginController,
+      useFactory: (loginUseCase: LoginUseCase) => {
+        return new LoginController(loginUseCase);
+      },
+      inject: [LoginUseCase],
+    },
+    {
+      provide: LoginAdminController,
+      useFactory: (loginUseCase: LoginUseCase) => {
+        return new LoginAdminController(loginUseCase);
+      },
+      inject: [LoginUseCase],
+    },
+    {
+      provide: GetAuthenticatedUserController,
+      useFactory: () => {
+        return new GetAuthenticatedUserController();
+      },
+      inject: [],
+    },
 
     // ACL adapter exposto para service-orders (validação/atribuição de mecânico).
     {
@@ -96,7 +120,7 @@ import { JwtStrategy } from './presentation/strategies/jwt.strategy';
       inject: [ACCESS_IDENTITY_REPOSITORY, PrismaService],
     },
   ],
-  controllers: [AuthController],
+  controllers: [AuthInfraController],
   exports: [JwtAuthGuard, RolesGuard, USER_REPOSITORY],
 })
 export class AccessIdentityModule {}
