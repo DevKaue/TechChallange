@@ -29,7 +29,7 @@ import {
   CustomerApiListDocs,
   CustomerApiUpdateDocs,
 } from '@/customer-management/infra/swaggers/customer-routes.swagger';
-import { CustomerExceptionFilter } from '@/customer-management/infra/filters/customer-exception.filter';
+import { DomainExceptionFilter } from '@/customer-management/infra/filters/domain-exception.filter';
 import type { CreateCustomerInput } from '@/customer-management/application/usecases/create-customer.usecase';
 import type { UpdateCustomerInput } from '@/customer-management/application/usecases/update-customer.usecase';
 import type { CustomerResponse } from '@/customer-management/presentation/presenters/json-customer.presenter';
@@ -38,7 +38,7 @@ import type { CustomerResponse } from '@/customer-management/presentation/presen
 @Controller('customers')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.ATTENDANT)
-@UseFilters(CustomerExceptionFilter)
+@UseFilters(DomainExceptionFilter)
 export class CustomerInfraController {
   constructor(
     private readonly createCustomerController: CreateCustomerController,

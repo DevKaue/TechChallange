@@ -3,15 +3,17 @@ import CustomerAlreadyExistsException from '@/customer-management/domain/excepti
 import CustomerIsArchivedException from '@/customer-management/domain/exceptions/customer-is-archived.exception';
 import CustomerNotFoundException from '@/customer-management/domain/exceptions/customer-not-found.exception';
 import DomainException from '@/customer-management/domain/exceptions/domain.exception';
-import { CustomerExceptionFilter } from '@/customer-management/infra/filters/customer-exception.filter';
+import VehicleAlreadyExistsException from '@/customer-management/domain/exceptions/vehicle-already-exists.exception';
+import VehicleNotFoundException from '@/customer-management/domain/exceptions/vehicle-not-found.exception';
+import { DomainExceptionFilter } from '@/customer-management/infra/filters/domain-exception.filter';
 
-describe('CustomerExceptionFilter', () => {
-  let filter: CustomerExceptionFilter;
+describe('DomainExceptionFilter', () => {
+  let filter: DomainExceptionFilter;
   let mockResponse: { status: jest.Mock; json: jest.Mock };
   let mockHost: ArgumentsHost;
 
   beforeEach(() => {
-    filter = new CustomerExceptionFilter();
+    filter = new DomainExceptionFilter();
     mockResponse = {
       status: jest.fn().mockReturnThis(),
       json: jest.fn().mockReturnThis(),
@@ -53,6 +55,30 @@ describe('CustomerExceptionFilter', () => {
       expect.objectContaining({
         error: 'Customer Is Archived',
         error_code: 'customer_is_archived',
+      }),
+    );
+  });
+
+  it('maps VehicleAlreadyExistsException to 409', () => {
+    const exc = new VehicleAlreadyExistsException();
+    filter.catch(exc, mockHost);
+    expect(mockResponse.status).toHaveBeenCalledWith(409);
+    expect(mockResponse.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        error: 'Vehicle Already Exists',
+        error_code: 'vehicle_already_exists',
+      }),
+    );
+  });
+
+  it('maps VehicleNotFoundException to 404', () => {
+    const exc = new VehicleNotFoundException();
+    filter.catch(exc, mockHost);
+    expect(mockResponse.status).toHaveBeenCalledWith(404);
+    expect(mockResponse.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        error: 'Vehicle Not Found',
+        error_code: 'vehicle_not_found',
       }),
     );
   });

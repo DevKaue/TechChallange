@@ -22,8 +22,7 @@ import CreateVehicleController from '@/customer-management/presentation/controll
 import FindVehicleByIdController from '@/customer-management/presentation/controllers/find-vehicle-by-id.controller';
 import ListVehiclesController from '@/customer-management/presentation/controllers/list-vehicles.controller';
 import UpdateVehicleController from '@/customer-management/presentation/controllers/update-vehicle.controller';
-import { CustomerExceptionFilter } from '@/customer-management/infra/filters/customer-exception.filter';
-import { VehicleExceptionFilter } from '@/customer-management/infra/filters/vehicle-exception.filter';
+import { DomainExceptionFilter } from '@/customer-management/infra/filters/domain-exception.filter';
 import {
   VehicleApiControllerDocs,
   VehicleApiCreateDocs,
@@ -40,8 +39,7 @@ import type { VehicleResponse } from '@/customer-management/presentation/present
 @Controller()
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.ATTENDANT)
-@UseFilters(VehicleExceptionFilter)
-@UseFilters(CustomerExceptionFilter)
+@UseFilters(DomainExceptionFilter)
 export class VehicleInfraController {
   constructor(
     private readonly createVehicleController: CreateVehicleController,
