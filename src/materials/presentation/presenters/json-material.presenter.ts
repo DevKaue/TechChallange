@@ -30,4 +30,8 @@ export class JsonMaterialPresenter {
       updatedAt: material.updatedAt,
     };
   }
+
+  static presentMany(materials: MaterialDTO[]): MaterialResponse[] {
+    return materials.map((material) => this.present(material));
+  }
 }
