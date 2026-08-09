@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
-import { ServiceOrderController } from './presentation/controllers/service-order.controller';
-import { EstimateController } from './presentation/controllers/estimate.controller';
-import { MechanicController } from './presentation/controllers/mechanic.controller';
-import { DiagnosisController } from './presentation/controllers/diagnosis.controller';
-import { MetricsController } from './presentation/controllers/metrics.controller';
+import { ServiceOrderInfraController } from './infra/controllers/service-order.controller';
+import { EstimateInfraController } from './infra/controllers/estimate.controller';
+import { MechanicInfraController } from './infra/controllers/mechanic.controller';
+import { DiagnosisInfraController } from './infra/controllers/diagnosis.controller';
+import { MetricsInfraController } from './infra/controllers/metrics.controller';
 //import { ServiceOrderUseCase } from './application/usecases/service-order/service-order.use-case';
 //import { EstimateUseCase } from './application/usecases/estimate/estimate.use-case';
 //import { MechanicUseCase } from './application/usecases/mechanic/mechanic.use-case';
@@ -37,6 +37,21 @@ import { FindAllServiceOrdersUseCase } from './application/usecases/service-orde
 import { FindOneServiceOrderUseCase } from './application/usecases/service-order/find-one-service-order.use-case';
 import { FinishServiceUseCase } from './application/usecases/service-order/finish-service.use-case';
 import { StartServiceUseCase } from './application/usecases/service-order/start-service.use-case';
+import StartDiagnosisController from './presentation/controllers/start-diagnosis.controller';
+import CreateEstimateController from './presentation/controllers/create-estimate.controller';
+import UpdateEstimateStatusController from './presentation/controllers/update-estimate-status.controller';
+import AddEstimateItemController from './presentation/controllers/add-estimate-item.controller';
+import RejectEstimateController from './presentation/controllers/reject-estimate.controller';
+import AssignMechanicController from './presentation/controllers/assign-mechanic.controller';
+import UpdateMechanicAvailabilityController from './presentation/controllers/update-mechanic-availability.controller';
+import GetAverageExecutionTimeController from './presentation/controllers/get-average-execution-time.controller';
+import CreateServiceOrderController from './presentation/controllers/create-service-order.controller';
+import FindAllServiceOrdersController from './presentation/controllers/find-all-service-orders.controller';
+import FindOneServiceOrderController from './presentation/controllers/find-one-service-order.controller';
+import StartServiceController from './presentation/controllers/start-service.controller';
+import FinishServiceController from './presentation/controllers/finish-service.controller';
+import DeliverVehicleController from './presentation/controllers/deliver-vehicle.controller';
+import CloseServiceOrderController from './presentation/controllers/close-service-order.controller';
 
 @Module({
   imports: [
@@ -46,11 +61,11 @@ import { StartServiceUseCase } from './application/usecases/service-order/start-
     AccessIdentityModule,
   ],
   controllers: [
-    ServiceOrderController,
-    EstimateController,
-    MechanicController,
-    DiagnosisController,
-    MetricsController,
+    ServiceOrderInfraController,
+    EstimateInfraController,
+    MechanicInfraController,
+    DiagnosisInfraController,
+    MetricsInfraController,
   ],
   providers: [
     // ServiceOrderUseCase,
@@ -166,6 +181,96 @@ import { StartServiceUseCase } from './application/usecases/service-order/start-
       inject: [ServiceOrdersRepositoryInterface, CustomerManagementInterface],
     },
     {
+      provide: StartDiagnosisController,
+      useFactory: (useCase: StartDiagnosisUseCase) =>
+        new StartDiagnosisController(useCase),
+      inject: [StartDiagnosisUseCase],
+    },
+    {
+      provide: CreateEstimateController,
+      useFactory: (useCase: CreateEstimateUseCase) =>
+        new CreateEstimateController(useCase),
+      inject: [CreateEstimateUseCase],
+    },
+    {
+      provide: UpdateEstimateStatusController,
+      useFactory: (useCase: UpdateEstimateStatusUseCase) =>
+        new UpdateEstimateStatusController(useCase),
+      inject: [UpdateEstimateStatusUseCase],
+    },
+    {
+      provide: AddEstimateItemController,
+      useFactory: (useCase: AddEstimateItemUseCase) =>
+        new AddEstimateItemController(useCase),
+      inject: [AddEstimateItemUseCase],
+    },
+    {
+      provide: RejectEstimateController,
+      useFactory: (useCase: RejectEstimateUseCase) =>
+        new RejectEstimateController(useCase),
+      inject: [RejectEstimateUseCase],
+    },
+    {
+      provide: AssignMechanicController,
+      useFactory: (useCase: AssignMechanicUseCase) =>
+        new AssignMechanicController(useCase),
+      inject: [AssignMechanicUseCase],
+    },
+    {
+      provide: UpdateMechanicAvailabilityController,
+      useFactory: (useCase: UpdateMechanicAvailabilityUseCase) =>
+        new UpdateMechanicAvailabilityController(useCase),
+      inject: [UpdateMechanicAvailabilityUseCase],
+    },
+    {
+      provide: GetAverageExecutionTimeController,
+      useFactory: (useCase: GetAverageExecutionTimeUseCase) =>
+        new GetAverageExecutionTimeController(useCase),
+      inject: [GetAverageExecutionTimeUseCase],
+    },
+    {
+      provide: CreateServiceOrderController,
+      useFactory: (useCase: CreateServiceOrderUseCase) =>
+        new CreateServiceOrderController(useCase),
+      inject: [CreateServiceOrderUseCase],
+    },
+    {
+      provide: FindAllServiceOrdersController,
+      useFactory: (useCase: FindAllServiceOrdersUseCase) =>
+        new FindAllServiceOrdersController(useCase),
+      inject: [FindAllServiceOrdersUseCase],
+    },
+    {
+      provide: FindOneServiceOrderController,
+      useFactory: (useCase: FindOneServiceOrderUseCase) =>
+        new FindOneServiceOrderController(useCase),
+      inject: [FindOneServiceOrderUseCase],
+    },
+    {
+      provide: StartServiceController,
+      useFactory: (useCase: StartServiceUseCase) =>
+        new StartServiceController(useCase),
+      inject: [StartServiceUseCase],
+    },
+    {
+      provide: FinishServiceController,
+      useFactory: (useCase: FinishServiceUseCase) =>
+        new FinishServiceController(useCase),
+      inject: [FinishServiceUseCase],
+    },
+    {
+      provide: DeliverVehicleController,
+      useFactory: (useCase: DeliverVehicleUseCase) =>
+        new DeliverVehicleController(useCase),
+      inject: [DeliverVehicleUseCase],
+    },
+    {
+      provide: CloseServiceOrderController,
+      useFactory: (useCase: CloseServiceOrderUseCase) =>
+        new CloseServiceOrderController(useCase),
+      inject: [CloseServiceOrderUseCase],
+    },
+    {
       provide: ServiceOrdersRepositoryInterface,
       useClass: PrismaServiceOrdersRepository,
     },
@@ -183,4 +288,4 @@ import { StartServiceUseCase } from './application/usecases/service-order/start-
   ],
   exports: [SERVICE_ORDERS_INTERFACE],
 })
-export class ServiceOrdersModule { }
+export class ServiceOrdersModule {}

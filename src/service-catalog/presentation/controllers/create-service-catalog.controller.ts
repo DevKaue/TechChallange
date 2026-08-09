@@ -1,0 +1,34 @@
+import { Controller } from '@/common/contracts/controller';
+import { HttpRequest, HttpResponse } from '@/common/contracts/http';
+import type { ServiceDTO } from '@service-catalog/application/dtos/service.dtos';
+import {
+  CreateServiceCatalogUseCase,
+  CreateServiceInput,
+} from '@service-catalog/application/usecases/create-service-catalog.use-case';
+
+type CreateServiceCatalogRequest = HttpRequest<
+  CreateServiceInput,
+  undefined,
+  undefined
+>;
+
+export default class CreateServiceCatalogController
+  implements Controller<CreateServiceCatalogRequest, ServiceDTO>
+{
+  constructor(
+    private readonly createServiceCatalogUseCase: CreateServiceCatalogUseCase,
+  ) {}
+
+  async handle(
+    httpRequest: CreateServiceCatalogRequest,
+  ): Promise<HttpResponse<ServiceDTO>> {
+    const output = await this.createServiceCatalogUseCase.execute(
+      httpRequest.body,
+    );
+
+    return {
+      statusCode: 201,
+      body: output,
+    };
+  }
+}

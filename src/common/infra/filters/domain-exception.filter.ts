@@ -49,7 +49,15 @@ export class DomainExceptionFilter implements ExceptionFilter {
   private resolveStatusCode(exception: Error): number {
     const exceptionName = exception.name;
 
+    if (exceptionName.endsWith('UnauthorizedMechanicException')) {
+      return HttpStatus.FORBIDDEN;
+    }
+
     if (exceptionName.endsWith('NotFoundException')) {
+      return HttpStatus.NOT_FOUND;
+    }
+
+    if (exceptionName.endsWith('NotMechanicException')) {
       return HttpStatus.NOT_FOUND;
     }
 
@@ -62,6 +70,9 @@ export class DomainExceptionFilter implements ExceptionFilter {
     }
 
     if (
+      exceptionName.endsWith('InvalidStatusTransitionException') ||
+      exceptionName.endsWith('OwnerMismatchException') ||
+      exceptionName.endsWith('InvalidMaterialDataException') ||
       exceptionName === 'DomainException' ||
       exceptionName.endsWith('DomainException') ||
       exceptionName.endsWith('ValidationException')
