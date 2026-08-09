@@ -44,8 +44,6 @@ import ArchiveVehicleController from '@/customer-management/presentation/control
   controllers: [CustomerInfraController, VehicleInfraController],
   providers: [
     PrismaUnitOfWorkService,
-    CustomerRegistrationChecker,
-    VehicleRegistrationChecker,
     {
       provide: UnitOfWorkServiceInterface,
       useClass: PrismaUnitOfWorkService,
