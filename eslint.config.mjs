@@ -33,9 +33,6 @@ export default tseslint.config(
       '@typescript-eslint/no-unsafe-member-access': 'warn',
       '@typescript-eslint/no-unsafe-call': 'warn',
       '@typescript-eslint/no-unsafe-return': 'warn',
-      // singleQuote registra a convenção que o código já segue. Sem isto o
-      // prettier assume aspas duplas e divergia de 366 arquivos, tornando o
-      // `npm run lint` inutilizável (4797 erros, 94% deles só de aspas).
       'prettier/prettier': ['error', { endOfLine: 'auto', singleQuote: true }],
     },
   },
