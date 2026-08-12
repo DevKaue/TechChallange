@@ -10,9 +10,10 @@ type UpdateEstimateStatusRequest = HttpRequest<
   undefined
 >;
 
-export default class UpdateEstimateStatusController
-  implements Controller<UpdateEstimateStatusRequest, EstimateResponseDto>
-{
+export default class UpdateEstimateStatusController implements Controller<
+  UpdateEstimateStatusRequest,
+  EstimateResponseDto
+> {
   constructor(
     private readonly updateEstimateStatusUseCase: UpdateEstimateStatusUseCase,
   ) {}

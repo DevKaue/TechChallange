@@ -51,4 +51,3 @@ import { createProvider } from '@/common/infra/di/create-provider';
   exports: [PART_REPOSITORY, MaterialRepositoryInterface],
 })
 export class MaterialsModule {}
-

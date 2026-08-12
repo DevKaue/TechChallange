@@ -8,18 +8,23 @@ type GetAverageExecutionTimeOutput = {
   message?: string;
 };
 
-type GetAverageExecutionTimeRequest = HttpRequest<undefined, undefined, undefined>;
+type GetAverageExecutionTimeRequest = HttpRequest<
+  undefined,
+  undefined,
+  undefined
+>;
 
-export default class GetAverageExecutionTimeController
-  implements
-    Controller<GetAverageExecutionTimeRequest, GetAverageExecutionTimeOutput>
-{
+export default class GetAverageExecutionTimeController implements Controller<
+  GetAverageExecutionTimeRequest,
+  GetAverageExecutionTimeOutput
+> {
   constructor(
     private readonly getAverageExecutionTimeUseCase: GetAverageExecutionTimeUseCase,
   ) {}
 
   async handle(): Promise<HttpResponse<GetAverageExecutionTimeOutput>> {
-    const output = await this.getAverageExecutionTimeUseCase.getAverageExecutionTime();
+    const output =
+      await this.getAverageExecutionTimeUseCase.getAverageExecutionTime();
 
     return {
       statusCode: 200,

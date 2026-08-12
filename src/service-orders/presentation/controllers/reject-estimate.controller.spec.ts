@@ -6,10 +6,16 @@ describe('RejectEstimateController', () => {
     // Arrange
     const output = { id: 'os-1' };
     const execute = jest.fn().mockResolvedValue(output);
-    const controller = new RejectEstimateController({ execute } as unknown as RejectEstimateUseCase);
+    const controller = new RejectEstimateController({
+      execute,
+    } as unknown as RejectEstimateUseCase);
 
     // Act
-    const response = await controller.handle({ body: { reason: 'caro' }, params: { id: 'os-1' }, query: undefined });
+    const response = await controller.handle({
+      body: { reason: 'caro' },
+      params: { id: 'os-1' },
+      query: undefined,
+    });
 
     // Assert
     expect(response.statusCode).toBe(200);

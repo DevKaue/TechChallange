@@ -8,11 +8,16 @@ import {
 import { Controller } from '@/common/application/contracts/controller';
 import { HttpRequest, HttpResponse } from '@/common/application/contracts/http';
 
-type CreateMaterialRequest = HttpRequest<CreateMaterialInput, undefined, undefined>;
+type CreateMaterialRequest = HttpRequest<
+  CreateMaterialInput,
+  undefined,
+  undefined
+>;
 
-export default class CreateMaterialController
-  implements Controller<CreateMaterialRequest, MaterialResponse>
-{
+export default class CreateMaterialController implements Controller<
+  CreateMaterialRequest,
+  MaterialResponse
+> {
   constructor(private readonly createMaterialUseCase: CreateMaterialUseCase) {}
 
   async handle(

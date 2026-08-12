@@ -4,11 +4,16 @@ import { StartDiagnosisDto } from '@service-orders/application/dto/diagnosis/sta
 import { ServiceOrderResponseDto } from '@service-orders/application/dto/service-order/service-order-response.dto';
 import { StartDiagnosisUseCase } from '@service-orders/application/usecases/diagnosis/startDiagnosis.use-case';
 
-type StartDiagnosisRequest = HttpRequest<StartDiagnosisDto, { id: string }, undefined>;
+type StartDiagnosisRequest = HttpRequest<
+  StartDiagnosisDto,
+  { id: string },
+  undefined
+>;
 
-export default class StartDiagnosisController
-  implements Controller<StartDiagnosisRequest, ServiceOrderResponseDto>
-{
+export default class StartDiagnosisController implements Controller<
+  StartDiagnosisRequest,
+  ServiceOrderResponseDto
+> {
   constructor(private readonly startDiagnosisUseCase: StartDiagnosisUseCase) {}
 
   async handle(

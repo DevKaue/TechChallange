@@ -48,7 +48,10 @@ describe('HttpExceptionFilter', () => {
   });
 
   it('handles HttpException with string response', () => {
-    filter.catch(new HttpException('Not found', HttpStatus.NOT_FOUND), mockHost);
+    filter.catch(
+      new HttpException('Not found', HttpStatus.NOT_FOUND),
+      mockHost,
+    );
 
     expect(mockResponse.status).toHaveBeenCalledWith(404);
     expect(mockResponse.json).toHaveBeenCalledWith(

@@ -16,7 +16,13 @@ describe('FindAllServiceOrdersController', () => {
       createdAt,
       updatedAt: createdAt,
       customer: { id: 'c-1', name: 'Ana' },
-      vehicle: { id: 'v-1', plate: 'ABC1D23', brand: 'Fiat', model: 'Uno', year: 2020 },
+      vehicle: {
+        id: 'v-1',
+        plate: 'ABC1D23',
+        brand: 'Fiat',
+        model: 'Uno',
+        year: 2020,
+      },
       mechanic: null,
     } as unknown as ServiceOrderSummaryDto;
     const execute = jest.fn().mockResolvedValue([dto]);
@@ -39,7 +45,13 @@ describe('FindAllServiceOrdersController', () => {
         created_at: createdAt,
         updated_at: createdAt,
         customer: { id: 'c-1', name: 'Ana' },
-        vehicle: { id: 'v-1', plate: 'ABC1D23', brand: 'Fiat', model: 'Uno', year: 2020 },
+        vehicle: {
+          id: 'v-1',
+          plate: 'ABC1D23',
+          brand: 'Fiat',
+          model: 'Uno',
+          year: 2020,
+        },
         mechanic: null,
       },
     ]);

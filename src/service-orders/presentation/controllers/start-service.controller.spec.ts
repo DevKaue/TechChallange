@@ -6,10 +6,16 @@ describe('StartServiceController', () => {
     // Arrange
     const output = { id: 'os-1' };
     const execute = jest.fn().mockResolvedValue(output);
-    const controller = new StartServiceController({ execute } as unknown as StartServiceUseCase);
+    const controller = new StartServiceController({
+      execute,
+    } as unknown as StartServiceUseCase);
 
     // Act
-    const response = await controller.handle({ body: undefined, params: { id: 'os-1' }, query: undefined });
+    const response = await controller.handle({
+      body: undefined,
+      params: { id: 'os-1' },
+      query: undefined,
+    });
 
     // Assert
     expect(response.statusCode).toBe(200);

@@ -39,7 +39,12 @@ describe('FindOneServiceOrderController', () => {
         id: 'os-1',
         created_at: createdAt,
         // o presenter acrescenta customer_id ao veiculo
-        vehicle: { id: 'v-1', plate: 'ABC1D23', customerId: 'c-1', customer_id: 'c-1' },
+        vehicle: {
+          id: 'v-1',
+          plate: 'ABC1D23',
+          customerId: 'c-1',
+          customer_id: 'c-1',
+        },
       }),
     );
     expect(execute).toHaveBeenCalledWith('os-1');

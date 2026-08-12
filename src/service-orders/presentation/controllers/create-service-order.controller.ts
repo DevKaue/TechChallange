@@ -4,11 +4,16 @@ import { CreateServiceOrderDto } from '@service-orders/application/dto/service-o
 import { ServiceOrderResponseDto } from '@service-orders/application/dto/service-order/service-order-response.dto';
 import { CreateServiceOrderUseCase } from '@service-orders/application/usecases/service-order/create-service-order.use-case';
 
-type CreateServiceOrderRequest = HttpRequest<CreateServiceOrderDto, undefined, undefined>;
+type CreateServiceOrderRequest = HttpRequest<
+  CreateServiceOrderDto,
+  undefined,
+  undefined
+>;
 
-export default class CreateServiceOrderController
-  implements Controller<CreateServiceOrderRequest, ServiceOrderResponseDto>
-{
+export default class CreateServiceOrderController implements Controller<
+  CreateServiceOrderRequest,
+  ServiceOrderResponseDto
+> {
   constructor(
     private readonly createServiceOrderUseCase: CreateServiceOrderUseCase,
   ) {}
@@ -16,7 +21,9 @@ export default class CreateServiceOrderController
   async handle(
     httpRequest: CreateServiceOrderRequest,
   ): Promise<HttpResponse<ServiceOrderResponseDto>> {
-    const output = await this.createServiceOrderUseCase.execute(httpRequest.body);
+    const output = await this.createServiceOrderUseCase.execute(
+      httpRequest.body,
+    );
 
     return {
       statusCode: 201,

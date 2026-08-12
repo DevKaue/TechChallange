@@ -30,7 +30,10 @@ describe('CreateServiceOrderUseCase', () => {
             repository: ServiceOrdersRepositoryInterface,
             customerManagement: CustomerManagementInterface,
           ) => new CreateServiceOrderUseCase(repository, customerManagement),
-          inject: [ServiceOrdersRepositoryInterface, CustomerManagementInterface],
+          inject: [
+            ServiceOrdersRepositoryInterface,
+            CustomerManagementInterface,
+          ],
         },
         {
           provide: ServiceOrdersRepositoryInterface,
@@ -80,7 +83,9 @@ describe('CreateServiceOrderUseCase', () => {
   });
 
   it('should throw when the vehicle does not exist', async () => {
-    customerManagement.findCustomerById.mockResolvedValue({ id: 'client-1' } as any);
+    customerManagement.findCustomerById.mockResolvedValue({
+      id: 'client-1',
+    } as any);
     customerManagement.findVehicleById.mockResolvedValue(null);
 
     await expect(
@@ -99,7 +104,9 @@ describe('CreateServiceOrderUseCase', () => {
   });
 
   it('should throw when the vehicle does not belong to the client', async () => {
-    customerManagement.findCustomerById.mockResolvedValue({ id: 'client-1' } as any);
+    customerManagement.findCustomerById.mockResolvedValue({
+      id: 'client-1',
+    } as any);
     customerManagement.findVehicleById.mockResolvedValue({
       id: 'vehicle-1',
       customerId: 'another-client',

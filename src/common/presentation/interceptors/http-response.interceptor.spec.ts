@@ -24,7 +24,9 @@ describe('HttpResponseInterceptor', () => {
     const handler = handlerFor({ statusCode: 201, body: { id: 'c-1' } });
 
     // Act
-    const result = await firstValueFrom(interceptor.intercept(context, handler));
+    const result = await firstValueFrom(
+      interceptor.intercept(context, handler),
+    );
 
     // Assert
     expect(status).toHaveBeenCalledWith(201);
@@ -37,7 +39,9 @@ describe('HttpResponseInterceptor', () => {
     const handler = handlerFor({ statusCode: 204, body: undefined });
 
     // Act
-    const result = await firstValueFrom(interceptor.intercept(context, handler));
+    const result = await firstValueFrom(
+      interceptor.intercept(context, handler),
+    );
 
     // Assert
     expect(status).toHaveBeenCalledWith(204);
@@ -50,7 +54,9 @@ describe('HttpResponseInterceptor', () => {
     const handler = handlerFor({ id: 'c-1' });
 
     // Act
-    const result = await firstValueFrom(interceptor.intercept(context, handler));
+    const result = await firstValueFrom(
+      interceptor.intercept(context, handler),
+    );
 
     // Assert
     expect(status).not.toHaveBeenCalled();

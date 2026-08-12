@@ -6,11 +6,16 @@ import {
   ServiceOrderPresenter,
 } from '@service-orders/presentation/presenters/service-order.presenter';
 
-type FindOneServiceOrderRequest = HttpRequest<undefined, { id: string }, undefined>;
+type FindOneServiceOrderRequest = HttpRequest<
+  undefined,
+  { id: string },
+  undefined
+>;
 
-export default class FindOneServiceOrderController
-  implements Controller<FindOneServiceOrderRequest, ServiceOrderDetailResponse>
-{
+export default class FindOneServiceOrderController implements Controller<
+  FindOneServiceOrderRequest,
+  ServiceOrderDetailResponse
+> {
   constructor(
     private readonly findOneServiceOrderUseCase: FindOneServiceOrderUseCase,
   ) {}

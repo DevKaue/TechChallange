@@ -7,7 +7,12 @@ import {
   UseFilters,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import type { AuthenticatedRequest } from '@/access-identity/presentation/authenticated-request';
 import { JwtAuthGuard } from '@/access-identity/infra/guards/jwt-auth.guard';
 import { adaptNestRoute } from '@/common/presentation/adapters/nest-route.adapter';
@@ -50,13 +55,10 @@ export class MechanicInfraController {
     @Req() req: AuthenticatedRequest,
     @Body() dto: UpdateMechanicAvailabilityDto,
   ): Promise<HttpResponse<void>> {
-    return adaptNestRoute(
-      this.updateMechanicAvailabilityController,
-      {
-        body: dto,
-        params: { mechanicId: req.user.userId },
-        query: undefined,
-      },
-    );
+    return adaptNestRoute(this.updateMechanicAvailabilityController, {
+      body: dto,
+      params: { mechanicId: req.user.userId },
+      query: undefined,
+    });
   }
 }

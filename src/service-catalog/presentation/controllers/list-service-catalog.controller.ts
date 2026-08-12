@@ -5,9 +5,10 @@ import { ListServiceCatalogUseCase } from '@service-catalog/application/usecases
 
 type ListServiceCatalogRequest = HttpRequest<undefined, undefined, undefined>;
 
-export default class ListServiceCatalogController
-  implements Controller<ListServiceCatalogRequest, ServiceDTO[]>
-{
+export default class ListServiceCatalogController implements Controller<
+  ListServiceCatalogRequest,
+  ServiceDTO[]
+> {
   constructor(
     private readonly listServiceCatalogUseCase: ListServiceCatalogUseCase,
   ) {}

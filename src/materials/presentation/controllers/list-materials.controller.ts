@@ -8,9 +8,10 @@ import { HttpRequest, HttpResponse } from '@/common/application/contracts/http';
 
 type ListMaterialsRequest = HttpRequest<undefined, undefined, undefined>;
 
-export default class ListMaterialsController
-  implements Controller<ListMaterialsRequest, MaterialResponse[]>
-{
+export default class ListMaterialsController implements Controller<
+  ListMaterialsRequest,
+  MaterialResponse[]
+> {
   constructor(private readonly listMaterialsUseCase: ListMaterialsUseCase) {}
 
   async handle(): Promise<HttpResponse<MaterialResponse[]>> {

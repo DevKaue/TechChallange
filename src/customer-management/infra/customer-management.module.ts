@@ -59,16 +59,27 @@ import { createProvider } from '@/common/infra/di/create-provider';
       useClass: PrismaCustomerRepository,
     },
 
-    createProvider(CreateCustomerUseCase, [CustomerRepositoryInterface, CustomerRegistrationChecker]),
+    createProvider(CreateCustomerUseCase, [
+      CustomerRepositoryInterface,
+      CustomerRegistrationChecker,
+    ]),
 
-    createProvider(ArchiveCustomerUseCase, [CustomerRepositoryInterface, VehicleRepositoryInterface, UnitOfWorkServiceInterface]),
+    createProvider(ArchiveCustomerUseCase, [
+      CustomerRepositoryInterface,
+      VehicleRepositoryInterface,
+      UnitOfWorkServiceInterface,
+    ]),
 
     {
       provide: VehicleRepositoryInterface,
       useClass: PrismaVehicleRepository,
     },
 
-    createProvider(CreateVehicleUseCase, [VehicleRepositoryInterface, CustomerRepositoryInterface, VehicleRegistrationChecker]),
+    createProvider(CreateVehicleUseCase, [
+      VehicleRepositoryInterface,
+      CustomerRepositoryInterface,
+      VehicleRegistrationChecker,
+    ]),
 
     createProvider(ArchiveVehicleUseCase, [VehicleRepositoryInterface]),
 
@@ -92,7 +103,10 @@ import { createProvider } from '@/common/infra/di/create-provider';
 
     createProvider(ListVehicleUseCase, [VehicleQueryServiceInterface]),
 
-    createProvider(UpdateVehicleUseCase, [VehicleRepositoryInterface, VehicleRegistrationChecker]),
+    createProvider(UpdateVehicleUseCase, [
+      VehicleRepositoryInterface,
+      VehicleRegistrationChecker,
+    ]),
 
     createProvider(VehicleRegistrationChecker, [VehicleRepositoryInterface]),
 
@@ -124,8 +138,6 @@ import { createProvider } from '@/common/infra/di/create-provider';
     createProvider(UpdateVehicleController, [UpdateVehicleUseCase]),
     createProvider(ArchiveVehicleController, [ArchiveVehicleUseCase]),
   ],
-  exports: [
-    CustomerManagementInterface
-  ],
+  exports: [CustomerManagementInterface],
 })
 export class CustomerManagementModule {}

@@ -6,11 +6,16 @@ import {
 import { Controller } from '@/common/application/contracts/controller';
 import { HttpRequest, HttpResponse } from '@/common/application/contracts/http';
 
-type FindMaterialByIdRequest = HttpRequest<undefined, { id: string }, undefined>;
+type FindMaterialByIdRequest = HttpRequest<
+  undefined,
+  { id: string },
+  undefined
+>;
 
-export default class FindMaterialByIdController
-  implements Controller<FindMaterialByIdRequest, MaterialResponse>
-{
+export default class FindMaterialByIdController implements Controller<
+  FindMaterialByIdRequest,
+  MaterialResponse
+> {
   constructor(
     private readonly findMaterialByIdUseCase: FindMaterialByIdUseCase,
   ) {}

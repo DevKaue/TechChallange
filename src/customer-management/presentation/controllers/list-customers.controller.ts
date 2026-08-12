@@ -8,9 +8,10 @@ import { HttpRequest, HttpResponse } from '@/common/application/contracts/http';
 
 type ListCustomersRequest = HttpRequest<undefined, undefined, undefined>;
 
-export default class ListCustomersController
-  implements Controller<ListCustomersRequest, CustomerResponse[]>
-{
+export default class ListCustomersController implements Controller<
+  ListCustomersRequest,
+  CustomerResponse[]
+> {
   constructor(private readonly listCustomersUseCase: ListCustomerUseCase) {}
 
   async handle(): Promise<HttpResponse<CustomerResponse[]>> {

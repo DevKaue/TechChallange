@@ -6,10 +6,16 @@ describe('CloseServiceOrderController', () => {
     // Arrange
     const output = { id: 'os-1' };
     const execute = jest.fn().mockResolvedValue(output);
-    const controller = new CloseServiceOrderController({ execute } as unknown as CloseServiceOrderUseCase);
+    const controller = new CloseServiceOrderController({
+      execute,
+    } as unknown as CloseServiceOrderUseCase);
 
     // Act
-    const response = await controller.handle({ body: undefined, params: { id: 'os-1' }, query: undefined });
+    const response = await controller.handle({
+      body: undefined,
+      params: { id: 'os-1' },
+      query: undefined,
+    });
 
     // Assert
     expect(response.statusCode).toBe(200);

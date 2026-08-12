@@ -3,11 +3,16 @@ import { HttpRequest, HttpResponse } from '@/common/application/contracts/http';
 import type { ServiceDTO } from '@service-catalog/application/dtos/service.dtos';
 import { FindByIdServiceCatalogUseCase } from '@service-catalog/application/usecases/find-by-id-service-catalog.use-case';
 
-type FindServiceCatalogByIdRequest = HttpRequest<undefined, { id: string }, undefined>;
+type FindServiceCatalogByIdRequest = HttpRequest<
+  undefined,
+  { id: string },
+  undefined
+>;
 
-export default class FindServiceCatalogByIdController
-  implements Controller<FindServiceCatalogByIdRequest, ServiceDTO>
-{
+export default class FindServiceCatalogByIdController implements Controller<
+  FindServiceCatalogByIdRequest,
+  ServiceDTO
+> {
   constructor(
     private readonly findByIdServiceCatalogUseCase: FindByIdServiceCatalogUseCase,
   ) {}

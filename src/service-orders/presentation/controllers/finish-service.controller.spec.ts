@@ -6,10 +6,16 @@ describe('FinishServiceController', () => {
     // Arrange
     const output = { id: 'os-1' };
     const execute = jest.fn().mockResolvedValue(output);
-    const controller = new FinishServiceController({ execute } as unknown as FinishServiceUseCase);
+    const controller = new FinishServiceController({
+      execute,
+    } as unknown as FinishServiceUseCase);
 
     // Act
-    const response = await controller.handle({ body: { mechanicId: 'mec-1', notes: 'ok' }, params: { id: 'os-1' }, query: undefined });
+    const response = await controller.handle({
+      body: { mechanicId: 'mec-1', notes: 'ok' },
+      params: { id: 'os-1' },
+      query: undefined,
+    });
 
     // Assert
     expect(response.statusCode).toBe(200);

@@ -1,6 +1,6 @@
-import Service from "@/service-catalog/domain/entities/service.entity";
-import { DeleteServiceCatalogUseCase } from "./delete-service-catalog.use-case";
-import ServiceNotFoundException from "../exceptions/service-not-found.exception";
+import Service from '@/service-catalog/domain/entities/service.entity';
+import { DeleteServiceCatalogUseCase } from './delete-service-catalog.use-case';
+import ServiceNotFoundException from '../exceptions/service-not-found.exception';
 
 const buildService = () =>
   new Service({ id: 'svc-1', name: 'Troca de óleo', price: 150 });

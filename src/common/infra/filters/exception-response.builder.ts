@@ -76,7 +76,11 @@ export class ExceptionResponseBuilder {
         return payload;
       }
 
-      if (typeof payload === 'object' && payload !== null && 'message' in payload) {
+      if (
+        typeof payload === 'object' &&
+        payload !== null &&
+        'message' in payload
+      ) {
         return payload.message;
       }
 

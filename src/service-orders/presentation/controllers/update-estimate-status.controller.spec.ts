@@ -6,10 +6,16 @@ describe('UpdateEstimateStatusController', () => {
     // Arrange
     const output = { id: 'os-1' };
     const execute = jest.fn().mockResolvedValue(output);
-    const controller = new UpdateEstimateStatusController({ execute } as unknown as UpdateEstimateStatusUseCase);
+    const controller = new UpdateEstimateStatusController({
+      execute,
+    } as unknown as UpdateEstimateStatusUseCase);
 
     // Act
-    const response = await controller.handle({ body: { status: 'APPROVED' }, params: { estimateId: 'est-1' }, query: undefined });
+    const response = await controller.handle({
+      body: { status: 'APPROVED' },
+      params: { estimateId: 'est-1' },
+      query: undefined,
+    });
 
     // Assert
     expect(response.statusCode).toBe(200);

@@ -71,9 +71,7 @@ export class CustomerInfraController {
 
   @Get(':id')
   @CustomerApiFindByIdDocs()
-  findById(
-    @Param('id') id: string,
-  ): Promise<HttpResponse<CustomerResponse>> {
+  findById(@Param('id') id: string): Promise<HttpResponse<CustomerResponse>> {
     return adaptNestRoute(this.findCustomerByIdController, {
       body: undefined,
       params: { id },
@@ -96,9 +94,7 @@ export class CustomerInfraController {
 
   @Delete(':id')
   @CustomerApiDeleteDocs()
-  delete(
-    @Param('id') id: string,
-  ): Promise<HttpResponse<void>> {
+  delete(@Param('id') id: string): Promise<HttpResponse<void>> {
     return adaptNestRoute(this.archiveCustomerController, {
       body: undefined,
       params: { id },

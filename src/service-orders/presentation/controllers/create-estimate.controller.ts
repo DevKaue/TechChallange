@@ -5,15 +5,18 @@ import { CreateEstimateUseCase } from '@service-orders/application/usecases/esti
 
 type CreateEstimateRequest = HttpRequest<undefined, { id: string }, undefined>;
 
-export default class CreateEstimateController
-  implements Controller<CreateEstimateRequest, EstimateResponseDto>
-{
+export default class CreateEstimateController implements Controller<
+  CreateEstimateRequest,
+  EstimateResponseDto
+> {
   constructor(private readonly createEstimateUseCase: CreateEstimateUseCase) {}
 
   async handle(
     httpRequest: CreateEstimateRequest,
   ): Promise<HttpResponse<EstimateResponseDto>> {
-    const output = await this.createEstimateUseCase.execute(httpRequest.params.id);
+    const output = await this.createEstimateUseCase.execute(
+      httpRequest.params.id,
+    );
 
     return {
       statusCode: 201,

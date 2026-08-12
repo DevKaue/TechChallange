@@ -9,9 +9,10 @@ type UpdateMechanicAvailabilityRequest = HttpRequest<
   undefined
 >;
 
-export default class UpdateMechanicAvailabilityController
-  implements Controller<UpdateMechanicAvailabilityRequest, undefined>
-{
+export default class UpdateMechanicAvailabilityController implements Controller<
+  UpdateMechanicAvailabilityRequest,
+  undefined
+> {
   constructor(
     private readonly updateMechanicAvailabilityUseCase: UpdateMechanicAvailabilityUseCase,
   ) {}

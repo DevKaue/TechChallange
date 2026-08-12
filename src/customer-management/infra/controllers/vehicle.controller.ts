@@ -75,9 +75,7 @@ export class VehicleInfraController {
 
   @Get('vehicles/:id')
   @VehicleApiFindByIdDocs()
-  findById(
-    @Param('id') id: string,
-  ): Promise<HttpResponse<VehicleResponse>> {
+  findById(@Param('id') id: string): Promise<HttpResponse<VehicleResponse>> {
     return adaptNestRoute(this.findVehicleByIdController, {
       body: undefined,
       params: { id },
@@ -100,9 +98,7 @@ export class VehicleInfraController {
 
   @Delete('vehicles/:id')
   @VehicleApiDeleteDocs()
-  delete(
-    @Param('id') id: string,
-  ): Promise<HttpResponse<void>> {
+  delete(@Param('id') id: string): Promise<HttpResponse<void>> {
     return adaptNestRoute(this.archiveVehicleController, {
       body: undefined,
       params: { id },

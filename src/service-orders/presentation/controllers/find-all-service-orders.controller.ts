@@ -8,9 +8,10 @@ import {
 
 type FindAllServiceOrdersRequest = HttpRequest<undefined, undefined, undefined>;
 
-export default class FindAllServiceOrdersController
-  implements Controller<FindAllServiceOrdersRequest, ServiceOrderSummaryResponse[]>
-{
+export default class FindAllServiceOrdersController implements Controller<
+  FindAllServiceOrdersRequest,
+  ServiceOrderSummaryResponse[]
+> {
   constructor(
     private readonly findAllServiceOrdersUseCase: FindAllServiceOrdersUseCase,
   ) {}

@@ -12,9 +12,10 @@ type ListVehiclesRequest = HttpRequest<
   { customerId?: string }
 >;
 
-export default class ListVehiclesController
-  implements Controller<ListVehiclesRequest, VehicleResponse[]>
-{
+export default class ListVehiclesController implements Controller<
+  ListVehiclesRequest,
+  VehicleResponse[]
+> {
   constructor(private readonly listVehiclesUseCase: ListVehicleUseCase) {}
 
   async handle(

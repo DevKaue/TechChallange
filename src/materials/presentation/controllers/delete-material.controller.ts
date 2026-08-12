@@ -8,9 +8,10 @@ import { HttpRequest, HttpResponse } from '@/common/application/contracts/http';
 
 type DeleteMaterialRequest = HttpRequest<undefined, { id: string }, undefined>;
 
-export default class DeleteMaterialController
-  implements Controller<DeleteMaterialRequest, MaterialResponse>
-{
+export default class DeleteMaterialController implements Controller<
+  DeleteMaterialRequest,
+  MaterialResponse
+> {
   constructor(private readonly deleteMaterialUseCase: DeleteMaterialUseCase) {}
 
   async handle(

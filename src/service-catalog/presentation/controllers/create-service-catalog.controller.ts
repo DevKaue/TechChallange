@@ -12,9 +12,10 @@ type CreateServiceCatalogRequest = HttpRequest<
   undefined
 >;
 
-export default class CreateServiceCatalogController
-  implements Controller<CreateServiceCatalogRequest, ServiceDTO>
-{
+export default class CreateServiceCatalogController implements Controller<
+  CreateServiceCatalogRequest,
+  ServiceDTO
+> {
   constructor(
     private readonly createServiceCatalogUseCase: CreateServiceCatalogUseCase,
   ) {}

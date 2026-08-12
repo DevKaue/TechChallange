@@ -6,10 +6,16 @@ describe('AssignMechanicController', () => {
     // Arrange
     const output = { id: 'os-1' };
     const execute = jest.fn().mockResolvedValue(output);
-    const controller = new AssignMechanicController({ execute } as unknown as AssignMechanicUseCase);
+    const controller = new AssignMechanicController({
+      execute,
+    } as unknown as AssignMechanicUseCase);
 
     // Act
-    const response = await controller.handle({ body: { mechanicId: 'mec-1' }, params: { id: 'os-1' }, query: undefined });
+    const response = await controller.handle({
+      body: { mechanicId: 'mec-1' },
+      params: { id: 'os-1' },
+      query: undefined,
+    });
 
     // Assert
     expect(response.statusCode).toBe(200);

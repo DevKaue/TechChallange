@@ -8,11 +8,16 @@ import {
 import { Controller } from '@/common/application/contracts/controller';
 import { HttpRequest, HttpResponse } from '@/common/application/contracts/http';
 
-type CreateCustomerRequest = HttpRequest<CreateCustomerInput, undefined, undefined>;
+type CreateCustomerRequest = HttpRequest<
+  CreateCustomerInput,
+  undefined,
+  undefined
+>;
 
-export default class CreateCustomerController
-  implements Controller<CreateCustomerRequest, CustomerResponse>
-{
+export default class CreateCustomerController implements Controller<
+  CreateCustomerRequest,
+  CustomerResponse
+> {
   constructor(private readonly createCustomerUseCase: CreateCustomerUseCase) {}
 
   async handle(

@@ -6,14 +6,23 @@ describe('CreateServiceOrderController', () => {
     // Arrange
     const output = { id: 'os-1' };
     const execute = jest.fn().mockResolvedValue(output);
-    const controller = new CreateServiceOrderController({ execute } as unknown as CreateServiceOrderUseCase);
+    const controller = new CreateServiceOrderController({
+      execute,
+    } as unknown as CreateServiceOrderUseCase);
 
     // Act
-    const response = await controller.handle({ body: { customerId: 'c-1', vehicleId: 'v-1' }, params: undefined, query: undefined });
+    const response = await controller.handle({
+      body: { customerId: 'c-1', vehicleId: 'v-1' },
+      params: undefined,
+      query: undefined,
+    });
 
     // Assert
     expect(response.statusCode).toBe(201);
     expect(response.body).toBe(output);
-    expect(execute).toHaveBeenCalledWith({ customerId: 'c-1', vehicleId: 'v-1' });
+    expect(execute).toHaveBeenCalledWith({
+      customerId: 'c-1',
+      vehicleId: 'v-1',
+    });
   });
 });

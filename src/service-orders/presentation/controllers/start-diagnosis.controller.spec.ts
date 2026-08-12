@@ -6,14 +6,22 @@ describe('StartDiagnosisController', () => {
     // Arrange
     const output = { id: 'os-1' };
     const startDiagnosis = jest.fn().mockResolvedValue(output);
-    const controller = new StartDiagnosisController({ startDiagnosis } as unknown as StartDiagnosisUseCase);
+    const controller = new StartDiagnosisController({
+      startDiagnosis,
+    } as unknown as StartDiagnosisUseCase);
 
     // Act
-    const response = await controller.handle({ body: { mechanicId: 'mec-1' }, params: { id: 'os-1' }, query: undefined });
+    const response = await controller.handle({
+      body: { mechanicId: 'mec-1' },
+      params: { id: 'os-1' },
+      query: undefined,
+    });
 
     // Assert
     expect(response.statusCode).toBe(200);
     expect(response.body).toBe(output);
-    expect(startDiagnosis).toHaveBeenCalledWith('os-1', { mechanicId: 'mec-1' });
+    expect(startDiagnosis).toHaveBeenCalledWith('os-1', {
+      mechanicId: 'mec-1',
+    });
   });
 });

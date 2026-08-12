@@ -34,7 +34,9 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
     this.log(exception, request, statusCode);
 
-    response.status(statusCode).json(this.responseBuilder.build(exception, statusCode));
+    response
+      .status(statusCode)
+      .json(this.responseBuilder.build(exception, statusCode));
   }
 
   private log(exception: unknown, request: Request, statusCode: number): void {

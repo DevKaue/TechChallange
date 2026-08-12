@@ -14,9 +14,10 @@ type AddMaterialStockRequest = HttpRequest<
   undefined
 >;
 
-export default class AddMaterialStockController
-  implements Controller<AddMaterialStockRequest, MaterialResponse>
-{
+export default class AddMaterialStockController implements Controller<
+  AddMaterialStockRequest,
+  MaterialResponse
+> {
   constructor(
     private readonly addMaterialStockUseCase: AddMaterialStockUseCase,
   ) {}

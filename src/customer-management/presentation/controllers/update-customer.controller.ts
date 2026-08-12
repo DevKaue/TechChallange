@@ -14,9 +14,10 @@ type UpdateCustomerRequest = HttpRequest<
   undefined
 >;
 
-export default class UpdateCustomerController
-  implements Controller<UpdateCustomerRequest, CustomerResponse>
-{
+export default class UpdateCustomerController implements Controller<
+  UpdateCustomerRequest,
+  CustomerResponse
+> {
   constructor(private readonly updateCustomerUseCase: UpdateCustomerUseCase) {}
 
   async handle(

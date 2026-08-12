@@ -8,10 +8,13 @@ import { HttpRequest, HttpResponse } from '@/common/application/contracts/http';
 
 type FindVehicleByIdRequest = HttpRequest<undefined, { id: string }, undefined>;
 
-export default class FindVehicleByIdController
-  implements Controller<FindVehicleByIdRequest, VehicleResponse>
-{
-  constructor(private readonly findVehicleByIdUseCase: FindVehicleByIdUseCase) {}
+export default class FindVehicleByIdController implements Controller<
+  FindVehicleByIdRequest,
+  VehicleResponse
+> {
+  constructor(
+    private readonly findVehicleByIdUseCase: FindVehicleByIdUseCase,
+  ) {}
 
   async handle(
     httpRequest: FindVehicleByIdRequest,

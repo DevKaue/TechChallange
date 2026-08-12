@@ -66,7 +66,7 @@ export abstract class ServiceOrdersRepositoryInterface {
   abstract update(
     id: string,
     //data: ServiceOrderUpdateData,
-    order: ServiceOrder
+    order: ServiceOrder,
   ): Promise<PersistedServiceOrder>;
 
   abstract createStatusHistory(data: {

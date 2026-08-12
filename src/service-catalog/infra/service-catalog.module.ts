@@ -30,16 +30,34 @@ import { createProvider } from '@/common/infra/di/create-provider';
       provide: ServiceCatalogRepositoryInterface,
       useClass: PrismaServiceCatalogRepository,
     },
-    createProvider(CreateServiceCatalogUseCase, [ServiceCatalogRepositoryInterface]),
-    createProvider(ListServiceCatalogUseCase, [ServiceCatalogRepositoryInterface]),
-    createProvider(FindByIdServiceCatalogUseCase, [ServiceCatalogRepositoryInterface]),
-    createProvider(UpdateServiceCatalogUseCase, [ServiceCatalogRepositoryInterface]),
-    createProvider(DeleteServiceCatalogUseCase, [ServiceCatalogRepositoryInterface]),
-    createProvider(CreateServiceCatalogController, [CreateServiceCatalogUseCase]),
+    createProvider(CreateServiceCatalogUseCase, [
+      ServiceCatalogRepositoryInterface,
+    ]),
+    createProvider(ListServiceCatalogUseCase, [
+      ServiceCatalogRepositoryInterface,
+    ]),
+    createProvider(FindByIdServiceCatalogUseCase, [
+      ServiceCatalogRepositoryInterface,
+    ]),
+    createProvider(UpdateServiceCatalogUseCase, [
+      ServiceCatalogRepositoryInterface,
+    ]),
+    createProvider(DeleteServiceCatalogUseCase, [
+      ServiceCatalogRepositoryInterface,
+    ]),
+    createProvider(CreateServiceCatalogController, [
+      CreateServiceCatalogUseCase,
+    ]),
     createProvider(ListServiceCatalogController, [ListServiceCatalogUseCase]),
-    createProvider(FindServiceCatalogByIdController, [FindByIdServiceCatalogUseCase]),
-    createProvider(UpdateServiceCatalogController, [UpdateServiceCatalogUseCase]),
-    createProvider(DeleteServiceCatalogController, [DeleteServiceCatalogUseCase]),
+    createProvider(FindServiceCatalogByIdController, [
+      FindByIdServiceCatalogUseCase,
+    ]),
+    createProvider(UpdateServiceCatalogController, [
+      UpdateServiceCatalogUseCase,
+    ]),
+    createProvider(DeleteServiceCatalogController, [
+      DeleteServiceCatalogUseCase,
+    ]),
     // Adapta o repositório de domínio ao contrato (ACL) que service-orders
     // espera para precificar serviços no orçamento.
     {

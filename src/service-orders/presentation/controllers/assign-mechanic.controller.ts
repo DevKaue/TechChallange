@@ -4,11 +4,16 @@ import { AssignMechanicDto } from '@service-orders/application/dto/mechanic/assi
 import { ServiceOrderResponseDto } from '@service-orders/application/dto/service-order/service-order-response.dto';
 import { AssignMechanicUseCase } from '@service-orders/application/usecases/mechanic/assign-mechanic.use-case';
 
-type AssignMechanicRequest = HttpRequest<AssignMechanicDto, { id: string }, undefined>;
+type AssignMechanicRequest = HttpRequest<
+  AssignMechanicDto,
+  { id: string },
+  undefined
+>;
 
-export default class AssignMechanicController
-  implements Controller<AssignMechanicRequest, ServiceOrderResponseDto>
-{
+export default class AssignMechanicController implements Controller<
+  AssignMechanicRequest,
+  ServiceOrderResponseDto
+> {
   constructor(private readonly assignMechanicUseCase: AssignMechanicUseCase) {}
 
   async handle(

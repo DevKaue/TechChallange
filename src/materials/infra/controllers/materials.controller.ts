@@ -109,9 +109,7 @@ export class MaterialsInfraController {
 
   @Delete(':id')
   @MaterialApiDeleteDocs()
-  delete(
-    @Param('id') id: string,
-  ): Promise<HttpResponse<MaterialResponseDto>> {
+  delete(@Param('id') id: string): Promise<HttpResponse<MaterialResponseDto>> {
     return adaptNestRoute(this.deleteMaterialController, {
       body: undefined,
       params: { id },

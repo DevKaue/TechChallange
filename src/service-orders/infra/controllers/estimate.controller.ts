@@ -86,7 +86,9 @@ export class EstimateInfraController {
   }
 
   @Patch(':id/reject')
-  @ApiOperation({ summary: 'Rejeita o orcamento e retorna a OS ao diagnostico' })
+  @ApiOperation({
+    summary: 'Rejeita o orcamento e retorna a OS ao diagnostico',
+  })
   @ApiOkResponse({ type: ServiceOrderResponseDto })
   rejectEstimate(
     @Param('id') id: string,

@@ -1,6 +1,6 @@
-import Service from "@/service-catalog/domain/entities/service.entity";
-import { UpdateServiceCatalogUseCase } from "./update-service-catalog.use-case";
-import ServiceNotFoundException from "../exceptions/service-not-found.exception";
+import Service from '@/service-catalog/domain/entities/service.entity';
+import { UpdateServiceCatalogUseCase } from './update-service-catalog.use-case';
+import ServiceNotFoundException from '../exceptions/service-not-found.exception';
 
 const buildService = () =>
   new Service({ id: 'svc-1', name: 'Troca de óleo', price: 150 });
@@ -27,8 +27,8 @@ describe('UpdateServiceCatalogUseCase', () => {
     repo.findById.mockResolvedValue(null);
     const useCase = new UpdateServiceCatalogUseCase(repo as any);
 
-    await expect(
-      useCase.execute('missing', { price: 1 })
-    ).rejects.toThrow(ServiceNotFoundException);
+    await expect(useCase.execute('missing', { price: 1 })).rejects.toThrow(
+      ServiceNotFoundException,
+    );
   });
 });

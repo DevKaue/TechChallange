@@ -113,7 +113,10 @@ describe('DomainExceptionFilter', () => {
 
     expect(mockResponse.status).toHaveBeenCalledWith(500);
     expect(mockResponse.json).toHaveBeenCalledWith(
-      expect.objectContaining({ error: 'Internal Server Error', message: 'boom' }),
+      expect.objectContaining({
+        error: 'Internal Server Error',
+        message: 'boom',
+      }),
     );
   });
 });

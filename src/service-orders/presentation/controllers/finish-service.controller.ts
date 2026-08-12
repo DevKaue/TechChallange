@@ -5,11 +5,16 @@ import { ServiceOrderResponseDto } from '@service-orders/application/dto/service
 import { FinishServiceUseCase } from '@service-orders/application/usecases/service-order/finish-service.use-case';
 
 type FinishServiceBody = FinishServiceOrderDto & { mechanicId: string };
-type FinishServiceRequest = HttpRequest<FinishServiceBody, { id: string }, undefined>;
+type FinishServiceRequest = HttpRequest<
+  FinishServiceBody,
+  { id: string },
+  undefined
+>;
 
-export default class FinishServiceController
-  implements Controller<FinishServiceRequest, ServiceOrderResponseDto>
-{
+export default class FinishServiceController implements Controller<
+  FinishServiceRequest,
+  ServiceOrderResponseDto
+> {
   constructor(private readonly finishServiceUseCase: FinishServiceUseCase) {}
 
   async handle(

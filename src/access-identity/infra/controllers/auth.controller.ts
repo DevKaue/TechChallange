@@ -38,9 +38,7 @@ export class AuthInfraController {
 
   @Post('login')
   @AuthApiLoginDocs()
-  login(
-    @Body() loginDto: LoginDto,
-  ): Promise<HttpResponse<LoginUseCaseOutput>> {
+  login(@Body() loginDto: LoginDto): Promise<HttpResponse<LoginUseCaseOutput>> {
     return adaptNestRoute(this.loginController, {
       body: loginDto,
       params: undefined,

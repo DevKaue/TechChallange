@@ -6,14 +6,23 @@ describe('AddEstimateItemController', () => {
     // Arrange
     const output = { id: 'os-1' };
     const execute = jest.fn().mockResolvedValue(output);
-    const controller = new AddEstimateItemController({ execute } as unknown as AddEstimateItemUseCase);
+    const controller = new AddEstimateItemController({
+      execute,
+    } as unknown as AddEstimateItemUseCase);
 
     // Act
-    const response = await controller.handle({ body: { referenceId: 'p-1', quantity: 2 }, params: { estimateId: 'est-1' }, query: undefined });
+    const response = await controller.handle({
+      body: { referenceId: 'p-1', quantity: 2 },
+      params: { estimateId: 'est-1' },
+      query: undefined,
+    });
 
     // Assert
     expect(response.statusCode).toBe(201);
     expect(response.body).toBe(output);
-    expect(execute).toHaveBeenCalledWith('est-1', { referenceId: 'p-1', quantity: 2 });
+    expect(execute).toHaveBeenCalledWith('est-1', {
+      referenceId: 'p-1',
+      quantity: 2,
+    });
   });
 });

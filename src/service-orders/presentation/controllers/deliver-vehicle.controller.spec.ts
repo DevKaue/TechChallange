@@ -6,10 +6,16 @@ describe('DeliverVehicleController', () => {
     // Arrange
     const output = { id: 'os-1' };
     const execute = jest.fn().mockResolvedValue(output);
-    const controller = new DeliverVehicleController({ execute } as unknown as DeliverVehicleUseCase);
+    const controller = new DeliverVehicleController({
+      execute,
+    } as unknown as DeliverVehicleUseCase);
 
     // Act
-    const response = await controller.handle({ body: undefined, params: { id: 'os-1' }, query: undefined });
+    const response = await controller.handle({
+      body: undefined,
+      params: { id: 'os-1' },
+      query: undefined,
+    });
 
     // Assert
     expect(response.statusCode).toBe(200);

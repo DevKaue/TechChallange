@@ -80,12 +80,22 @@ import { createProvider } from '@/common/infra/di/create-provider';
     // MetricsUseCase,
     createProvider(StartDiagnosisUseCase, [ServiceOrdersRepositoryInterface]),
     createProvider(CreateEstimateUseCase, [ServiceOrdersRepositoryInterface]),
-    createProvider(UpdateEstimateStatusUseCase, [ServiceOrdersRepositoryInterface]),
-    createProvider(GetAverageExecutionTimeUseCase, [ServiceOrdersRepositoryInterface]),
-    createProvider(CloseServiceOrderUseCase, [ServiceOrdersRepositoryInterface]),
+    createProvider(UpdateEstimateStatusUseCase, [
+      ServiceOrdersRepositoryInterface,
+    ]),
+    createProvider(GetAverageExecutionTimeUseCase, [
+      ServiceOrdersRepositoryInterface,
+    ]),
+    createProvider(CloseServiceOrderUseCase, [
+      ServiceOrdersRepositoryInterface,
+    ]),
     createProvider(DeliverVehicleUseCase, [ServiceOrdersRepositoryInterface]),
-    createProvider(FindAllServiceOrdersUseCase, [ServiceOrderQueryServiceInterface]),
-    createProvider(FindOneServiceOrderUseCase, [ServiceOrderQueryServiceInterface]),
+    createProvider(FindAllServiceOrdersUseCase, [
+      ServiceOrderQueryServiceInterface,
+    ]),
+    createProvider(FindOneServiceOrderUseCase, [
+      ServiceOrderQueryServiceInterface,
+    ]),
     createProvider(FinishServiceUseCase, [ServiceOrdersRepositoryInterface]),
     createProvider(StartServiceUseCase, [ServiceOrdersRepositoryInterface]),
     {
@@ -106,20 +116,37 @@ import { createProvider } from '@/common/infra/di/create-provider';
         SERVICE_CATALOG_REPOSITORY,
       ],
     },
-    createProvider(RejectEstimateUseCase, [ServiceOrdersRepositoryInterface, PART_REPOSITORY]),
-    createProvider(AssignMechanicUseCase, [ServiceOrdersRepositoryInterface, USER_REPOSITORY]),
+    createProvider(RejectEstimateUseCase, [
+      ServiceOrdersRepositoryInterface,
+      PART_REPOSITORY,
+    ]),
+    createProvider(AssignMechanicUseCase, [
+      ServiceOrdersRepositoryInterface,
+      USER_REPOSITORY,
+    ]),
     createProvider(UpdateMechanicAvailabilityUseCase, [USER_REPOSITORY]),
-    createProvider(CreateServiceOrderUseCase, [ServiceOrdersRepositoryInterface, CustomerManagementInterface]),
+    createProvider(CreateServiceOrderUseCase, [
+      ServiceOrdersRepositoryInterface,
+      CustomerManagementInterface,
+    ]),
     createProvider(StartDiagnosisController, [StartDiagnosisUseCase]),
     createProvider(CreateEstimateController, [CreateEstimateUseCase]),
-    createProvider(UpdateEstimateStatusController, [UpdateEstimateStatusUseCase]),
+    createProvider(UpdateEstimateStatusController, [
+      UpdateEstimateStatusUseCase,
+    ]),
     createProvider(AddEstimateItemController, [AddEstimateItemUseCase]),
     createProvider(RejectEstimateController, [RejectEstimateUseCase]),
     createProvider(AssignMechanicController, [AssignMechanicUseCase]),
-    createProvider(UpdateMechanicAvailabilityController, [UpdateMechanicAvailabilityUseCase]),
-    createProvider(GetAverageExecutionTimeController, [GetAverageExecutionTimeUseCase]),
+    createProvider(UpdateMechanicAvailabilityController, [
+      UpdateMechanicAvailabilityUseCase,
+    ]),
+    createProvider(GetAverageExecutionTimeController, [
+      GetAverageExecutionTimeUseCase,
+    ]),
     createProvider(CreateServiceOrderController, [CreateServiceOrderUseCase]),
-    createProvider(FindAllServiceOrdersController, [FindAllServiceOrdersUseCase]),
+    createProvider(FindAllServiceOrdersController, [
+      FindAllServiceOrdersUseCase,
+    ]),
     createProvider(FindOneServiceOrderController, [FindOneServiceOrderUseCase]),
     createProvider(StartServiceController, [StartServiceUseCase]),
     createProvider(FinishServiceController, [FinishServiceUseCase]),

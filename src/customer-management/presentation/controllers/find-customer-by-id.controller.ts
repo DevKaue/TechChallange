@@ -6,11 +6,16 @@ import {
 import { Controller } from '@/common/application/contracts/controller';
 import { HttpRequest, HttpResponse } from '@/common/application/contracts/http';
 
-type FindCustomerByIdRequest = HttpRequest<undefined, { id: string }, undefined>;
+type FindCustomerByIdRequest = HttpRequest<
+  undefined,
+  { id: string },
+  undefined
+>;
 
-export default class FindCustomerByIdController
-  implements Controller<FindCustomerByIdRequest, CustomerResponse>
-{
+export default class FindCustomerByIdController implements Controller<
+  FindCustomerByIdRequest,
+  CustomerResponse
+> {
   constructor(
     private readonly findCustomerByIdUseCase: FindCustomerByIdUseCase,
   ) {}

@@ -8,9 +8,10 @@ import {
 
 type LoginRequest = HttpRequest<LoginUseCaseInput, undefined, undefined>;
 
-export default class LoginController
-  implements Controller<LoginRequest, LoginUseCaseOutput>
-{
+export default class LoginController implements Controller<
+  LoginRequest,
+  LoginUseCaseOutput
+> {
   constructor(private readonly loginUseCase: LoginUseCase) {}
 
   async handle(

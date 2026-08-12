@@ -10,11 +10,16 @@ export type AuthenticatedUserResponse = {
   role: UserRole;
 };
 
-type GetAuthenticatedUserRequest = HttpRequest<AuthenticatedUser, undefined, undefined>;
+type GetAuthenticatedUserRequest = HttpRequest<
+  AuthenticatedUser,
+  undefined,
+  undefined
+>;
 
-export default class GetAuthenticatedUserController
-  implements Controller<GetAuthenticatedUserRequest, AuthenticatedUserResponse>
-{
+export default class GetAuthenticatedUserController implements Controller<
+  GetAuthenticatedUserRequest,
+  AuthenticatedUserResponse
+> {
   async handle(
     httpRequest: GetAuthenticatedUserRequest,
   ): Promise<HttpResponse<AuthenticatedUserResponse>> {

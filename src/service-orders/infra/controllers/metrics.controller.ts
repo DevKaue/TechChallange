@@ -1,10 +1,10 @@
+import { Controller, Get, UseFilters, UseGuards } from '@nestjs/common';
 import {
-  Controller,
-  Get,
-  UseFilters,
-  UseGuards,
-} from '@nestjs/common';
-import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+  ApiBearerAuth,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from '@/access-identity/infra/guards/jwt-auth.guard';
 import { adaptNestRoute } from '@/common/presentation/adapters/nest-route.adapter';
 import type { HttpResponse } from '@/common/application/contracts/http';
@@ -28,9 +28,13 @@ export class MetricsInfraController {
   ) {}
 
   @Get('metrics/average-time')
-  @ApiOperation({ summary: 'Tempo medio de execucao (IN_EXECUTION -> FINISHED)' })
+  @ApiOperation({
+    summary: 'Tempo medio de execucao (IN_EXECUTION -> FINISHED)',
+  })
   @ApiOkResponse({ type: Object })
-  getAverageExecutionTime(): Promise<HttpResponse<GetAverageExecutionTimeResponse>> {
+  getAverageExecutionTime(): Promise<
+    HttpResponse<GetAverageExecutionTimeResponse>
+  > {
     return adaptNestRoute(this.getAverageExecutionTimeController, {
       body: undefined,
       params: undefined,

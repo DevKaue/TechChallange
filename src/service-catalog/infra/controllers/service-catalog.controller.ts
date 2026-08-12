@@ -65,9 +65,7 @@ export class ServiceCatalogInfraController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Detalha um servico do catalogo' })
-  findById(
-    @Param('id') id: string,
-  ): Promise<HttpResponse<ServiceDTO>> {
+  findById(@Param('id') id: string): Promise<HttpResponse<ServiceDTO>> {
     return adaptNestRoute(this.findServiceCatalogByIdController, {
       body: undefined,
       params: { id },
@@ -90,9 +88,7 @@ export class ServiceCatalogInfraController {
 
   @Delete(':id')
   @ApiOperation({ summary: 'Remove um servico do catalogo' })
-  delete(
-    @Param('id') id: string,
-  ): Promise<HttpResponse<void>> {
+  delete(@Param('id') id: string): Promise<HttpResponse<void>> {
     return adaptNestRoute(this.deleteServiceCatalogController, {
       body: undefined,
       params: { id },

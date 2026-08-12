@@ -14,9 +14,10 @@ type UpdateMaterialRequest = HttpRequest<
   undefined
 >;
 
-export default class UpdateMaterialController
-  implements Controller<UpdateMaterialRequest, MaterialResponse>
-{
+export default class UpdateMaterialController implements Controller<
+  UpdateMaterialRequest,
+  MaterialResponse
+> {
   constructor(private readonly updateMaterialUseCase: UpdateMaterialUseCase) {}
 
   async handle(

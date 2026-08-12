@@ -5,15 +5,18 @@ import { StartServiceUseCase } from '@service-orders/application/usecases/servic
 
 type StartServiceRequest = HttpRequest<undefined, { id: string }, undefined>;
 
-export default class StartServiceController
-  implements Controller<StartServiceRequest, ServiceOrderResponseDto>
-{
+export default class StartServiceController implements Controller<
+  StartServiceRequest,
+  ServiceOrderResponseDto
+> {
   constructor(private readonly startServiceUseCase: StartServiceUseCase) {}
 
   async handle(
     httpRequest: StartServiceRequest,
   ): Promise<HttpResponse<ServiceOrderResponseDto>> {
-    const output = await this.startServiceUseCase.execute(httpRequest.params.id);
+    const output = await this.startServiceUseCase.execute(
+      httpRequest.params.id,
+    );
 
     return {
       statusCode: 200,

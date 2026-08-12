@@ -12,9 +12,10 @@ type UpdateServiceCatalogRequest = HttpRequest<
   undefined
 >;
 
-export default class UpdateServiceCatalogController
-  implements Controller<UpdateServiceCatalogRequest, ServiceDTO>
-{
+export default class UpdateServiceCatalogController implements Controller<
+  UpdateServiceCatalogRequest,
+  ServiceDTO
+> {
   constructor(
     private readonly updateServiceCatalogUseCase: UpdateServiceCatalogUseCase,
   ) {}

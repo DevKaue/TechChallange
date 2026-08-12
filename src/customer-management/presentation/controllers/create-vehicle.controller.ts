@@ -15,9 +15,10 @@ type CreateVehicleRequest = HttpRequest<
   undefined
 >;
 
-export default class CreateVehicleController
-  implements Controller<CreateVehicleRequest, VehicleResponse>
-{
+export default class CreateVehicleController implements Controller<
+  CreateVehicleRequest,
+  VehicleResponse
+> {
   constructor(private readonly createVehicleUseCase: CreateVehicleUseCase) {}
 
   async handle(

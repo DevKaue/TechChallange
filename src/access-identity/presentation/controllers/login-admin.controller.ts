@@ -9,9 +9,10 @@ import { UserRole } from '@/access-identity/domain/enums/user-role.enum';
 
 type LoginAdminRequest = HttpRequest<LoginUseCaseInput, undefined, undefined>;
 
-export default class LoginAdminController
-  implements Controller<LoginAdminRequest, LoginUseCaseOutput>
-{
+export default class LoginAdminController implements Controller<
+  LoginAdminRequest,
+  LoginUseCaseOutput
+> {
   constructor(private readonly loginUseCase: LoginUseCase) {}
 
   async handle(
