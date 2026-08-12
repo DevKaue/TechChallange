@@ -1,79 +1,53 @@
 import {
+  ArgumentsHost,
   Catch,
   ExceptionFilter,
-  ArgumentsHost,
-  HttpException,
+  HttpStatus,
   Logger,
 } from '@nestjs/common';
 import { Response, Request } from 'express';
+import type { ExceptionStatusMap } from '@/common/infra/filters/exception-status.map';
+import { ExceptionStatusResolver } from '@/common/infra/filters/exception-status.resolver';
+import { ExceptionResponseBuilder } from '@/common/infra/filters/exception-response.builder';
 
+/**
+ * Filter global. Usa o mesmo resolver e o mesmo builder do filter de rota — a
+ * API responde erro no mesmo formato independentemente de qual filter atende —
+ * e acrescenta o logging da requisição.
+ */
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
   private readonly logger = new Logger(HttpExceptionFilter.name);
+  private readonly statusResolver: ExceptionStatusResolver;
+  private readonly responseBuilder = new ExceptionResponseBuilder();
 
-  catch(exception: unknown, host: ArgumentsHost) {
+  constructor(statusMap: ExceptionStatusMap) {
+    this.statusResolver = new ExceptionStatusResolver(statusMap);
+  }
+
+  catch(exception: unknown, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
 
-    if (exception instanceof HttpException) {
-      const status = exception.getStatus();
-      const errorResponse = exception.getResponse();
+    const statusCode = this.statusResolver.resolve(exception);
 
-      this.logger.warn(`${request.method} ${request.url} → ${status}`);
+    this.log(exception, request, statusCode);
 
-      return response.status(status).json({
-        path: request.url,
-        statusCode: status,
-        error: errorResponse,
-      });
-    }
+    response.status(statusCode).json(this.responseBuilder.build(exception, statusCode));
+  }
 
-    // Erros de domínio (DomainException de qualquer bounded context) representam
-    // violação de regra de negócio/entrada inválida → HTTP 400, não 500.
-    if (exception instanceof Error && exception.name === 'DomainException') {
-      this.logger.warn(`${request.method} ${request.url} → 400`);
+  private log(exception: unknown, request: Request, statusCode: number): void {
+    const route = `${request.method} ${request.url}`;
 
-      return response.status(400).json({
-        path: request.url,
-        statusCode: 400,
-        error: exception.message,
-      });
-    }
-
-    // Erros de autenticação/autorização de domínio → status correto.
-    if (exception instanceof Error) {
-      switch (exception.name) {
-        case 'InvalidCredentialsException':
-          this.logger.warn(`${request.method} ${request.url} → 401`);
-          return response.status(401).json({
-            path: request.url,
-            status_code: 401,
-            error: exception.name,
-            message: exception.message,
-          });
-        case 'ForbiddenRoleException':
-          this.logger.warn(`${request.method} ${request.url} → 403`);
-          return response.status(403).json({
-            path: request.url,
-            status_code: 403,
-            error: exception.name,
-            message: exception.message,
-          });
-      }
+    if (statusCode < Number(HttpStatus.INTERNAL_SERVER_ERROR)) {
+      this.logger.warn(`${route} → ${statusCode}`);
+      return;
     }
 
     const stack =
       exception instanceof Error && exception.stack ? exception.stack : '';
-    this.logger.error(
-      `Unhandled exception on ${request.method} ${request.url}`,
-      stack,
-    );
 
-    return response.status(500).json({
-      path: request.url,
-      statusCode: 500,
-      error: 'Internal server error',
-    });
+    this.logger.error(`Unhandled exception on ${route}`, stack);
   }
 }

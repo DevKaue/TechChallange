@@ -1,17 +1,18 @@
+import { ArgumentsHost, HttpException, HttpStatus } from '@nestjs/common';
 import { HttpExceptionFilter } from './http-exception.filter';
-import { HttpException, HttpStatus } from '@nestjs/common';
-import { ArgumentsHost } from '@nestjs/common';
+import { allExceptionStatusMaps } from '@/exception-status.registry';
+import CustomerNotFoundException from '@/customer-management/domain/exceptions/customer-not-found.exception';
+import { InvalidCredentialsException } from '@/access-identity/domain/exceptions/invalid-credentials.exception';
 
 describe('HttpExceptionFilter', () => {
   let filter: HttpExceptionFilter;
-  let mockResponse: any;
-  let mockRequest: any;
+  let mockResponse: { status: jest.Mock; json: jest.Mock };
+  let mockRequest: { method: string; url: string };
   let mockHost: ArgumentsHost;
 
   beforeEach(() => {
-    filter = new HttpExceptionFilter();
+    filter = new HttpExceptionFilter(allExceptionStatusMaps);
 
-    // Mockar logger para suprimir logs durante testes
     jest.spyOn(filter['logger'], 'warn').mockImplementation(() => {});
     jest.spyOn(filter['logger'], 'error').mockImplementation(() => {});
 
@@ -20,17 +21,14 @@ describe('HttpExceptionFilter', () => {
       json: jest.fn().mockReturnThis(),
     };
 
-    mockRequest = {
-      method: 'POST',
-      url: '/api/test',
-    };
+    mockRequest = { method: 'POST', url: '/api/test' };
 
     mockHost = {
       switchToHttp: () => ({
         getResponse: () => mockResponse,
         getRequest: () => mockRequest,
       }),
-    } as any;
+    } as unknown as ArgumentsHost;
   });
 
   afterEach(() => {
@@ -38,45 +36,55 @@ describe('HttpExceptionFilter', () => {
   });
 
   it('handles HttpException with object response', () => {
-    const exception = new HttpException(
-      { message: 'Bad data' },
-      HttpStatus.BAD_REQUEST,
+    filter.catch(
+      new HttpException({ message: 'Bad data' }, HttpStatus.BAD_REQUEST),
+      mockHost,
     );
-    filter.catch(exception, mockHost);
 
     expect(mockResponse.status).toHaveBeenCalledWith(400);
     expect(mockResponse.json).toHaveBeenCalledWith(
-      expect.objectContaining({ statusCode: 400, path: '/api/test' }),
+      expect.objectContaining({ error: 'Bad Request', message: 'Bad data' }),
     );
   });
 
   it('handles HttpException with string response', () => {
-    const exception = new HttpException('Not found', HttpStatus.NOT_FOUND);
-    filter.catch(exception, mockHost);
+    filter.catch(new HttpException('Not found', HttpStatus.NOT_FOUND), mockHost);
 
     expect(mockResponse.status).toHaveBeenCalledWith(404);
+    expect(mockResponse.json).toHaveBeenCalledWith(
+      expect.objectContaining({ error: 'Not Found', message: 'Not found' }),
+    );
   });
 
-  it('handles DomainException as 400', () => {
-    const error = new Error('Invalid domain');
-    error.name = 'DomainException';
-    filter.catch(error, mockHost);
+  it('resolves domain exceptions through the aggregated context maps', () => {
+    filter.catch(new CustomerNotFoundException(), mockHost);
 
-    expect(mockResponse.status).toHaveBeenCalledWith(400);
+    expect(mockResponse.status).toHaveBeenCalledWith(404);
     expect(mockResponse.json).toHaveBeenCalledWith(
-      expect.objectContaining({ statusCode: 400, error: 'Invalid domain' }),
+      expect.objectContaining({
+        error: 'Customer Not Found',
+        error_code: 'customer_not_found',
+      }),
+    );
+  });
+
+  it('resolves exceptions from a different bounded context with the same instance', () => {
+    filter.catch(new InvalidCredentialsException(), mockHost);
+
+    expect(mockResponse.status).toHaveBeenCalledWith(401);
+    expect(mockResponse.json).toHaveBeenCalledWith(
+      expect.objectContaining({ error: 'Invalid Credentials' }),
     );
   });
 
   it('handles unknown error as 500', () => {
-    const error = new Error('Something went wrong');
-    filter.catch(error, mockHost);
+    filter.catch(new Error('Something went wrong'), mockHost);
 
     expect(mockResponse.status).toHaveBeenCalledWith(500);
     expect(mockResponse.json).toHaveBeenCalledWith(
       expect.objectContaining({
-        statusCode: 500,
-        error: 'Internal server error',
+        error: 'Internal Server Error',
+        message: 'Something went wrong',
       }),
     );
   });

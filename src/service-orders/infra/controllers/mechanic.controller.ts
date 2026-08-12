@@ -4,15 +4,14 @@ import {
   Param,
   Patch,
   Req,
-  Res,
   UseFilters,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import type { Response } from 'express';
 import type { AuthenticatedRequest } from '@/access-identity/presentation/authenticated-request';
 import { JwtAuthGuard } from '@/access-identity/infra/guards/jwt-auth.guard';
 import { adaptNestRoute } from '@/common/presentation/adapters/nest-route.adapter';
+import type { HttpResponse } from '@/common/application/contracts/http';
 import { DomainExceptionFilter } from '@/common/infra/filters/domain-exception.filter';
 import { AssignMechanicDto } from '@service-orders/application/dto/mechanic/assign-mechanic.dto';
 import { UpdateMechanicAvailabilityDto } from '@service-orders/application/dto/mechanic/update-mechanic-availability.dto';
@@ -34,29 +33,24 @@ export class MechanicInfraController {
   @Patch(':id/mechanic')
   @ApiOperation({ summary: 'Atribui um mecanico a OS' })
   @ApiOkResponse({ type: ServiceOrderResponseDto })
-  async assignMechanic(
+  assignMechanic(
     @Param('id') id: string,
     @Body() dto: AssignMechanicDto,
-    @Res({ passthrough: true }) res: Response,
-  ): Promise<ServiceOrderResponseDto> {
-    const httpResponse = await adaptNestRoute(this.assignMechanicController, {
+  ): Promise<HttpResponse<ServiceOrderResponseDto>> {
+    return adaptNestRoute(this.assignMechanicController, {
       body: dto,
       params: { id },
       query: undefined,
     });
-
-    res.status(httpResponse.statusCode);
-    return httpResponse.body;
   }
 
   @Patch('me/availability')
   @ApiOperation({ summary: 'Atualiza a disponibilidade do mecanico logado' })
-  async updateMechanicAvailability(
+  updateMechanicAvailability(
     @Req() req: AuthenticatedRequest,
     @Body() dto: UpdateMechanicAvailabilityDto,
-    @Res({ passthrough: true }) res: Response,
-  ): Promise<void> {
-    const httpResponse = await adaptNestRoute(
+  ): Promise<HttpResponse<void>> {
+    return adaptNestRoute(
       this.updateMechanicAvailabilityController,
       {
         body: dto,
@@ -64,8 +58,5 @@ export class MechanicInfraController {
         query: undefined,
       },
     );
-
-    res.status(httpResponse.statusCode);
-    return httpResponse.body;
   }
 }

@@ -4,7 +4,6 @@ import {
   Param,
   Patch,
   Post,
-  Res,
   UseFilters,
   UseGuards,
 } from '@nestjs/common';
@@ -15,9 +14,9 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
-import type { Response } from 'express';
 import { JwtAuthGuard } from '@/access-identity/infra/guards/jwt-auth.guard';
 import { adaptNestRoute } from '@/common/presentation/adapters/nest-route.adapter';
+import type { HttpResponse } from '@/common/application/contracts/http';
 import { DomainExceptionFilter } from '@/common/infra/filters/domain-exception.filter';
 import { AddEstimateItemDto } from '@service-orders/application/dto/estimate/add-estimate-item.dto';
 import {
@@ -48,71 +47,55 @@ export class EstimateInfraController {
   @Post(':id/estimates')
   @ApiOperation({ summary: 'Gera o orcamento da OS e envia para aprovacao' })
   @ApiCreatedResponse({ type: EstimateResponseDto })
-  async createEstimate(
+  createEstimate(
     @Param('id') id: string,
-    @Res({ passthrough: true }) res: Response,
-  ): Promise<EstimateResponseDto> {
-    const httpResponse = await adaptNestRoute(this.createEstimateController, {
+  ): Promise<HttpResponse<EstimateResponseDto>> {
+    return adaptNestRoute(this.createEstimateController, {
       body: undefined,
       params: { id },
       query: undefined,
     });
-
-    res.status(httpResponse.statusCode);
-    return httpResponse.body;
   }
 
   @Post('estimates/:estimateId/items')
   @ApiOperation({ summary: 'Adiciona um item (peca/servico) ao orcamento' })
   @ApiCreatedResponse({ type: EstimateItemDto })
-  async addEstimateItem(
+  addEstimateItem(
     @Param('estimateId') estimateId: string,
     @Body() dto: AddEstimateItemDto,
-    @Res({ passthrough: true }) res: Response,
-  ): Promise<EstimateItemDto> {
-    const httpResponse = await adaptNestRoute(this.addEstimateItemController, {
+  ): Promise<HttpResponse<EstimateItemDto>> {
+    return adaptNestRoute(this.addEstimateItemController, {
       body: dto,
       params: { estimateId },
       query: undefined,
     });
-
-    res.status(httpResponse.statusCode);
-    return httpResponse.body;
   }
 
   @Patch('estimates/:estimateId/status')
   @ApiOperation({ summary: 'Aprova ou rejeita o orcamento' })
   @ApiOkResponse({ type: EstimateResponseDto })
-  async updateEstimateStatus(
+  updateEstimateStatus(
     @Param('estimateId') estimateId: string,
     @Body() dto: UpdateEstimateStatusDto,
-    @Res({ passthrough: true }) res: Response,
-  ): Promise<EstimateResponseDto> {
-    const httpResponse = await adaptNestRoute(this.updateEstimateStatusController, {
+  ): Promise<HttpResponse<EstimateResponseDto>> {
+    return adaptNestRoute(this.updateEstimateStatusController, {
       body: dto,
       params: { estimateId },
       query: undefined,
     });
-
-    res.status(httpResponse.statusCode);
-    return httpResponse.body;
   }
 
   @Patch(':id/reject')
   @ApiOperation({ summary: 'Rejeita o orcamento e retorna a OS ao diagnostico' })
   @ApiOkResponse({ type: ServiceOrderResponseDto })
-  async rejectEstimate(
+  rejectEstimate(
     @Param('id') id: string,
     @Body() dto: RejectEstimateDto,
-    @Res({ passthrough: true }) res: Response,
-  ): Promise<ServiceOrderResponseDto> {
-    const httpResponse = await adaptNestRoute(this.rejectEstimateController, {
+  ): Promise<HttpResponse<ServiceOrderResponseDto>> {
+    return adaptNestRoute(this.rejectEstimateController, {
       body: dto,
       params: { id },
       query: undefined,
     });
-
-    res.status(httpResponse.statusCode);
-    return httpResponse.body;
   }
 }

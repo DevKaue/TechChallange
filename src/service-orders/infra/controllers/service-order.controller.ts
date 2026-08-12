@@ -6,7 +6,6 @@ import {
   Patch,
   Post,
   Req,
-  Res,
   UseFilters,
   UseGuards,
 } from '@nestjs/common';
@@ -17,10 +16,10 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
-import type { Response } from 'express';
 import type { AuthenticatedRequest } from '@/access-identity/presentation/authenticated-request';
 import { JwtAuthGuard } from '@/access-identity/infra/guards/jwt-auth.guard';
 import { adaptNestRoute } from '@/common/presentation/adapters/nest-route.adapter';
+import type { HttpResponse } from '@/common/application/contracts/http';
 import { DomainExceptionFilter } from '@/common/infra/filters/domain-exception.filter';
 import { CreateServiceOrderDto } from '@service-orders/application/dto/service-order/create-service-order.dto';
 import { FinishServiceOrderDto } from '@service-orders/application/dto/service-order/finish-service-order.dto';
@@ -56,79 +55,61 @@ export class ServiceOrderInfraController {
   @Post()
   @ApiOperation({ summary: 'Cria uma ordem de servico' })
   @ApiCreatedResponse({ type: ServiceOrderResponseDto })
-  async create(
+  create(
     @Body() dto: CreateServiceOrderDto,
-    @Res({ passthrough: true }) res: Response,
-  ): Promise<ServiceOrderResponseDto> {
-    const httpResponse = await adaptNestRoute(this.createServiceOrderController, {
+  ): Promise<HttpResponse<ServiceOrderResponseDto>> {
+    return adaptNestRoute(this.createServiceOrderController, {
       body: dto,
       params: undefined,
       query: undefined,
     });
-
-    res.status(httpResponse.statusCode);
-    return httpResponse.body;
   }
 
   @Get()
   @ApiOperation({ summary: 'Lista as ordens de servico' })
   @ApiOkResponse({ type: ServiceOrderResponseDto, isArray: true })
-  async findAll(
-    @Res({ passthrough: true }) res: Response,
-  ): Promise<ServiceOrderSummaryResponse[]> {
-    const httpResponse = await adaptNestRoute(this.findAllServiceOrdersController, {
+  findAll(): Promise<HttpResponse<ServiceOrderSummaryResponse[]>> {
+    return adaptNestRoute(this.findAllServiceOrdersController, {
       body: undefined,
       params: undefined,
       query: undefined,
     });
-
-    res.status(httpResponse.statusCode);
-    return httpResponse.body;
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Detalha uma OS com historico de status' })
   @ApiOkResponse({ type: ServiceOrderResponseDto })
-  async findOne(
+  findOne(
     @Param('id') id: string,
-    @Res({ passthrough: true }) res: Response,
-  ): Promise<ServiceOrderDetailResponse> {
-    const httpResponse = await adaptNestRoute(this.findOneServiceOrderController, {
+  ): Promise<HttpResponse<ServiceOrderDetailResponse>> {
+    return adaptNestRoute(this.findOneServiceOrderController, {
       body: undefined,
       params: { id },
       query: undefined,
     });
-
-    res.status(httpResponse.statusCode);
-    return httpResponse.body;
   }
 
   @Patch(':id/start-service')
   @ApiOperation({ summary: 'Inicia a execucao do servico' })
-  async startService(
+  startService(
     @Param('id') id: string,
-    @Res({ passthrough: true }) res: Response,
-  ): Promise<ServiceOrderResponseDto> {
-    const httpResponse = await adaptNestRoute(this.startServiceController, {
+  ): Promise<HttpResponse<ServiceOrderResponseDto>> {
+    return adaptNestRoute(this.startServiceController, {
       body: undefined,
       params: { id },
       query: undefined,
     });
-
-    res.status(httpResponse.statusCode);
-    return httpResponse.body;
   }
 
   @Patch(':id/finish')
   @ApiOperation({ summary: 'Finaliza o servico (apenas o mecanico atribuido)' })
   @ApiOkResponse({ type: ServiceOrderResponseDto })
-  async finish(
+  finish(
     @Param('id') id: string,
     @Body() dto: FinishServiceOrderDto,
     @Req() req: AuthenticatedRequest,
-    @Res({ passthrough: true }) res: Response,
-  ): Promise<ServiceOrderResponseDto> {
-    const httpResponse = await adaptNestRoute(this.finishServiceController, {
+  ): Promise<HttpResponse<ServiceOrderResponseDto>> {
+    return adaptNestRoute(this.finishServiceController, {
       body: {
         ...dto,
         mechanicId: req.user.userId,
@@ -136,42 +117,31 @@ export class ServiceOrderInfraController {
       params: { id },
       query: undefined,
     });
-
-    res.status(httpResponse.statusCode);
-    return httpResponse.body;
   }
 
   @Patch(':id/deliver')
   @ApiOperation({ summary: 'Registra a entrega do veiculo' })
   @ApiOkResponse({ type: ServiceOrderResponseDto })
-  async deliverVehicle(
+  deliverVehicle(
     @Param('id') id: string,
-    @Res({ passthrough: true }) res: Response,
-  ): Promise<ServiceOrderResponseDto> {
-    const httpResponse = await adaptNestRoute(this.deliverVehicleController, {
+  ): Promise<HttpResponse<ServiceOrderResponseDto>> {
+    return adaptNestRoute(this.deliverVehicleController, {
       body: undefined,
       params: { id },
       query: undefined,
     });
-
-    res.status(httpResponse.statusCode);
-    return httpResponse.body;
   }
 
   @Patch(':id/close')
   @ApiOperation({ summary: 'Encerra a ordem de servico' })
   @ApiOkResponse({ type: ServiceOrderResponseDto })
-  async close(
+  close(
     @Param('id') id: string,
-    @Res({ passthrough: true }) res: Response,
-  ): Promise<ServiceOrderResponseDto> {
-    const httpResponse = await adaptNestRoute(this.closeServiceOrderController, {
+  ): Promise<HttpResponse<ServiceOrderResponseDto>> {
+    return adaptNestRoute(this.closeServiceOrderController, {
       body: undefined,
       params: { id },
       query: undefined,
     });
-
-    res.status(httpResponse.statusCode);
-    return httpResponse.body;
   }
 }

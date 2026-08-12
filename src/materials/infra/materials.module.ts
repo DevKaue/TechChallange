@@ -16,11 +16,17 @@ import DeleteMaterialController from '@materials/presentation/controllers/delete
 import FindMaterialByIdController from '@materials/presentation/controllers/find-material-by-id.controller';
 import ListMaterialsController from '@materials/presentation/controllers/list-materials.controller';
 import UpdateMaterialController from '@materials/presentation/controllers/update-material.controller';
+import { DomainExceptionFilter } from '@/common/infra/filters/domain-exception.filter';
+import { EXCEPTION_STATUS_MAP } from '@/common/infra/filters/exception-status.map';
+import { materialsStatusMap } from '@/materials/infra/filters/materials-status.map';
+import { createProvider } from '@/common/infra/di/create-provider';
 
 @Module({
   imports: [PrismaModule],
   controllers: [MaterialsInfraController],
   providers: [
+    { provide: EXCEPTION_STATUS_MAP, useValue: materialsStatusMap },
+    DomainExceptionFilter,
     {
       provide: MaterialRepositoryInterface,
       useClass: PrismaMaterialRepository,
@@ -29,78 +35,18 @@ import UpdateMaterialController from '@materials/presentation/controllers/update
       provide: PART_REPOSITORY,
       useExisting: MaterialRepositoryInterface,
     },
-    {
-      provide: CreateMaterialUseCase,
-      useFactory: (repository: MaterialRepositoryInterface) =>
-        new CreateMaterialUseCase(repository),
-      inject: [MaterialRepositoryInterface],
-    },
-    {
-      provide: ListMaterialsUseCase,
-      useFactory: (repository: MaterialRepositoryInterface) =>
-        new ListMaterialsUseCase(repository),
-      inject: [MaterialRepositoryInterface],
-    },
-    {
-      provide: FindMaterialByIdUseCase,
-      useFactory: (repository: MaterialRepositoryInterface) =>
-        new FindMaterialByIdUseCase(repository),
-      inject: [MaterialRepositoryInterface],
-    },
-    {
-      provide: UpdateMaterialUseCase,
-      useFactory: (repository: MaterialRepositoryInterface) =>
-        new UpdateMaterialUseCase(repository),
-      inject: [MaterialRepositoryInterface],
-    },
-    {
-      provide: AddMaterialStockUseCase,
-      useFactory: (repository: MaterialRepositoryInterface) =>
-        new AddMaterialStockUseCase(repository),
-      inject: [MaterialRepositoryInterface],
-    },
-    {
-      provide: DeleteMaterialUseCase,
-      useFactory: (repository: MaterialRepositoryInterface) =>
-        new DeleteMaterialUseCase(repository),
-      inject: [MaterialRepositoryInterface],
-    },
-    {
-      provide: CreateMaterialController,
-      useFactory: (createMaterialUseCase: CreateMaterialUseCase) =>
-        new CreateMaterialController(createMaterialUseCase),
-      inject: [CreateMaterialUseCase],
-    },
-    {
-      provide: ListMaterialsController,
-      useFactory: (listMaterialsUseCase: ListMaterialsUseCase) =>
-        new ListMaterialsController(listMaterialsUseCase),
-      inject: [ListMaterialsUseCase],
-    },
-    {
-      provide: FindMaterialByIdController,
-      useFactory: (findMaterialByIdUseCase: FindMaterialByIdUseCase) =>
-        new FindMaterialByIdController(findMaterialByIdUseCase),
-      inject: [FindMaterialByIdUseCase],
-    },
-    {
-      provide: UpdateMaterialController,
-      useFactory: (updateMaterialUseCase: UpdateMaterialUseCase) =>
-        new UpdateMaterialController(updateMaterialUseCase),
-      inject: [UpdateMaterialUseCase],
-    },
-    {
-      provide: AddMaterialStockController,
-      useFactory: (addMaterialStockUseCase: AddMaterialStockUseCase) =>
-        new AddMaterialStockController(addMaterialStockUseCase),
-      inject: [AddMaterialStockUseCase],
-    },
-    {
-      provide: DeleteMaterialController,
-      useFactory: (deleteMaterialUseCase: DeleteMaterialUseCase) =>
-        new DeleteMaterialController(deleteMaterialUseCase),
-      inject: [DeleteMaterialUseCase],
-    },
+    createProvider(CreateMaterialUseCase, [MaterialRepositoryInterface]),
+    createProvider(ListMaterialsUseCase, [MaterialRepositoryInterface]),
+    createProvider(FindMaterialByIdUseCase, [MaterialRepositoryInterface]),
+    createProvider(UpdateMaterialUseCase, [MaterialRepositoryInterface]),
+    createProvider(AddMaterialStockUseCase, [MaterialRepositoryInterface]),
+    createProvider(DeleteMaterialUseCase, [MaterialRepositoryInterface]),
+    createProvider(CreateMaterialController, [CreateMaterialUseCase]),
+    createProvider(ListMaterialsController, [ListMaterialsUseCase]),
+    createProvider(FindMaterialByIdController, [FindMaterialByIdUseCase]),
+    createProvider(UpdateMaterialController, [UpdateMaterialUseCase]),
+    createProvider(AddMaterialStockController, [AddMaterialStockUseCase]),
+    createProvider(DeleteMaterialController, [DeleteMaterialUseCase]),
   ],
   exports: [PART_REPOSITORY, MaterialRepositoryInterface],
 })

@@ -6,13 +6,12 @@ import {
   Param,
   Patch,
   Post,
-  Res,
   UseFilters,
   UseGuards,
 } from '@nestjs/common';
-import type { Response } from 'express';
 import { JwtAuthGuard } from '@/access-identity/infra/guards/jwt-auth.guard';
 import { adaptNestRoute } from '@/common/presentation/adapters/nest-route.adapter';
+import type { HttpResponse } from '@/common/application/contracts/http';
 import { DomainExceptionFilter } from '@/common/infra/filters/domain-exception.filter';
 import AddMaterialStockController from '@materials/presentation/controllers/add-material-stock.controller';
 import CreateMaterialController from '@materials/presentation/controllers/create-material.controller';
@@ -50,102 +49,73 @@ export class MaterialsInfraController {
 
   @Post()
   @MaterialApiCreateDocs()
-  async create(
+  create(
     @Body() input: CreateMaterialRequestDto,
-    @Res({ passthrough: true }) res: Response,
-  ): Promise<MaterialResponseDto> {
-    const httpResponse = await adaptNestRoute(this.createMaterialController, {
+  ): Promise<HttpResponse<MaterialResponseDto>> {
+    return adaptNestRoute(this.createMaterialController, {
       body: input,
       params: undefined,
       query: undefined,
     });
-
-    res.status(httpResponse.statusCode);
-
-    return httpResponse.body;
   }
 
   @Get()
   @MaterialApiListDocs()
-  async list(@Res({ passthrough: true }) res: Response): Promise<MaterialResponseDto[]> {
-    const httpResponse = await adaptNestRoute(this.listMaterialsController, {
+  list(): Promise<HttpResponse<MaterialResponseDto[]>> {
+    return adaptNestRoute(this.listMaterialsController, {
       body: undefined,
       params: undefined,
       query: undefined,
     });
-
-    res.status(httpResponse.statusCode);
-
-    return httpResponse.body;
   }
 
   @Get(':id')
   @MaterialApiFindByIdDocs()
-  async findById(
+  findById(
     @Param('id') id: string,
-    @Res({ passthrough: true }) res: Response,
-  ): Promise<MaterialResponseDto> {
-    const httpResponse = await adaptNestRoute(this.findMaterialByIdController, {
+  ): Promise<HttpResponse<MaterialResponseDto>> {
+    return adaptNestRoute(this.findMaterialByIdController, {
       body: undefined,
       params: { id },
       query: undefined,
     });
-
-    res.status(httpResponse.statusCode);
-
-    return httpResponse.body;
   }
 
   @Patch(':id/stock')
   @MaterialApiAddStockDocs()
-  async addStock(
+  addStock(
     @Param('id') id: string,
     @Body() input: AddMaterialStockRequestDto,
-    @Res({ passthrough: true }) res: Response,
-  ): Promise<MaterialResponseDto> {
-    const httpResponse = await adaptNestRoute(this.addMaterialStockController, {
+  ): Promise<HttpResponse<MaterialResponseDto>> {
+    return adaptNestRoute(this.addMaterialStockController, {
       body: input,
       params: { id },
       query: undefined,
     });
-
-    res.status(httpResponse.statusCode);
-
-    return httpResponse.body;
   }
 
   @Patch(':id')
   @MaterialApiUpdateDocs()
-  async update(
+  update(
     @Param('id') id: string,
     @Body() input: UpdateMaterialRequestDto,
-    @Res({ passthrough: true }) res: Response,
-  ): Promise<MaterialResponseDto> {
-    const httpResponse = await adaptNestRoute(this.updateMaterialController, {
+  ): Promise<HttpResponse<MaterialResponseDto>> {
+    return adaptNestRoute(this.updateMaterialController, {
       body: input,
       params: { id },
       query: undefined,
     });
-
-    res.status(httpResponse.statusCode);
-
-    return httpResponse.body;
   }
 
   @Delete(':id')
   @MaterialApiDeleteDocs()
-  async delete(
+  delete(
     @Param('id') id: string,
-    @Res({ passthrough: true }) res: Response,
-  ): Promise<MaterialResponseDto> {
-    const httpResponse = await adaptNestRoute(this.deleteMaterialController, {
+  ): Promise<HttpResponse<MaterialResponseDto>> {
+    return adaptNestRoute(this.deleteMaterialController, {
       body: undefined,
       params: { id },
       query: undefined,
     });
-
-    res.status(httpResponse.statusCode);
-
-    return httpResponse.body;
   }
 }

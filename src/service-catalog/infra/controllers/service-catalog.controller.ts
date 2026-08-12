@@ -6,17 +6,16 @@ import {
   Param,
   Patch,
   Post,
-  Res,
   UseFilters,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import type { Response } from 'express';
 import { JwtAuthGuard } from '@/access-identity/infra/guards/jwt-auth.guard';
 import { RolesGuard } from '@/access-identity/infra/guards/roles.guard';
 import { Roles } from '@/access-identity/infra/decorators/roles.decorator';
 import { UserRole } from '@/access-identity/domain/enums/user-role.enum';
 import { adaptNestRoute } from '@/common/presentation/adapters/nest-route.adapter';
+import type { HttpResponse } from '@/common/application/contracts/http';
 import { DomainExceptionFilter } from '@/common/infra/filters/domain-exception.filter';
 import type { ServiceDTO } from '@service-catalog/application/dtos/service.dtos';
 import { CreateServiceRequestDto } from '@service-catalog/presentation/dto/create-service-request.dto';
@@ -44,79 +43,60 @@ export class ServiceCatalogInfraController {
 
   @Post()
   @ApiOperation({ summary: 'Cadastra um servico no catalogo' })
-  async create(
+  create(
     @Body() dto: CreateServiceRequestDto,
-    @Res({ passthrough: true }) res: Response,
-  ): Promise<ServiceDTO> {
-    const httpResponse = await adaptNestRoute(this.createServiceCatalogController, {
+  ): Promise<HttpResponse<ServiceDTO>> {
+    return adaptNestRoute(this.createServiceCatalogController, {
       body: dto,
       params: undefined,
       query: undefined,
     });
-
-    res.status(httpResponse.statusCode);
-    return httpResponse.body;
   }
 
   @Get()
   @ApiOperation({ summary: 'Lista os servicos do catalogo' })
-  async list(@Res({ passthrough: true }) res: Response): Promise<ServiceDTO[]> {
-    const httpResponse = await adaptNestRoute(this.listServiceCatalogController, {
+  list(): Promise<HttpResponse<ServiceDTO[]>> {
+    return adaptNestRoute(this.listServiceCatalogController, {
       body: undefined,
       params: undefined,
       query: undefined,
     });
-
-    res.status(httpResponse.statusCode);
-    return httpResponse.body;
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Detalha um servico do catalogo' })
-  async findById(
+  findById(
     @Param('id') id: string,
-    @Res({ passthrough: true }) res: Response,
-  ): Promise<ServiceDTO> {
-    const httpResponse = await adaptNestRoute(this.findServiceCatalogByIdController, {
+  ): Promise<HttpResponse<ServiceDTO>> {
+    return adaptNestRoute(this.findServiceCatalogByIdController, {
       body: undefined,
       params: { id },
       query: undefined,
     });
-
-    res.status(httpResponse.statusCode);
-    return httpResponse.body;
   }
 
   @Patch(':id')
   @ApiOperation({ summary: 'Atualiza um servico do catalogo' })
-  async update(
+  update(
     @Param('id') id: string,
     @Body() dto: UpdateServiceRequestDto,
-    @Res({ passthrough: true }) res: Response,
-  ): Promise<ServiceDTO> {
-    const httpResponse = await adaptNestRoute(this.updateServiceCatalogController, {
+  ): Promise<HttpResponse<ServiceDTO>> {
+    return adaptNestRoute(this.updateServiceCatalogController, {
       body: dto,
       params: { id },
       query: undefined,
     });
-
-    res.status(httpResponse.statusCode);
-    return httpResponse.body;
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Remove um servico do catalogo' })
-  async delete(
+  delete(
     @Param('id') id: string,
-    @Res({ passthrough: true }) res: Response,
-  ): Promise<void> {
-    const httpResponse = await adaptNestRoute(this.deleteServiceCatalogController, {
+  ): Promise<HttpResponse<void>> {
+    return adaptNestRoute(this.deleteServiceCatalogController, {
       body: undefined,
       params: { id },
       query: undefined,
     });
-
-    res.status(httpResponse.statusCode);
-    return httpResponse.body;
   }
 }

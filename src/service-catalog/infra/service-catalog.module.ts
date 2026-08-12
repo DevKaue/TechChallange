@@ -15,75 +15,31 @@ import ListServiceCatalogController from '../presentation/controllers/list-servi
 import FindServiceCatalogByIdController from '../presentation/controllers/find-service-catalog-by-id.controller';
 import UpdateServiceCatalogController from '../presentation/controllers/update-service-catalog.controller';
 import DeleteServiceCatalogController from '../presentation/controllers/delete-service-catalog.controller';
+import { DomainExceptionFilter } from '@/common/infra/filters/domain-exception.filter';
+import { EXCEPTION_STATUS_MAP } from '@/common/infra/filters/exception-status.map';
+import { serviceCatalogStatusMap } from '@/service-catalog/infra/filters/service-catalog-status.map';
+import { createProvider } from '@/common/infra/di/create-provider';
 
 @Module({
   imports: [PrismaModule],
   controllers: [ServiceCatalogInfraController],
   providers: [
+    { provide: EXCEPTION_STATUS_MAP, useValue: serviceCatalogStatusMap },
+    DomainExceptionFilter,
     {
       provide: ServiceCatalogRepositoryInterface,
       useClass: PrismaServiceCatalogRepository,
     },
-    {
-      provide: CreateServiceCatalogUseCase,
-      useFactory: (repository: ServiceCatalogRepositoryInterface) =>
-        new CreateServiceCatalogUseCase(repository),
-      inject: [ServiceCatalogRepositoryInterface],
-    },
-    {
-      provide: ListServiceCatalogUseCase,
-      useFactory: (repository: ServiceCatalogRepositoryInterface) =>
-        new ListServiceCatalogUseCase(repository),
-      inject: [ServiceCatalogRepositoryInterface],
-    },
-    {
-      provide: FindByIdServiceCatalogUseCase,
-      useFactory: (repository: ServiceCatalogRepositoryInterface) =>
-        new FindByIdServiceCatalogUseCase(repository),
-      inject: [ServiceCatalogRepositoryInterface],
-    },
-    {
-      provide: UpdateServiceCatalogUseCase,
-      useFactory: (repository: ServiceCatalogRepositoryInterface) =>
-        new UpdateServiceCatalogUseCase(repository),
-      inject: [ServiceCatalogRepositoryInterface],
-    },
-    {
-      provide: DeleteServiceCatalogUseCase,
-      useFactory: (repository: ServiceCatalogRepositoryInterface) =>
-        new DeleteServiceCatalogUseCase(repository),
-      inject: [ServiceCatalogRepositoryInterface],
-    },
-    {
-      provide: CreateServiceCatalogController,
-      useFactory: (useCase: CreateServiceCatalogUseCase) =>
-        new CreateServiceCatalogController(useCase),
-      inject: [CreateServiceCatalogUseCase],
-    },
-    {
-      provide: ListServiceCatalogController,
-      useFactory: (useCase: ListServiceCatalogUseCase) =>
-        new ListServiceCatalogController(useCase),
-      inject: [ListServiceCatalogUseCase],
-    },
-    {
-      provide: FindServiceCatalogByIdController,
-      useFactory: (useCase: FindByIdServiceCatalogUseCase) =>
-        new FindServiceCatalogByIdController(useCase),
-      inject: [FindByIdServiceCatalogUseCase],
-    },
-    {
-      provide: UpdateServiceCatalogController,
-      useFactory: (useCase: UpdateServiceCatalogUseCase) =>
-        new UpdateServiceCatalogController(useCase),
-      inject: [UpdateServiceCatalogUseCase],
-    },
-    {
-      provide: DeleteServiceCatalogController,
-      useFactory: (useCase: DeleteServiceCatalogUseCase) =>
-        new DeleteServiceCatalogController(useCase),
-      inject: [DeleteServiceCatalogUseCase],
-    },
+    createProvider(CreateServiceCatalogUseCase, [ServiceCatalogRepositoryInterface]),
+    createProvider(ListServiceCatalogUseCase, [ServiceCatalogRepositoryInterface]),
+    createProvider(FindByIdServiceCatalogUseCase, [ServiceCatalogRepositoryInterface]),
+    createProvider(UpdateServiceCatalogUseCase, [ServiceCatalogRepositoryInterface]),
+    createProvider(DeleteServiceCatalogUseCase, [ServiceCatalogRepositoryInterface]),
+    createProvider(CreateServiceCatalogController, [CreateServiceCatalogUseCase]),
+    createProvider(ListServiceCatalogController, [ListServiceCatalogUseCase]),
+    createProvider(FindServiceCatalogByIdController, [FindByIdServiceCatalogUseCase]),
+    createProvider(UpdateServiceCatalogController, [UpdateServiceCatalogUseCase]),
+    createProvider(DeleteServiceCatalogController, [DeleteServiceCatalogUseCase]),
     // Adapta o repositório de domínio ao contrato (ACL) que service-orders
     // espera para precificar serviços no orçamento.
     {

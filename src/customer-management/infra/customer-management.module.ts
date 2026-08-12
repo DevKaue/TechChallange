@@ -38,11 +38,17 @@ import FindVehicleByIdController from '@/customer-management/presentation/contro
 import ListVehiclesController from '@/customer-management/presentation/controllers/list-vehicles.controller';
 import UpdateVehicleController from '@/customer-management/presentation/controllers/update-vehicle.controller';
 import ArchiveVehicleController from '@/customer-management/presentation/controllers/archive-vehicle.controller';
+import { DomainExceptionFilter } from '@/common/infra/filters/domain-exception.filter';
+import { EXCEPTION_STATUS_MAP } from '@/common/infra/filters/exception-status.map';
+import { customerManagementStatusMap } from '@/customer-management/infra/filters/customer-management-status.map';
+import { createProvider } from '@/common/infra/di/create-provider';
 
 @Module({
   imports: [PrismaModule],
   controllers: [CustomerInfraController, VehicleInfraController],
   providers: [
+    { provide: EXCEPTION_STATUS_MAP, useValue: customerManagementStatusMap },
+    DomainExceptionFilter,
     PrismaUnitOfWorkService,
     {
       provide: UnitOfWorkServiceInterface,
@@ -53,146 +59,44 @@ import ArchiveVehicleController from '@/customer-management/presentation/control
       useClass: PrismaCustomerRepository,
     },
 
-    {
-      provide: CreateCustomerUseCase,
-      useFactory: (
-        repository: CustomerRepositoryInterface,
-        registrationChecker: CustomerRegistrationChecker,
-      ) => {
-        return new CreateCustomerUseCase(repository, registrationChecker);
-      },
-      inject: [CustomerRepositoryInterface, CustomerRegistrationChecker],
-    },
+    createProvider(CreateCustomerUseCase, [CustomerRepositoryInterface, CustomerRegistrationChecker]),
 
-    {
-      provide: ArchiveCustomerUseCase,
-      useFactory: (
-        customerRepository: CustomerRepositoryInterface,
-        vehicleRepository: VehicleRepositoryInterface,
-        unitOfWork: UnitOfWorkServiceInterface,
-      ) => {
-        return new ArchiveCustomerUseCase(
-          customerRepository,
-          vehicleRepository,
-          unitOfWork,
-        );
-      },
-      inject: [
-        CustomerRepositoryInterface,
-        VehicleRepositoryInterface,
-        UnitOfWorkServiceInterface,
-      ],
-    },
+    createProvider(ArchiveCustomerUseCase, [CustomerRepositoryInterface, VehicleRepositoryInterface, UnitOfWorkServiceInterface]),
 
     {
       provide: VehicleRepositoryInterface,
       useClass: PrismaVehicleRepository,
     },
 
-    {
-      provide: CreateVehicleUseCase,
-      useFactory: (
-        vehicleRepository: VehicleRepositoryInterface,
-        customerRepository: CustomerRepositoryInterface,
-        registrationChecker: VehicleRegistrationChecker,
-      ) => {
-        return new CreateVehicleUseCase(
-          vehicleRepository,
-          customerRepository,
-          registrationChecker,
-        );
-      },
-      inject: [
-        VehicleRepositoryInterface,
-        CustomerRepositoryInterface,
-        VehicleRegistrationChecker,
-      ],
-    },
+    createProvider(CreateVehicleUseCase, [VehicleRepositoryInterface, CustomerRepositoryInterface, VehicleRegistrationChecker]),
 
-    {
-      provide: ArchiveVehicleUseCase,
-      useFactory: (vehicleRepository: VehicleRepositoryInterface) => {
-        return new ArchiveVehicleUseCase(vehicleRepository);
-      },
-      inject: [VehicleRepositoryInterface],
-    },
+    createProvider(ArchiveVehicleUseCase, [VehicleRepositoryInterface]),
 
     {
       provide: CustomerQueryServiceInterface,
       useClass: PrismaCustomerQueryService,
     },
 
-    {
-      provide: FindCustomerByIdUseCase,
-      useFactory: (queryService: CustomerQueryServiceInterface) => {
-        return new FindCustomerByIdUseCase(queryService);
-      },
-      inject: [CustomerQueryServiceInterface],
-    },
+    createProvider(FindCustomerByIdUseCase, [CustomerQueryServiceInterface]),
 
-    {
-      provide: ListCustomerUseCase,
-      useFactory: (queryService: CustomerQueryServiceInterface) => {
-        return new ListCustomerUseCase(queryService);
-      },
-      inject: [CustomerQueryServiceInterface],
-    },
+    createProvider(ListCustomerUseCase, [CustomerQueryServiceInterface]),
 
-    {
-      provide: UpdateCustomerUseCase,
-      useFactory: (repository: CustomerRepositoryInterface) => {
-        return new UpdateCustomerUseCase(repository);
-      },
-      inject: [CustomerRepositoryInterface],
-    },
+    createProvider(UpdateCustomerUseCase, [CustomerRepositoryInterface]),
 
     {
       provide: VehicleQueryServiceInterface,
       useClass: PrismaVehicleQueryService,
     },
 
-    {
-      provide: FindVehicleByIdUseCase,
-      useFactory: (queryService: VehicleQueryServiceInterface) => {
-        return new FindVehicleByIdUseCase(queryService);
-      },
-      inject: [VehicleQueryServiceInterface],
-    },
+    createProvider(FindVehicleByIdUseCase, [VehicleQueryServiceInterface]),
 
-    {
-      provide: ListVehicleUseCase,
-      useFactory: (queryService: VehicleQueryServiceInterface) => {
-        return new ListVehicleUseCase(queryService);
-      },
-      inject: [VehicleQueryServiceInterface],
-    },
+    createProvider(ListVehicleUseCase, [VehicleQueryServiceInterface]),
 
-    {
-      provide: UpdateVehicleUseCase,
-      useFactory: (
-        vehicleRepository: VehicleRepositoryInterface,
-        registrationChecker: VehicleRegistrationChecker,
-      ) => {
-        return new UpdateVehicleUseCase(vehicleRepository, registrationChecker);
-      },
-      inject: [VehicleRepositoryInterface, VehicleRegistrationChecker],
-    },
+    createProvider(UpdateVehicleUseCase, [VehicleRepositoryInterface, VehicleRegistrationChecker]),
 
-    {
-      provide: VehicleRegistrationChecker,
-      useFactory: (vehicleRepository: VehicleRepositoryInterface) => {
-        return new VehicleRegistrationChecker(vehicleRepository);
-      },
-      inject: [VehicleRepositoryInterface],
-    },
+    createProvider(VehicleRegistrationChecker, [VehicleRepositoryInterface]),
 
-    {
-      provide: CustomerRegistrationChecker,
-      useFactory: (customerRepository: CustomerRepositoryInterface) => {
-        return new CustomerRegistrationChecker(customerRepository);
-      },
-      inject: [CustomerRepositoryInterface],
-    },
+    createProvider(CustomerRegistrationChecker, [CustomerRepositoryInterface]),
 
     {
       provide: CustomerManagementInterface,
@@ -208,77 +112,17 @@ import ArchiveVehicleController from '@/customer-management/presentation/control
       inject: [FindCustomerByIdUseCase, FindVehicleByIdUseCase],
     },
 
-    {
-      provide: CreateCustomerController,
-      useFactory: (createCustomerUseCase: CreateCustomerUseCase) => {
-        return new CreateCustomerController(createCustomerUseCase);
-      },
-      inject: [CreateCustomerUseCase],
-    },
-    {
-      provide: FindCustomerByIdController,
-      useFactory: (findCustomerByIdUseCase: FindCustomerByIdUseCase) => {
-        return new FindCustomerByIdController(findCustomerByIdUseCase);
-      },
-      inject: [FindCustomerByIdUseCase],
-    },
-    {
-      provide: ListCustomersController,
-      useFactory: (listCustomerUseCase: ListCustomerUseCase) => {
-        return new ListCustomersController(listCustomerUseCase);
-      },
-      inject: [ListCustomerUseCase],
-    },
-    {
-      provide: UpdateCustomerController,
-      useFactory: (updateCustomerUseCase: UpdateCustomerUseCase) => {
-        return new UpdateCustomerController(updateCustomerUseCase);
-      },
-      inject: [UpdateCustomerUseCase],
-    },
-    {
-      provide: ArchiveCustomerController,
-      useFactory: (archiveCustomerUseCase: ArchiveCustomerUseCase) => {
-        return new ArchiveCustomerController(archiveCustomerUseCase);
-      },
-      inject: [ArchiveCustomerUseCase],
-    },
+    createProvider(CreateCustomerController, [CreateCustomerUseCase]),
+    createProvider(FindCustomerByIdController, [FindCustomerByIdUseCase]),
+    createProvider(ListCustomersController, [ListCustomerUseCase]),
+    createProvider(UpdateCustomerController, [UpdateCustomerUseCase]),
+    createProvider(ArchiveCustomerController, [ArchiveCustomerUseCase]),
 
-    {
-      provide: CreateVehicleController,
-      useFactory: (createVehicleUseCase: CreateVehicleUseCase) => {
-        return new CreateVehicleController(createVehicleUseCase);
-      },
-      inject: [CreateVehicleUseCase],
-    },
-    {
-      provide: FindVehicleByIdController,
-      useFactory: (findVehicleByIdUseCase: FindVehicleByIdUseCase) => {
-        return new FindVehicleByIdController(findVehicleByIdUseCase);
-      },
-      inject: [FindVehicleByIdUseCase],
-    },
-    {
-      provide: ListVehiclesController,
-      useFactory: (listVehicleUseCase: ListVehicleUseCase) => {
-        return new ListVehiclesController(listVehicleUseCase);
-      },
-      inject: [ListVehicleUseCase],
-    },
-    {
-      provide: UpdateVehicleController,
-      useFactory: (updateVehicleUseCase: UpdateVehicleUseCase) => {
-        return new UpdateVehicleController(updateVehicleUseCase);
-      },
-      inject: [UpdateVehicleUseCase],
-    },
-    {
-      provide: ArchiveVehicleController,
-      useFactory: (archiveVehicleUseCase: ArchiveVehicleUseCase) => {
-        return new ArchiveVehicleController(archiveVehicleUseCase);
-      },
-      inject: [ArchiveVehicleUseCase],
-    },
+    createProvider(CreateVehicleController, [CreateVehicleUseCase]),
+    createProvider(FindVehicleByIdController, [FindVehicleByIdUseCase]),
+    createProvider(ListVehiclesController, [ListVehicleUseCase]),
+    createProvider(UpdateVehicleController, [UpdateVehicleUseCase]),
+    createProvider(ArchiveVehicleController, [ArchiveVehicleUseCase]),
   ],
   exports: [
     CustomerManagementInterface

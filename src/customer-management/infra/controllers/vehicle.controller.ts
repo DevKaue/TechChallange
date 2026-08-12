@@ -6,23 +6,22 @@ import {
   Patch,
   Post,
   Query,
-  Res,
   UseFilters,
   UseGuards,
 } from '@nestjs/common';
-import type { Response } from 'express';
 import { JwtAuthGuard } from '@/access-identity/infra/guards/jwt-auth.guard';
 import { RolesGuard } from '@/access-identity/infra/guards/roles.guard';
 import { Roles } from '@/access-identity/infra/decorators/roles.decorator';
 import { UserRole } from '@/access-identity/domain/enums/user-role.enum';
 import { BodyCamelCase } from '@/common/infra/decorators/body-camel-case.decorator';
 import { adaptNestRoute } from '@/common/presentation/adapters/nest-route.adapter';
+import type { HttpResponse } from '@/common/application/contracts/http';
 import ArchiveVehicleController from '@/customer-management/presentation/controllers/archive-vehicle.controller';
 import CreateVehicleController from '@/customer-management/presentation/controllers/create-vehicle.controller';
 import FindVehicleByIdController from '@/customer-management/presentation/controllers/find-vehicle-by-id.controller';
 import ListVehiclesController from '@/customer-management/presentation/controllers/list-vehicles.controller';
 import UpdateVehicleController from '@/customer-management/presentation/controllers/update-vehicle.controller';
-import { DomainExceptionFilter } from '@/customer-management/infra/filters/domain-exception.filter';
+import { DomainExceptionFilter } from '@/common/infra/filters/domain-exception.filter';
 import {
   VehicleApiControllerDocs,
   VehicleApiCreateDocs,
@@ -51,87 +50,63 @@ export class VehicleInfraController {
 
   @Get('vehicles')
   @VehicleApiListDocs()
-  async list(
+  list(
     @Query('customerId') customerId: string | undefined,
-    @Res({ passthrough: true }) res: Response,
-  ): Promise<VehicleResponse[]> {
-    const httpResponse = await adaptNestRoute(this.listVehiclesController, {
+  ): Promise<HttpResponse<VehicleResponse[]>> {
+    return adaptNestRoute(this.listVehiclesController, {
       body: undefined,
       params: undefined,
       query: { customerId },
     });
-
-    res.status(httpResponse.statusCode);
-
-    return httpResponse.body;
   }
 
   @Post('customers/:customerId/vehicles')
   @VehicleApiCreateDocs()
-  async create(
+  create(
     @Param('customerId') customerId: string,
     @BodyCamelCase() input: Omit<CreateVehicleInput, 'customerId'>,
-    @Res({ passthrough: true }) res: Response,
-  ): Promise<VehicleResponse> {
-    const httpResponse = await adaptNestRoute(this.createVehicleController, {
+  ): Promise<HttpResponse<VehicleResponse>> {
+    return adaptNestRoute(this.createVehicleController, {
       body: input,
       params: { customerId },
       query: undefined,
     });
-
-    res.status(httpResponse.statusCode);
-
-    return httpResponse.body;
   }
 
   @Get('vehicles/:id')
   @VehicleApiFindByIdDocs()
-  async findById(
+  findById(
     @Param('id') id: string,
-    @Res({ passthrough: true }) res: Response,
-  ): Promise<VehicleResponse> {
-    const httpResponse = await adaptNestRoute(this.findVehicleByIdController, {
+  ): Promise<HttpResponse<VehicleResponse>> {
+    return adaptNestRoute(this.findVehicleByIdController, {
       body: undefined,
       params: { id },
       query: undefined,
     });
-
-    res.status(httpResponse.statusCode);
-
-    return httpResponse.body;
   }
 
   @Patch('vehicles/:id')
   @VehicleApiUpdateDocs()
-  async update(
+  update(
     @Param('id') id: string,
     @BodyCamelCase() input: Omit<UpdateVehicleInput, 'id'>,
-    @Res({ passthrough: true }) res: Response,
-  ): Promise<VehicleResponse> {
-    const httpResponse = await adaptNestRoute(this.updateVehicleController, {
+  ): Promise<HttpResponse<VehicleResponse>> {
+    return adaptNestRoute(this.updateVehicleController, {
       body: input,
       params: { id },
       query: undefined,
     });
-
-    res.status(httpResponse.statusCode);
-
-    return httpResponse.body;
   }
 
   @Delete('vehicles/:id')
   @VehicleApiDeleteDocs()
-  async delete(
+  delete(
     @Param('id') id: string,
-    @Res({ passthrough: true }) res: Response,
-  ): Promise<void> {
-    const httpResponse = await adaptNestRoute(this.archiveVehicleController, {
+  ): Promise<HttpResponse<void>> {
+    return adaptNestRoute(this.archiveVehicleController, {
       body: undefined,
       params: { id },
       query: undefined,
     });
-
-    res.status(httpResponse.statusCode);
-    return httpResponse.body;
   }
 }
