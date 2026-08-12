@@ -1,14 +1,17 @@
-import { ServiceOrdersRepositoryInterface } from "@/service-orders/domain/contracts/service-orders-repository.interface";
-import { StartDiagnosisDto } from "../../dto/diagnosis/start-diagnosis.dto";
-import { InvalidStatusTransitionException, ServiceOrderNotFoundException } from "../../exceptions";
-import { ServiceOrderMapper } from "@/service-orders/domain/mappers/service-order.mapper";
-import { ServiceOrderResponseDto } from "../../dto/service-order/service-order-response.dto";
+import { ServiceOrdersRepositoryInterface } from '@/service-orders/domain/contracts/service-orders-repository.interface';
+import { StartDiagnosisDto } from '../../dto/diagnosis/start-diagnosis.dto';
+import {
+  InvalidStatusTransitionException,
+  ServiceOrderNotFoundException,
+} from '../../exceptions';
+import { ServiceOrderMapper } from '@/service-orders/domain/mappers/service-order.mapper';
+import { ServiceOrderResponseDto } from '../../dto/service-order/service-order-response.dto';
 import { plainToInstance } from 'class-transformer';
 
 export class StartDiagnosisUseCase {
   constructor(private readonly repository: ServiceOrdersRepositoryInterface) {}
 
-    async startDiagnosis(id: string, dto: StartDiagnosisDto) {
+  async startDiagnosis(id: string, dto: StartDiagnosisDto) {
     const data = await this.repository.findById(id);
     if (!data) throw new ServiceOrderNotFoundException(id);
 

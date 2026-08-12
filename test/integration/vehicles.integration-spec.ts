@@ -3,7 +3,7 @@ import request from 'supertest';
 import { createTestApp, closeTestApp, TestApp } from './setup/app.helper';
 import { seedTestData, SeedData } from './setup/seed.helper';
 import { loginAsAttendant, authHeader } from './setup/auth.helper';
-import { PrismaService } from '@/prisma/prisma.service';
+import { PrismaService } from '@/common/infra/prisma/prisma.service';
 
 describe('Vehicles (e2e)', () => {
   let testApp: TestApp;

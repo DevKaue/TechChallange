@@ -7,8 +7,9 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { HttpExceptionFilter } from './common/filters/http-exception.filter';
-import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
+import { HttpExceptionFilter } from './common/infra/filters/http-exception.filter';
+import { LoggingInterceptor } from './common/infra/interceptors/logging.interceptor';
+import { allExceptionStatusMaps } from './exception-status.registry';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
@@ -27,7 +28,7 @@ async function bootstrap() {
     new LoggingInterceptor(),
   );
 
-  app.useGlobalFilters(new HttpExceptionFilter());
+  app.useGlobalFilters(new HttpExceptionFilter(allExceptionStatusMaps));
 
   app.setGlobalPrefix('api');
 

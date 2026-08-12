@@ -4,6 +4,7 @@ const config: Config = {
   moduleFileExtensions: ['js', 'json', 'ts'],
   rootDir: '../..',
   testRegex: '.*\\.integration-spec\\.ts$',
+  setupFiles: ['<rootDir>/test/setup/test-env.ts'],
   transform: {
     '^.+\\.(t|j)s$': 'ts-jest',
   },
@@ -35,7 +36,7 @@ const config: Config = {
     '!src/**/swaggers/**',
     '!src/**/enums/**',
     '!src/**/factories/**',
-    '!src/prisma/**',
+    '!src/common/infra/prisma/**',
     '!src/**/in-memory-*.ts',
     '!src/**/exceptions/index.ts',
   ],
@@ -125,13 +126,13 @@ const config: Config = {
       functions: 80,
       lines: 80,
     },
-    'src/common/filters/': {
+    'src/common/infra/filters/': {
       statements: 70,
       branches: 10,
       functions: 80,
       lines: 65,
     },
-    'src/common/interceptors/': {
+    'src/common/infra/interceptors/': {
       statements: 80,
       branches: 70,
       functions: 80,

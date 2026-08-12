@@ -1,4 +1,4 @@
-import { PrismaService } from '@/prisma/prisma.service';
+import { PrismaService } from '@/common/infra/prisma/prisma.service';
 import { hashPassword } from '@/access-identity/infra/security/scrypt-password-hasher';
 
 export interface SeedData {

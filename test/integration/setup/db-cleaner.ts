@@ -1,4 +1,4 @@
-import { PrismaService } from '@/prisma/prisma.service';
+import { PrismaService } from '@/common/infra/prisma/prisma.service';
 
 const TEST_DB_PATTERNS = ['_test', 'localhost', 'oficinadb_test'];
 

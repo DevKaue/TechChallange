@@ -1,5 +1,5 @@
-import Service from "@/service-catalog/domain/entities/service.entity";
-import { ListServiceCatalogUseCase } from "./list-service-catalog.use-case";
+import Service from '@/service-catalog/domain/entities/service.entity';
+import { ListServiceCatalogUseCase } from './list-service-catalog.use-case';
 
 const buildService = () =>
   new Service({ id: 'svc-1', name: 'Troca de óleo', price: 150 });

@@ -1,27 +1,28 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
-import { PrismaService } from '@/prisma/prisma.service';
+import { PrismaService } from '@/common/infra/prisma/prisma.service';
 import { USER_REPOSITORY } from '@service-orders/domain/acls/user-repository.interface';
 import { LoginUseCase } from './application/usecases/login.usecase';
 import { ValidateAuthenticatedUserUseCase } from './application/usecases/validate-authenticated-user.usecase';
 import { ACCESS_IDENTITY_REPOSITORY } from './domain/contracts/access-identity-repository.interface';
 import type { AccessIdentityRepository } from './domain/contracts/access-identity-repository.interface';
-import {
-  PASSWORD_HASHER,
-  PasswordHasher,
-} from './domain/contracts/password-hasher.interface';
-import {
-  TOKEN_SERVICE,
-  TokenService,
-} from './domain/contracts/token-service.interface';
+import { PASSWORD_HASHER } from './domain/contracts/password-hasher.interface';
+import { TOKEN_SERVICE } from './domain/contracts/token-service.interface';
 import { PrismaAccessIdentityRepository } from './infra/repositories/prisma-access-identity.repository';
 import { JwtTokenService } from './infra/security/jwt-token.service';
 import { ScryptPasswordHasher } from './infra/security/scrypt-password-hasher';
-import { AuthController } from './presentation/controllers/auth.controller';
-import { JwtAuthGuard } from './presentation/guards/jwt-auth.guard';
-import { RolesGuard } from './presentation/guards/roles.guard';
+import { AuthInfraController } from './infra/controllers/auth.controller';
+import LoginController from './presentation/controllers/login.controller';
+import LoginAdminController from './presentation/controllers/login-admin.controller';
+import GetAuthenticatedUserController from './presentation/controllers/get-authenticated-user.controller';
+import { JwtAuthGuard } from './infra/guards/jwt-auth.guard';
+import { RolesGuard } from './infra/guards/roles.guard';
 import { JwtStrategy } from './presentation/strategies/jwt.strategy';
+import { DomainExceptionFilter } from '@/common/infra/filters/domain-exception.filter';
+import { EXCEPTION_STATUS_MAP } from '@/common/infra/filters/exception-status.map';
+import { accessIdentityStatusMap } from '@/access-identity/infra/filters/access-identity-status.map';
+import { createProvider } from '@/common/infra/di/create-provider';
 
 @Module({
   imports: [
@@ -32,26 +33,16 @@ import { JwtStrategy } from './presentation/strategies/jwt.strategy';
     }),
   ],
   providers: [
-    {
-      provide: LoginUseCase,
-      useFactory: (
-        accessIdentityRepository: AccessIdentityRepository,
-        passwordHasher: PasswordHasher,
-        tokenService: TokenService,
-      ) =>
-        new LoginUseCase(
-          accessIdentityRepository,
-          passwordHasher,
-          tokenService,
-        ),
-      inject: [ACCESS_IDENTITY_REPOSITORY, PASSWORD_HASHER, TOKEN_SERVICE],
-    },
-    {
-      provide: ValidateAuthenticatedUserUseCase,
-      useFactory: (accessIdentityRepository: AccessIdentityRepository) =>
-        new ValidateAuthenticatedUserUseCase(accessIdentityRepository),
-      inject: [ACCESS_IDENTITY_REPOSITORY],
-    },
+    { provide: EXCEPTION_STATUS_MAP, useValue: accessIdentityStatusMap },
+    DomainExceptionFilter,
+    createProvider(LoginUseCase, [
+      ACCESS_IDENTITY_REPOSITORY,
+      PASSWORD_HASHER,
+      TOKEN_SERVICE,
+    ]),
+    createProvider(ValidateAuthenticatedUserUseCase, [
+      ACCESS_IDENTITY_REPOSITORY,
+    ]),
     JwtStrategy,
     JwtAuthGuard,
     RolesGuard,
@@ -67,6 +58,9 @@ import { JwtStrategy } from './presentation/strategies/jwt.strategy';
       provide: TOKEN_SERVICE,
       useClass: JwtTokenService,
     },
+    createProvider(LoginController, [LoginUseCase]),
+    createProvider(LoginAdminController, [LoginUseCase]),
+    createProvider(GetAuthenticatedUserController),
 
     // ACL adapter exposto para service-orders (validação/atribuição de mecânico).
     {
@@ -96,7 +90,7 @@ import { JwtStrategy } from './presentation/strategies/jwt.strategy';
       inject: [ACCESS_IDENTITY_REPOSITORY, PrismaService],
     },
   ],
-  controllers: [AuthController],
+  controllers: [AuthInfraController],
   exports: [JwtAuthGuard, RolesGuard, USER_REPOSITORY],
 })
 export class AccessIdentityModule {}
