@@ -26,6 +26,8 @@ export class PrismaServiceOrdersRepository extends ServiceOrdersRepositoryInterf
     customerId: string;
     vehicleId: string;
     status: ServiceOrderStatus;
+    mileage?: number | null;
+    notes?: string | null;
   }): Promise<PersistedServiceOrder> {
     const serviceOrder = await this.prisma.serviceOrder.create({ data });
 

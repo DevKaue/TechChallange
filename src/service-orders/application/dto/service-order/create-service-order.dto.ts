@@ -1,5 +1,40 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, IsUUID } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
+import {
+  IsArray,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsUUID,
+  Min,
+  ValidateNested,
+} from 'class-validator';
+
+export class CreateServiceOrderItemDto {
+  @ApiProperty({
+    description: 'Service catalog or part UUID',
+  })
+  @IsString()
+  @IsNotEmpty()
+  @IsUUID()
+  referenceId: string;
+
+  @ApiProperty({
+    description: 'Quantity (decimals allowed for labor hours)',
+  })
+  @IsNumber()
+  @Min(0.001)
+  quantity: number;
+
+  @ApiPropertyOptional({
+    description: 'Optional item description',
+  })
+  @IsString()
+  @IsNotEmpty()
+  @IsOptional()
+  description?: string;
+}
 
 export class CreateServiceOrderDto {
   @ApiProperty({ description: 'Client UUID' })
@@ -13,4 +48,29 @@ export class CreateServiceOrderDto {
   @IsNotEmpty()
   @IsUUID()
   vehicleId: string;
+
+  @ApiPropertyOptional({ description: 'OS opening notes' })
+  @IsString()
+  @IsOptional()
+  notes?: string;
+
+  @ApiPropertyOptional({
+    type: [CreateServiceOrderItemDto],
+    description: 'Labor services to include in the initial estimate',
+  })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CreateServiceOrderItemDto)
+  @IsOptional()
+  services?: CreateServiceOrderItemDto[];
+
+  @ApiPropertyOptional({
+    type: [CreateServiceOrderItemDto],
+    description: 'Parts to include in the initial estimate',
+  })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CreateServiceOrderItemDto)
+  @IsOptional()
+  parts?: CreateServiceOrderItemDto[];
 }

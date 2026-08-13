@@ -4,10 +4,6 @@ import { EstimateInfraController } from './infra/controllers/estimate.controller
 import { MechanicInfraController } from './infra/controllers/mechanic.controller';
 import { DiagnosisInfraController } from './infra/controllers/diagnosis.controller';
 import { MetricsInfraController } from './infra/controllers/metrics.controller';
-//import { ServiceOrderUseCase } from './application/usecases/service-order/service-order.use-case';
-//import { EstimateUseCase } from './application/usecases/estimate/estimate.use-case';
-//import { MechanicUseCase } from './application/usecases/mechanic/mechanic.use-case';
-//import { MetricsUseCase } from './application/usecases/metrics/get-avetage-execution-time.use-case';
 import { ServiceOrdersRepositoryInterface } from './domain/contracts/service-orders-repository.interface';
 import { PrismaServiceOrdersRepository } from './infra/repositories/prisma-service-orders.repository';
 import { ServiceOrderQueryServiceInterface } from './application/contracts/service-order-query-service.interface';
@@ -37,6 +33,7 @@ import { FindAllServiceOrdersUseCase } from './application/usecases/service-orde
 import { FindOneServiceOrderUseCase } from './application/usecases/service-order/find-one-service-order.use-case';
 import { FinishServiceUseCase } from './application/usecases/service-order/finish-service.use-case';
 import { StartServiceUseCase } from './application/usecases/service-order/start-service.use-case';
+import { GetServiceOrderStatusUseCase } from './application/usecases/service-order/get-service-order-status.use-case';
 import StartDiagnosisController from './presentation/controllers/start-diagnosis.controller';
 import CreateEstimateController from './presentation/controllers/create-estimate.controller';
 import UpdateEstimateStatusController from './presentation/controllers/update-estimate-status.controller';
@@ -52,6 +49,7 @@ import StartServiceController from './presentation/controllers/start-service.con
 import FinishServiceController from './presentation/controllers/finish-service.controller';
 import DeliverVehicleController from './presentation/controllers/deliver-vehicle.controller';
 import CloseServiceOrderController from './presentation/controllers/close-service-order.controller';
+import GetServiceOrderStatusController from './presentation/controllers/get-service-order-status.controller';
 import { DomainExceptionFilter } from '@/common/infra/filters/domain-exception.filter';
 import { EXCEPTION_STATUS_MAP } from '@/common/infra/filters/exception-status.map';
 import { serviceOrdersStatusMap } from '@/service-orders/infra/filters/service-orders-status.map';
@@ -96,6 +94,9 @@ import { createProvider } from '@/common/infra/di/create-provider';
     createProvider(FindOneServiceOrderUseCase, [
       ServiceOrderQueryServiceInterface,
     ]),
+    createProvider(GetServiceOrderStatusUseCase, [
+      ServiceOrderQueryServiceInterface,
+    ]),
     createProvider(FinishServiceUseCase, [ServiceOrdersRepositoryInterface]),
     createProvider(StartServiceUseCase, [ServiceOrdersRepositoryInterface]),
     {
@@ -128,6 +129,8 @@ import { createProvider } from '@/common/infra/di/create-provider';
     createProvider(CreateServiceOrderUseCase, [
       ServiceOrdersRepositoryInterface,
       CustomerManagementInterface,
+      CreateEstimateUseCase,
+      AddEstimateItemUseCase,
     ]),
     createProvider(StartDiagnosisController, [StartDiagnosisUseCase]),
     createProvider(CreateEstimateController, [CreateEstimateUseCase]),
@@ -148,6 +151,9 @@ import { createProvider } from '@/common/infra/di/create-provider';
       FindAllServiceOrdersUseCase,
     ]),
     createProvider(FindOneServiceOrderController, [FindOneServiceOrderUseCase]),
+    createProvider(GetServiceOrderStatusController, [
+      GetServiceOrderStatusUseCase,
+    ]),
     createProvider(StartServiceController, [StartServiceUseCase]),
     createProvider(FinishServiceController, [FinishServiceUseCase]),
     createProvider(DeliverVehicleController, [DeliverVehicleUseCase]),
