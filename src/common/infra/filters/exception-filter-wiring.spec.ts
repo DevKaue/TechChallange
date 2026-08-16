@@ -4,7 +4,6 @@ import { PrismaService } from '@/common/infra/prisma/prisma.service';
 import { DomainExceptionFilter } from '@/common/infra/filters/domain-exception.filter';
 import { MaterialsModule } from '@/materials/infra/materials.module';
 import { CustomerManagementModule } from '@/customer-management/infra/customer-management.module';
-import { ServiceCatalogModule } from '@/service-catalog/infra/service-catalog.module';
 import { ServiceOrdersModule } from '@/service-orders/service-orders.module';
 import { AccessIdentityModule } from '@/access-identity/access-identity.module';
 
@@ -21,7 +20,6 @@ describe('DomainExceptionFilter wiring', () => {
     for (const mod of [
       MaterialsModule,
       CustomerManagementModule,
-      ServiceCatalogModule,
       ServiceOrdersModule,
       AccessIdentityModule,
     ]) {

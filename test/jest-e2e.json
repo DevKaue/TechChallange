@@ -14,7 +14,6 @@
     "^@customer-management/(.*)$": "<rootDir>/src/customer-management/$1",
     "^@materials/(.*)$": "<rootDir>/src/materials/$1",
     "^@service-orders/(.*)$": "<rootDir>/src/service-orders/$1",
-    "^@service-catalog/(.*)$": "<rootDir>/src/service-catalog/$1",
     "^@common/(.*)$": "<rootDir>/src/common/$1"
   }
 }
