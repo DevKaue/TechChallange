@@ -93,6 +93,14 @@ export class PrismaServiceOrdersRepository extends ServiceOrdersRepositoryInterf
     return PrismaEstimateMapper.toPersistence(estimate);
   }
 
+  async findEstimateById(id: string): Promise<PersistedEstimate | null> {
+    const estimate = await this.prisma.estimate.findUnique({
+      where: { id },
+    });
+
+    return estimate ? PrismaEstimateMapper.toPersistence(estimate) : null;
+  }
+
   async addEstimateItem(data: {
     estimateId: string;
     itemType: ServiceOrderItemType;

@@ -85,6 +85,8 @@ export abstract class ServiceOrdersRepositoryInterface {
     totalAmount: number;
   }): Promise<PersistedEstimate>;
 
+  abstract findEstimateById(id: string): Promise<PersistedEstimate | null>;
+
   abstract addEstimateItem(data: {
     estimateId: string;
     itemType: ServiceOrderItemType;

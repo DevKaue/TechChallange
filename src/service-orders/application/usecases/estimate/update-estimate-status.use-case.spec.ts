@@ -4,6 +4,7 @@ import { ServiceOrdersRepositoryInterface } from '@service-orders/domain/contrac
 import { ServiceOrderStatus } from '@service-orders/domain/enums/service-order-status.enum';
 import { EstimateStatus } from '@service-orders/domain/enums/estimate-status.enum';
 import { ServiceOrderNotFoundException } from '@service-orders/application/exceptions/service-order-not-found.exception';
+import { EstimateNotFoundException } from '@service-orders/application/exceptions/estimate-not-found.exception';
 import { InvalidStatusTransitionException } from '@service-orders/application/exceptions/invalid-status-transition.exception';
 
 describe('UpdateEstimateStatusUseCase', () => {
@@ -29,6 +30,7 @@ describe('UpdateEstimateStatusUseCase', () => {
         {
           provide: ServiceOrdersRepositoryInterface,
           useValue: {
+            findEstimateById: jest.fn(),
             updateEstimateStatus: jest.fn(),
             findById: jest.fn(),
             update: jest.fn(),
@@ -49,6 +51,7 @@ describe('UpdateEstimateStatusUseCase', () => {
       status: EstimateStatus.APPROVED,
     } as any;
 
+    repository.findEstimateById.mockResolvedValue(mockEstimate);
     repository.updateEstimateStatus.mockResolvedValue(mockEstimate);
     repository.findById.mockResolvedValue(mockOrder);
     repository.update.mockResolvedValue({
@@ -74,6 +77,7 @@ describe('UpdateEstimateStatusUseCase', () => {
       status: EstimateStatus.REJECTED,
     } as any;
 
+    repository.findEstimateById.mockResolvedValue(mockEstimate);
     repository.updateEstimateStatus.mockResolvedValue(mockEstimate);
 
     const result = await useCase.execute('est-1', {
@@ -91,6 +95,7 @@ describe('UpdateEstimateStatusUseCase', () => {
       status: EstimateStatus.APPROVED,
     } as any;
 
+    repository.findEstimateById.mockResolvedValue(mockEstimate);
     repository.updateEstimateStatus.mockResolvedValue(mockEstimate);
     repository.findById.mockResolvedValue(null);
 
@@ -106,6 +111,7 @@ describe('UpdateEstimateStatusUseCase', () => {
       status: EstimateStatus.APPROVED,
     } as any;
 
+    repository.findEstimateById.mockResolvedValue(mockEstimate);
     repository.updateEstimateStatus.mockResolvedValue(mockEstimate);
     repository.findById.mockResolvedValue({
       ...mockOrder,
@@ -115,5 +121,15 @@ describe('UpdateEstimateStatusUseCase', () => {
     await expect(
       useCase.execute('est-1', { status: EstimateStatus.APPROVED }),
     ).rejects.toThrow(InvalidStatusTransitionException);
+  });
+
+  it('should throw EstimateNotFoundException when estimate does not exist', async () => {
+    repository.findEstimateById.mockResolvedValue(null);
+
+    await expect(
+      useCase.execute('est-1', { status: EstimateStatus.APPROVED }),
+    ).rejects.toThrow(EstimateNotFoundException);
+
+    expect(repository.updateEstimateStatus).not.toHaveBeenCalled();
   });
 });

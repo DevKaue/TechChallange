@@ -5,12 +5,16 @@ import { EstimateResponseDto } from '@service-orders/application/dto/estimate/es
 import { UpdateEstimateStatusDto } from '@service-orders/application/dto/estimate/update-estimate-status.dto';
 import { plainToInstance } from 'class-transformer';
 import { ServiceOrderNotFoundException } from '@service-orders/application/exceptions/service-order-not-found.exception';
+import { EstimateNotFoundException } from '@service-orders/application/exceptions/estimate-not-found.exception';
 import { InvalidStatusTransitionException } from '@service-orders/application/exceptions/invalid-status-transition.exception';
 
 export class UpdateEstimateStatusUseCase {
   constructor(private readonly repository: ServiceOrdersRepositoryInterface) {}
 
   async execute(estimateId: string, dto: UpdateEstimateStatusDto) {
+    const existing = await this.repository.findEstimateById(estimateId);
+    if (!existing) throw new EstimateNotFoundException(estimateId);
+
     if (dto.status === EstimateStatus.APPROVED) {
       const estimate = await this.repository.updateEstimateStatus(
         estimateId,

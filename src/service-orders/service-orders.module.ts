@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ServiceOrderInfraController } from './infra/controllers/service-order.controller';
 import { EstimateInfraController } from './infra/controllers/estimate.controller';
+import { EstimateNotificationInfraController } from './infra/controllers/estimate-notification.controller';
 import { MechanicInfraController } from './infra/controllers/mechanic.controller';
 import { DiagnosisInfraController } from './infra/controllers/diagnosis.controller';
 import { MetricsInfraController } from './infra/controllers/metrics.controller';
@@ -37,6 +38,7 @@ import { GetServiceOrderStatusUseCase } from './application/usecases/service-ord
 import StartDiagnosisController from './presentation/controllers/start-diagnosis.controller';
 import CreateEstimateController from './presentation/controllers/create-estimate.controller';
 import UpdateEstimateStatusController from './presentation/controllers/update-estimate-status.controller';
+import UpdateEstimateStatusExternalController from './presentation/controllers/update-estimate-status-external.controller';
 import AddEstimateItemController from './presentation/controllers/add-estimate-item.controller';
 import RejectEstimateController from './presentation/controllers/reject-estimate.controller';
 import AssignMechanicController from './presentation/controllers/assign-mechanic.controller';
@@ -65,6 +67,7 @@ import { createProvider } from '@/common/infra/di/create-provider';
   controllers: [
     ServiceOrderInfraController,
     EstimateInfraController,
+    EstimateNotificationInfraController,
     MechanicInfraController,
     DiagnosisInfraController,
     MetricsInfraController,
@@ -135,6 +138,9 @@ import { createProvider } from '@/common/infra/di/create-provider';
     createProvider(StartDiagnosisController, [StartDiagnosisUseCase]),
     createProvider(CreateEstimateController, [CreateEstimateUseCase]),
     createProvider(UpdateEstimateStatusController, [
+      UpdateEstimateStatusUseCase,
+    ]),
+    createProvider(UpdateEstimateStatusExternalController, [
       UpdateEstimateStatusUseCase,
     ]),
     createProvider(AddEstimateItemController, [AddEstimateItemUseCase]),
