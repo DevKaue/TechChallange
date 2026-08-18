@@ -12,6 +12,7 @@ import type { HttpResponse } from '@/common/application/contracts/http';
 import { DomainExceptionFilter } from '@/common/infra/filters/domain-exception.filter';
 import { WebhookAuthGuard } from '@service-orders/infra/guards/webhook-auth.guard';
 import { EstimateResponseDto } from '@service-orders/application/dto/estimate/estimate-response.dto';
+import { ServiceOrderResponseDto } from '@service-orders/application/dto/service-order/service-order-response.dto';
 import { UpdateEstimateStatusExternalDto } from '@service-orders/application/dto/estimate/update-estimate-status-external.dto';
 import UpdateEstimateStatusExternalController from '@service-orders/presentation/controllers/update-estimate-status-external.controller';
 
@@ -33,7 +34,7 @@ export class EstimateNotificationInfraController {
   updateEstimateStatusExternal(
     @Param('estimateId') estimateId: string,
     @Body() dto: UpdateEstimateStatusExternalDto,
-  ): Promise<HttpResponse<EstimateResponseDto>> {
+  ): Promise<HttpResponse<EstimateResponseDto | ServiceOrderResponseDto>> {
     return adaptNestRoute(this.updateEstimateStatusExternalController, {
       body: dto,
       params: { estimateId },

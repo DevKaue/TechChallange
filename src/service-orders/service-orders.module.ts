@@ -144,6 +144,8 @@ import { WebhookAuthGuard } from './infra/guards/webhook-auth.guard';
     ]),
     createProvider(UpdateEstimateStatusExternalController, [
       UpdateEstimateStatusUseCase,
+      RejectEstimateUseCase,
+      ServiceOrdersRepositoryInterface,
     ]),
     createProvider(AddEstimateItemController, [AddEstimateItemUseCase]),
     createProvider(RejectEstimateController, [RejectEstimateUseCase]),
