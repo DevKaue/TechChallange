@@ -20,6 +20,8 @@ import { SERVICE_CATALOG_REPOSITORY } from '@service-orders/domain/acls/service-
 import { USER_REPOSITORY } from '@service-orders/domain/acls/user-repository.interface';
 import CustomerManagementInterface from '@common/application/contracts/customer-management.interface';
 import UnitOfWorkServiceInterface from '@common/application/contracts/unit-of-work-service.interface';
+import InitialEstimateOrchestratorInterface from '@service-orders/application/contracts/initial-estimate-orchestrator.interface';
+import InitialEstimateOrchestratorService from '@service-orders/application/services/initial-estimate-orchestrator.service';
 import { StartDiagnosisUseCase } from './application/usecases/diagnosis/startDiagnosis.use-case';
 import { AddEstimateItemUseCase } from './application/usecases/estimate/add-estimate-item.use-case';
 import { CreateEstimateUseCase } from './application/usecases/estimate/create-estimate.use-case';
@@ -132,11 +134,18 @@ import { WebhookAuthGuard } from './infra/guards/webhook-auth.guard';
       USER_REPOSITORY,
     ]),
     createProvider(UpdateMechanicAvailabilityUseCase, [USER_REPOSITORY]),
+    createProvider(InitialEstimateOrchestratorService, [
+      CreateEstimateUseCase,
+      AddEstimateItemUseCase,
+    ]),
+    {
+      provide: InitialEstimateOrchestratorInterface,
+      useExisting: InitialEstimateOrchestratorService,
+    },
     createProvider(CreateServiceOrderUseCase, [
       ServiceOrdersRepositoryInterface,
       CustomerManagementInterface,
-      CreateEstimateUseCase,
-      AddEstimateItemUseCase,
+      InitialEstimateOrchestratorInterface,
       UnitOfWorkServiceInterface,
     ]),
     createProvider(StartDiagnosisController, [StartDiagnosisUseCase]),

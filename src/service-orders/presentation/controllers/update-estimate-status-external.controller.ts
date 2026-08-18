@@ -2,10 +2,7 @@ import { Controller } from '@/common/application/contracts/controller';
 import { HttpRequest, HttpResponse } from '@/common/application/contracts/http';
 import { EstimateResponseDto } from '@service-orders/application/dto/estimate/estimate-response.dto';
 import { ServiceOrderResponseDto } from '@service-orders/application/dto/service-order/service-order-response.dto';
-import {
-  EstimateExternalDecision,
-  UpdateEstimateStatusExternalDto,
-} from '@service-orders/application/dto/estimate/update-estimate-status-external.dto';
+import { UpdateEstimateStatusExternalDto } from '@service-orders/application/dto/estimate/update-estimate-status-external.dto';
 import { UpdateEstimateStatusUseCase } from '@service-orders/application/usecases/estimate/update-estimate-status.use-case';
 import { RejectEstimateUseCase } from '@service-orders/application/usecases/estimate/reject-estimate.use-case';
 import { ServiceOrdersRepositoryInterface } from '@service-orders/domain/contracts/service-orders-repository.interface';
@@ -39,7 +36,7 @@ export default class UpdateEstimateStatusExternalController implements Controlle
   ): Promise<HttpResponse<UpdateEstimateStatusExternalResponse>> {
     const { estimateId } = httpRequest.params;
 
-    if (httpRequest.body.decision === EstimateExternalDecision.REJECTED) {
+    if (httpRequest.body.decision === EstimateStatus.REJECTED) {
       const estimate = await this.repository.findEstimateById(estimateId);
       if (!estimate) throw new EstimateNotFoundException(estimateId);
 
@@ -55,7 +52,7 @@ export default class UpdateEstimateStatusExternalController implements Controlle
     }
 
     const output = await this.updateEstimateStatusUseCase.execute(estimateId, {
-      status: EstimateStatus.APPROVED,
+      status: httpRequest.body.decision,
     });
 
     return {

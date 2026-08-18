@@ -3,10 +3,8 @@ import { CreateServiceOrderUseCase } from './create-service-order.use-case';
 import { ServiceOrdersRepositoryInterface } from '@service-orders/domain/contracts/service-orders-repository.interface';
 import CustomerManagementInterface from '@/common/application/contracts/customer-management.interface';
 import UnitOfWorkServiceInterface from '@/common/application/contracts/unit-of-work-service.interface';
-import { CreateEstimateUseCase } from '@service-orders/application/usecases/estimate/create-estimate.use-case';
-import { AddEstimateItemUseCase } from '@service-orders/application/usecases/estimate/add-estimate-item.use-case';
+import InitialEstimateOrchestratorInterface from '@service-orders/application/contracts/initial-estimate-orchestrator.interface';
 import { ServiceOrderStatus } from '@service-orders/domain/enums/service-order-status.enum';
-import { ServiceOrderItemType } from '@service-orders/domain/enums/service-order-item-type.enum';
 import { CustomerNotFoundException } from '@service-orders/application/exceptions/customer-not-found.exception';
 import { VehicleNotFoundException } from '@service-orders/application/exceptions/vehicle-not-found.exception';
 import { VehicleOwnerMismatchException } from '@service-orders/application/exceptions/vehicle-owner-mismatch.exception';
@@ -15,8 +13,7 @@ describe('CreateServiceOrderUseCase', () => {
   let useCase: CreateServiceOrderUseCase;
   let repository: jest.Mocked<ServiceOrdersRepositoryInterface>;
   let customerManagement: jest.Mocked<CustomerManagementInterface>;
-  let createEstimateUseCase: jest.Mocked<CreateEstimateUseCase>;
-  let addEstimateItemUseCase: jest.Mocked<AddEstimateItemUseCase>;
+  let initialEstimateOrchestrator: jest.Mocked<InitialEstimateOrchestratorInterface>;
   let unitOfWork: {
     runInTransaction: jest.Mock;
     client: any;
@@ -62,6 +59,9 @@ describe('CreateServiceOrderUseCase', () => {
       runInTransaction: jest.fn((work: () => Promise<unknown>) => work()),
       client: {},
     };
+    initialEstimateOrchestrator = {
+      execute: jest.fn(),
+    } as jest.Mocked<InitialEstimateOrchestratorInterface>;
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -70,22 +70,19 @@ describe('CreateServiceOrderUseCase', () => {
           useFactory: (
             repository: ServiceOrdersRepositoryInterface,
             customerManagement: CustomerManagementInterface,
-            createEstimateUseCase: CreateEstimateUseCase,
-            addEstimateItemUseCase: AddEstimateItemUseCase,
+            initialEstimateOrchestrator: InitialEstimateOrchestratorInterface,
             unitOfWork: UnitOfWorkServiceInterface,
           ) =>
             new CreateServiceOrderUseCase(
               repository,
               customerManagement,
-              createEstimateUseCase,
-              addEstimateItemUseCase,
+              initialEstimateOrchestrator,
               unitOfWork,
             ),
           inject: [
             ServiceOrdersRepositoryInterface,
             CustomerManagementInterface,
-            CreateEstimateUseCase,
-            AddEstimateItemUseCase,
+            InitialEstimateOrchestratorInterface,
             UnitOfWorkServiceInterface,
           ],
         },
@@ -94,10 +91,15 @@ describe('CreateServiceOrderUseCase', () => {
           useValue: unitOfWork,
         },
         {
+          provide: InitialEstimateOrchestratorInterface,
+          useValue: initialEstimateOrchestrator,
+        },
+        {
           provide: ServiceOrdersRepositoryInterface,
           useValue: {
             create: jest.fn(),
             createStatusHistory: jest.fn(),
+            update: jest.fn(),
             findById: jest.fn(),
           },
         },
@@ -108,26 +110,15 @@ describe('CreateServiceOrderUseCase', () => {
             findVehicleById: jest.fn(),
           },
         },
-        {
-          provide: CreateEstimateUseCase,
-          useValue: {
-            execute: jest.fn(),
-          },
-        },
-        {
-          provide: AddEstimateItemUseCase,
-          useValue: {
-            execute: jest.fn(),
-          },
-        },
       ],
     }).compile();
 
     useCase = module.get(CreateServiceOrderUseCase);
     repository = module.get(ServiceOrdersRepositoryInterface);
     customerManagement = module.get(CustomerManagementInterface);
-    createEstimateUseCase = module.get(CreateEstimateUseCase);
-    addEstimateItemUseCase = module.get(AddEstimateItemUseCase);
+    initialEstimateOrchestrator = module.get(
+      InitialEstimateOrchestratorInterface,
+    );
   });
 
   it('should create a service order when the vehicle belongs to the client', async () => {
@@ -155,8 +146,13 @@ describe('CreateServiceOrderUseCase', () => {
       mileage: null,
       notes: null,
     });
-    expect(createEstimateUseCase.execute).not.toHaveBeenCalled();
+    expect(initialEstimateOrchestrator.execute).toHaveBeenCalledWith({
+      orderId: 'order-1',
+      services: [],
+      parts: [],
+    });
     expect(result).toHaveProperty('id', 'order-1');
+    expect(result).toHaveProperty('customer', { id: 'client-1', name: 'Maria' });
   });
 
   it('should persist mileage and notes when provided', async () => {
@@ -187,7 +183,7 @@ describe('CreateServiceOrderUseCase', () => {
     });
   });
 
-  it('should create an initial estimate with services and parts when provided', async () => {
+  it('should delegate initial estimate assembly to the orchestrator when services and parts are provided', async () => {
     customerManagement.findCustomerById.mockResolvedValue({
       id: 'client-1',
     } as any);
@@ -197,8 +193,13 @@ describe('CreateServiceOrderUseCase', () => {
     } as any);
     repository.create.mockResolvedValue(mockOrder);
     repository.createStatusHistory.mockResolvedValue({} as any);
-    createEstimateUseCase.execute.mockResolvedValue({ id: 'est-1' } as any);
-    addEstimateItemUseCase.execute.mockResolvedValue({} as any);
+    repository.update.mockResolvedValue({
+      ...mockOrder,
+      status: ServiceOrderStatus.IN_DIAGNOSIS,
+    });
+    initialEstimateOrchestrator.execute.mockResolvedValue({
+      id: 'est-1',
+    } as any);
     repository.findById.mockResolvedValue({
       ...mockOrder,
       status: ServiceOrderStatus.WAITING_APPROVAL,
@@ -225,18 +226,22 @@ describe('CreateServiceOrderUseCase', () => {
       parts: [{ referenceId: 'part-1', quantity: 2 }],
     });
 
-    expect(createEstimateUseCase.execute).toHaveBeenCalledWith('order-1');
-    expect(addEstimateItemUseCase.execute).toHaveBeenCalledWith('est-1', {
-      itemType: ServiceOrderItemType.SERVICE,
-      referenceId: 'svc-1',
-      quantity: 1,
-      description: undefined,
+    expect(initialEstimateOrchestrator.execute).toHaveBeenCalledWith({
+      orderId: 'order-1',
+      services: [{ referenceId: 'svc-1', quantity: 1 }],
+      parts: [{ referenceId: 'part-1', quantity: 2 }],
     });
-    expect(addEstimateItemUseCase.execute).toHaveBeenCalledWith('est-1', {
-      itemType: ServiceOrderItemType.PART,
-      referenceId: 'part-1',
-      quantity: 2,
-      description: undefined,
+    expect(repository.create).toHaveBeenCalledWith({
+      customerId: 'client-1',
+      vehicleId: 'vehicle-1',
+      status: ServiceOrderStatus.RECEIVED,
+      mileage: null,
+      notes: null,
+    });
+    expect(repository.createStatusHistory).toHaveBeenCalledWith({
+      serviceOrderId: 'order-1',
+      previousStatus: ServiceOrderStatus.RECEIVED,
+      newStatus: ServiceOrderStatus.IN_DIAGNOSIS,
     });
     expect(result).toHaveProperty('id', 'order-1');
     expect(result).toHaveProperty(

@@ -1,17 +1,18 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty } from 'class-validator';
+import { IsIn, IsNotEmpty } from 'class-validator';
+import { EstimateStatus } from '@service-orders/domain/enums/estimate-status.enum';
 
-export enum EstimateExternalDecision {
-  APPROVED = 'APPROVED',
-  REJECTED = 'REJECTED',
-}
+const EXTERNAL_DECISIONS = [
+  EstimateStatus.APPROVED,
+  EstimateStatus.REJECTED,
+];
 
 export class UpdateEstimateStatusExternalDto {
   @ApiProperty({
-    enum: EstimateExternalDecision,
+    enum: EXTERNAL_DECISIONS,
     description: 'APPROVED or REJECTED',
   })
-  @IsEnum(EstimateExternalDecision)
+  @IsIn(EXTERNAL_DECISIONS)
   @IsNotEmpty()
-  decision: EstimateExternalDecision;
+  decision: EstimateStatus;
 }

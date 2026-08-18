@@ -1,13 +1,12 @@
 import { ServiceOrdersRepositoryInterface } from '@service-orders/domain/contracts/service-orders-repository.interface';
 import CustomarManagementInterface from '@common/application/contracts/customer-management.interface';
 import UnitOfWorkServiceInterface from '@common/application/contracts/unit-of-work-service.interface';
-import { ServiceOrderStatus } from '@service-orders/domain/enums/service-order-status.enum';
-import { ServiceOrderItemType } from '@service-orders/domain/enums/service-order-item-type.enum';
+import InitialEstimateOrchestratorInterface from '@service-orders/application/contracts/initial-estimate-orchestrator.interface';
+import { ServiceOrder } from '@service-orders/domain/entities/service-order.entity';
 import { ServiceOrderResponseDto } from '@service-orders/application/dto/service-order/service-order-response.dto';
 import { CreateServiceOrderDto } from '@service-orders/application/dto/service-order/create-service-order.dto';
-import { CreateEstimateUseCase } from '@service-orders/application/usecases/estimate/create-estimate.use-case';
-import { AddEstimateItemUseCase } from '@service-orders/application/usecases/estimate/add-estimate-item.use-case';
 import { plainToInstance } from 'class-transformer';
+import { randomUUID } from 'crypto';
 import { CustomerNotFoundException } from '@service-orders/application/exceptions/customer-not-found.exception';
 import { VehicleNotFoundException } from '@service-orders/application/exceptions/vehicle-not-found.exception';
 import { VehicleOwnerMismatchException } from '@service-orders/application/exceptions/vehicle-owner-mismatch.exception';
@@ -17,8 +16,7 @@ export class CreateServiceOrderUseCase {
   constructor(
     private readonly repository: ServiceOrdersRepositoryInterface,
     private readonly customerManagement: CustomarManagementInterface,
-    private readonly createEstimateUseCase: CreateEstimateUseCase,
-    private readonly addEstimateItemUseCase: AddEstimateItemUseCase,
+    private readonly initialEstimateOrchestrator: InitialEstimateOrchestratorInterface,
     private readonly unitOfWork: UnitOfWorkServiceInterface,
   ) {}
 
@@ -39,60 +37,47 @@ export class CreateServiceOrderUseCase {
     }
 
     return this.unitOfWork.runInTransaction(async () => {
-      const order = await this.repository.create({
+      const hasItems =
+        (dto.services?.length ?? 0) > 0 || (dto.parts?.length ?? 0) > 0;
+
+      const order = ServiceOrder.open({ id: randomUUID() });
+
+      const created = await this.repository.create({
         customerId: dto.customerId,
         vehicleId: dto.vehicleId,
-        status: ServiceOrderStatus.RECEIVED,
+        status: order.status,
         mileage: dto.mileage ?? null,
         notes: dto.notes ?? null,
       });
 
       await this.repository.createStatusHistory({
-        serviceOrderId: order.id,
+        serviceOrderId: created.id,
         previousStatus: null,
-        newStatus: ServiceOrderStatus.RECEIVED,
+        newStatus: order.status,
       });
 
-      const hasItems =
-        (dto.services?.length ?? 0) > 0 || (dto.parts?.length ?? 0) > 0;
-
       if (hasItems) {
-        const estimate = await this.createEstimateUseCase.execute(order.id);
-
-        for (const service of dto.services ?? []) {
-          await this.addEstimateItemUseCase.execute(estimate.id, {
-            itemType: ServiceOrderItemType.SERVICE,
-            referenceId: service.referenceId,
-            quantity: service.quantity,
-            description: service.description,
-          });
-        }
-
-        for (const part of dto.parts ?? []) {
-          await this.addEstimateItemUseCase.execute(estimate.id, {
-            itemType: ServiceOrderItemType.PART,
-            referenceId: part.referenceId,
-            quantity: part.quantity,
-            description: part.description,
-          });
-        }
+        const change = order.startDiagnosis();
+        await this.repository.update(created.id, order);
+        await this.repository.createStatusHistory({
+          serviceOrderId: created.id,
+          previousStatus: change.previousStatus,
+          newStatus: change.newStatus,
+        });
       }
 
-      const persisted = await this.repository.findById(order.id);
-      if (!persisted) throw new ServiceOrderNotFoundException(order.id);
+      await this.initialEstimateOrchestrator.execute({
+        orderId: created.id,
+        services: dto.services ?? [],
+        parts: dto.parts ?? [],
+      });
 
-      return plainToInstance(
-        ServiceOrderResponseDto,
-        {
-          ...persisted,
-          client: persisted.customer
-            ? { id: persisted.customer.id, name: persisted.customer.name }
-            : undefined,
-        },
-        {
-          excludeExtraneousValues: true,
-        },
-      );
+      const persisted = await this.repository.findById(created.id);
+      if (!persisted) throw new ServiceOrderNotFoundException(created.id);
+
+      return plainToInstance(ServiceOrderResponseDto, persisted, {
+        excludeExtraneousValues: true,
+      });
     });
   }
 }

@@ -1,7 +1,7 @@
 import UpdateEstimateStatusExternalController from '@service-orders/presentation/controllers/update-estimate-status-external.controller';
 import type { UpdateEstimateStatusUseCase } from '@service-orders/application/usecases/estimate/update-estimate-status.use-case';
 import type { RejectEstimateUseCase } from '@service-orders/application/usecases/estimate/reject-estimate.use-case';
-import { EstimateExternalDecision } from '@service-orders/application/dto/estimate/update-estimate-status-external.dto';
+import { EstimateStatus } from '@service-orders/domain/enums/estimate-status.enum';
 import { EstimateNotFoundException } from '@service-orders/application/exceptions/estimate-not-found.exception';
 
 describe('UpdateEstimateStatusExternalController', () => {
@@ -38,7 +38,7 @@ describe('UpdateEstimateStatusExternalController', () => {
     );
 
     const response = await controller.handle({
-      body: { decision: EstimateExternalDecision.APPROVED },
+      body: { decision: EstimateStatus.APPROVED },
       params: { estimateId: 'est-1' },
       query: undefined,
     });
@@ -60,7 +60,7 @@ describe('UpdateEstimateStatusExternalController', () => {
     (rejectEstimateUseCase.execute as jest.Mock).mockResolvedValue(output);
 
     const response = await controller.handle({
-      body: { decision: EstimateExternalDecision.REJECTED },
+      body: { decision: EstimateStatus.REJECTED },
       params: { estimateId: 'est-1' },
       query: undefined,
     });
@@ -79,7 +79,7 @@ describe('UpdateEstimateStatusExternalController', () => {
 
     await expect(
       controller.handle({
-        body: { decision: EstimateExternalDecision.REJECTED },
+        body: { decision: EstimateStatus.REJECTED },
         params: { estimateId: 'missing' },
         query: undefined,
       }),
