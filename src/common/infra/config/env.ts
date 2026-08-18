@@ -1,5 +1,5 @@
 export function validateEnv(): void {
-  const required = ['DATABASE_URL', 'JWT_SECRET'];
+  const required = ['DATABASE_URL', 'JWT_SECRET', 'WEBHOOK_SECRET'];
   const missing: string[] = [];
 
   for (const key of required) {
@@ -19,10 +19,12 @@ export function env(): {
   jwtSecret: string;
   port: number;
   databaseUrl: string;
+  webhookSecret: string;
 } {
   return {
     jwtSecret: process.env.JWT_SECRET!,
     port: parseInt(process.env.PORT ?? '3000', 10),
     databaseUrl: process.env.DATABASE_URL!,
+    webhookSecret: process.env.WEBHOOK_SECRET!,
   };
 }

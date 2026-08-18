@@ -56,6 +56,7 @@ import { DomainExceptionFilter } from '@/common/infra/filters/domain-exception.f
 import { EXCEPTION_STATUS_MAP } from '@/common/infra/filters/exception-status.map';
 import { serviceOrdersStatusMap } from '@/service-orders/infra/filters/service-orders-status.map';
 import { createProvider } from '@/common/infra/di/create-provider';
+import { WebhookAuthGuard } from './infra/guards/webhook-auth.guard';
 
 @Module({
   imports: [
@@ -75,6 +76,7 @@ import { createProvider } from '@/common/infra/di/create-provider';
   providers: [
     { provide: EXCEPTION_STATUS_MAP, useValue: serviceOrdersStatusMap },
     DomainExceptionFilter,
+    WebhookAuthGuard,
     // ServiceOrderUseCase,
     // EstimateUseCase,
     // MechanicUseCase,

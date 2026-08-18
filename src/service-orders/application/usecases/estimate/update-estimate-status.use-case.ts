@@ -15,6 +15,23 @@ export class UpdateEstimateStatusUseCase {
     const existing = await this.repository.findEstimateById(estimateId);
     if (!existing) throw new EstimateNotFoundException(estimateId);
 
+    const existingStatus = existing.status as EstimateStatus;
+
+    // Idempotência: notificações/atualizações repetidas não alteram o estado.
+    if (existingStatus === dto.status) {
+      return plainToInstance(EstimateResponseDto, existing, {
+        excludeExtraneousValues: true,
+      });
+    }
+
+    // Um orçamento aprovado já moveu a OS para IN_EXECUTION; não pode ser
+    // reaberto por uma notificação conflitante (ex.: REJECTED que chegou atrasada).
+    if (existingStatus === EstimateStatus.APPROVED) {
+      throw new InvalidStatusTransitionException(
+        `Cannot change estimate ${estimateId} from ${existing.status} to ${dto.status}`,
+      );
+    }
+
     if (dto.status === EstimateStatus.APPROVED) {
       const estimate = await this.repository.updateEstimateStatus(
         estimateId,
