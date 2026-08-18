@@ -17,10 +17,11 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
-import type { AuthenticatedRequest } from '@/access-identity/presentation/authenticated-request';
+import type { RequestWithUser } from '@/access-identity/presentation/interfaces/authenticated-user.interface';
 //import { ServiceOrderUseCase } from '@/service-orders/application/usecases/service-order/service-order.use-case';
 import { CreateServiceOrderDto } from '@service-orders/application/dto/service-order/create-service-order.dto';
 import { FinishServiceOrderDto } from '@service-orders/application/dto/service-order/finish-service-order.dto';
+import { UpdateServiceOrderStatusDto } from '@service-orders/application/dto/service-order/update-service-order-status.dto';
 import { ServiceOrderResponseDto } from '@service-orders/application/dto/service-order/service-order-response.dto';
 import { ServiceOrderExceptionFilter } from '@service-orders/presentation/filters/service-order-exception.filter';
 import {
@@ -35,6 +36,7 @@ import { FindAllServiceOrdersUseCase } from '@/service-orders/application/usecas
 import { FindOneServiceOrderUseCase } from '@/service-orders/application/usecases/service-order/find-one-service-order.use-case';
 import { StartServiceUseCase } from '@/service-orders/application/usecases/service-order/start-service.use-case';
 import { FinishServiceUseCase } from '@/service-orders/application/usecases/service-order/finish-service.use-case';
+import { UpdateServiceOrderStatusUseCase } from '@/service-orders/application/usecases/service-order/update-service-order-status.use-case';
 
 @ApiTags('Service Orders')
 @Controller('service-orders')
@@ -48,6 +50,7 @@ export class ServiceOrderController {
     private readonly findOneServiceOrderUseCase: FindOneServiceOrderUseCase,
     private readonly finishServiceOrderUseCase: FinishServiceUseCase,
     private readonly startServiceUseCase: StartServiceUseCase,
+    private readonly updateServiceOrderStatusUseCase: UpdateServiceOrderStatusUseCase,
   ) {}
 
   @Post()
@@ -85,6 +88,22 @@ export class ServiceOrderController {
       .then((dto) => ServiceOrderPresenter.presentDetail(dto));
   }
 
+  @Patch(':id/status')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Atualiza o status de uma ordem de serviço' })
+  @ApiOkResponse({ type: ServiceOrderResponseDto })
+  updateStatus(
+    @Param('id') id: string,
+    @Body() dto: UpdateServiceOrderStatusDto,
+    @Req() req: RequestWithUser,
+  ) {
+    return this.updateServiceOrderStatusUseCase.execute(id, dto, {
+      id: req.user.userId,
+      email: req.user.email,
+    });
+  }
+
   @Patch(':id/start-service')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
@@ -101,7 +120,7 @@ export class ServiceOrderController {
   finish(
     @Param('id') id: string,
     @Body() dto: FinishServiceOrderDto,
-    @Req() req: AuthenticatedRequest,
+    @Req() req: RequestWithUser,
   ) {
     return this.finishServiceOrderUseCase.execute(id, req.user.userId, dto.notes);
   }

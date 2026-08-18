@@ -1,4 +1,3 @@
-import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { createTestApp, closeTestApp, TestApp } from './setup/app.helper';
 import { seedTestData, SeedData } from './setup/seed.helper';
@@ -69,10 +68,118 @@ describe('Service Orders (e2e)', () => {
       expect(res.body.length).toBeGreaterThanOrEqual(1);
     });
 
+    it('should order active service orders by status and age and omit completed orders', async () => {
+      const statuses = [
+        ServiceOrderStatus.RECEIVED,
+        ServiceOrderStatus.IN_DIAGNOSIS,
+        ServiceOrderStatus.WAITING_APPROVAL,
+        ServiceOrderStatus.IN_EXECUTION,
+        ServiceOrderStatus.FINISHED,
+        ServiceOrderStatus.DELIVERED,
+        ServiceOrderStatus.CLOSED,
+      ];
+      const createdOrders = await Promise.all(
+        statuses.map((status, index) =>
+          prisma.serviceOrder.create({
+            data: {
+              customerId: seed.customer1Id,
+              vehicleId: seed.vehicle1Id,
+              status,
+              createdAt: new Date(`2026-01-0${index + 1}T00:00:00.000Z`),
+            },
+          }),
+        ),
+      );
+
+      const res = await request(testApp.app.getHttpServer())
+        .get('/api/service-orders')
+        .set(authHeader(attendantToken))
+        .expect(200);
+
+      const priority = new Map([
+        [ServiceOrderStatus.IN_EXECUTION, 0],
+        [ServiceOrderStatus.WAITING_APPROVAL, 1],
+        [ServiceOrderStatus.IN_DIAGNOSIS, 2],
+        [ServiceOrderStatus.RECEIVED, 3],
+      ]);
+
+      expect(
+        res.body.every((order: { status: ServiceOrderStatus }) =>
+          priority.has(order.status),
+        ),
+      ).toBe(true);
+
+      for (let index = 1; index < res.body.length; index += 1) {
+        const previous = res.body[index - 1];
+        const current = res.body[index];
+        const previousPriority = priority.get(previous.status) as number;
+        const currentPriority = priority.get(current.status) as number;
+
+        expect(currentPriority).toBeGreaterThanOrEqual(previousPriority);
+        if (currentPriority === previousPriority) {
+          expect(new Date(current.created_at).getTime()).toBeGreaterThanOrEqual(
+            new Date(previous.created_at).getTime(),
+          );
+        }
+      }
+
+      const omittedIds = createdOrders
+        .filter((order) => !priority.has(order.status as ServiceOrderStatus))
+        .map((order) => order.id);
+      expect(res.body.map((order: { id: string }) => order.id)).not.toEqual(
+        expect.arrayContaining(omittedIds),
+      );
+    });
+
     it('should return 401 without token', async () => {
       await request(testApp.app.getHttpServer())
         .get('/api/service-orders')
         .expect(401);
+    });
+  });
+
+  describe('PATCH /api/service-orders/:id/status', () => {
+    it('should update the status and register who made the change', async () => {
+      const order = await prisma.serviceOrder.create({
+        data: {
+          customerId: seed.customer1Id,
+          vehicleId: seed.vehicle1Id,
+        },
+      });
+
+      const res = await request(testApp.app.getHttpServer())
+        .patch(`/api/service-orders/${order.id}/status`)
+        .set(authHeader(attendantToken))
+        .send({
+          status: ServiceOrderStatus.IN_DIAGNOSIS,
+          notes: 'Atualização recebida por e-mail',
+        })
+        .expect(200);
+
+      expect(res.body.status).toBe(ServiceOrderStatus.IN_DIAGNOSIS);
+
+      const history = await prisma.serviceOrderStatusHistory.findFirst({
+        where: { serviceOrderId: order.id },
+        orderBy: { changedAt: 'desc' },
+      });
+      expect(history).toEqual(
+        expect.objectContaining({
+          previousStatus: ServiceOrderStatus.RECEIVED,
+          newStatus: ServiceOrderStatus.IN_DIAGNOSIS,
+          changedBy: 'ana.test@oficina.com',
+          notes: 'Atualização recebida por e-mail',
+        }),
+      );
+    });
+
+    it('should reject an invalid status', async () => {
+      await request(testApp.app.getHttpServer())
+        .patch(
+          '/api/service-orders/00000000-0000-0000-0000-000000000000/status',
+        )
+        .set(authHeader(attendantToken))
+        .send({ status: 'INVALID_STATUS' })
+        .expect(400);
     });
   });
 

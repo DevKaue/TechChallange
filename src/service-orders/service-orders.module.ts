@@ -37,6 +37,7 @@ import { FindAllServiceOrdersUseCase } from './application/usecases/service-orde
 import { FindOneServiceOrderUseCase } from './application/usecases/service-order/find-one-service-order.use-case';
 import { FinishServiceUseCase } from './application/usecases/service-order/finish-service.use-case';
 import { StartServiceUseCase } from './application/usecases/service-order/start-service.use-case';
+import { UpdateServiceOrderStatusUseCase } from './application/usecases/service-order/update-service-order-status.use-case';
 
 @Module({
   imports: [
@@ -115,6 +116,12 @@ import { StartServiceUseCase } from './application/usecases/service-order/start-
       provide: StartServiceUseCase,
       useFactory: (repository: ServiceOrdersRepositoryInterface) =>
         new StartServiceUseCase(repository),
+      inject: [ServiceOrdersRepositoryInterface],
+    },
+    {
+      provide: UpdateServiceOrderStatusUseCase,
+      useFactory: (repository: ServiceOrdersRepositoryInterface) =>
+        new UpdateServiceOrderStatusUseCase(repository),
       inject: [ServiceOrdersRepositoryInterface],
     },
     {

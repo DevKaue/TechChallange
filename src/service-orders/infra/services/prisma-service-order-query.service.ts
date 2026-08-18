@@ -4,6 +4,18 @@ import { ServiceOrderQueryServiceInterface } from '@service-orders/application/c
 import { ServiceOrderSummaryDto } from '@service-orders/application/dto/query/service-order-summary.dto';
 import { ServiceOrderDetailDto } from '@service-orders/application/dto/query/service-order-detail.dto';
 import { EstimateStatus } from '@service-orders/domain/enums/estimate-status.enum';
+import { ServiceOrderStatus } from '@service-orders/domain/enums/service-order-status.enum';
+
+const LISTABLE_STATUSES = [
+  ServiceOrderStatus.IN_EXECUTION,
+  ServiceOrderStatus.WAITING_APPROVAL,
+  ServiceOrderStatus.IN_DIAGNOSIS,
+  ServiceOrderStatus.RECEIVED,
+];
+
+const STATUS_PRIORITY = new Map(
+  LISTABLE_STATUSES.map((status, index) => [status, index]),
+);
 
 @Injectable()
 export class PrismaServiceOrderQueryService implements ServiceOrderQueryServiceInterface {
@@ -11,6 +23,9 @@ export class PrismaServiceOrderQueryService implements ServiceOrderQueryServiceI
 
   async findAll(): Promise<ServiceOrderSummaryDto[]> {
     const orders = await this.prisma.serviceOrder.findMany({
+      where: {
+        status: { in: LISTABLE_STATUSES },
+      },
       include: {
         customer: { select: { id: true, name: true } },
         vehicle: {
@@ -24,7 +39,20 @@ export class PrismaServiceOrderQueryService implements ServiceOrderQueryServiceI
         },
         mechanic: { select: { id: true, name: true } },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    orders.sort((first, second) => {
+      const statusDifference =
+        (STATUS_PRIORITY.get(first.status as ServiceOrderStatus) ??
+          Number.MAX_SAFE_INTEGER) -
+        (STATUS_PRIORITY.get(second.status as ServiceOrderStatus) ??
+          Number.MAX_SAFE_INTEGER);
+
+      return (
+        statusDifference ||
+        first.createdAt.getTime() - second.createdAt.getTime()
+      );
     });
 
     return orders.map((order) => ({

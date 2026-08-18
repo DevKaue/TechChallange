@@ -135,6 +135,31 @@ export class ServiceOrder {
     return new StatusChange(previous, this._status);
   }
 
+  updateStatus(status: ServiceOrderStatus, actorId: string): StatusChange {
+    if (status === this._status) {
+      throw new Error(`Service order is already in status ${status}`);
+    }
+
+    switch (status) {
+      case ServiceOrderStatus.IN_DIAGNOSIS:
+        return this._status === ServiceOrderStatus.WAITING_APPROVAL
+          ? this.rejectEstimate()
+          : this.startDiagnosis();
+      case ServiceOrderStatus.WAITING_APPROVAL:
+        return this.requestApproval();
+      case ServiceOrderStatus.IN_EXECUTION:
+        return this.startService();
+      case ServiceOrderStatus.FINISHED:
+        return this.finish(actorId);
+      case ServiceOrderStatus.DELIVERED:
+        return this.deliverVehicle();
+      case ServiceOrderStatus.CLOSED:
+        return this.close();
+      case ServiceOrderStatus.RECEIVED:
+        throw new Error('Cannot move a service order back to RECEIVED');
+    }
+  }
+
   get id(): string {
     return this._id;
   }
