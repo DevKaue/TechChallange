@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+data:
+  NODE_ENV: "production"
+  PORT: "3000"
+  POSTGRES_USER: "admin"
+  POSTGRES_DB: "oficinadb"
