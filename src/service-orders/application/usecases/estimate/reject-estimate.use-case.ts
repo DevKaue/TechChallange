@@ -37,6 +37,18 @@ export class RejectEstimateUseCase {
             ServiceOrderItemType.PART,
         );
 
+      const pendingEstimates = data.estimates.filter(
+        (estimate) =>
+          (estimate.status as EstimateStatus) === EstimateStatus.PENDING,
+      );
+
+      for (const estimate of pendingEstimates) {
+        await this.repository.updateEstimateStatus(
+          estimate.id,
+          EstimateStatus.REJECTED,
+        );
+      }
+
       for (const item of pendingItems) {
         await this.partRepository.incrementStock(
           item.referenceId,

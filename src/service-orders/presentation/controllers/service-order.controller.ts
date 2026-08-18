@@ -37,6 +37,8 @@ import { FindOneServiceOrderUseCase } from '@/service-orders/application/usecase
 import { StartServiceUseCase } from '@/service-orders/application/usecases/service-order/start-service.use-case';
 import { FinishServiceUseCase } from '@/service-orders/application/usecases/service-order/finish-service.use-case';
 import { UpdateServiceOrderStatusUseCase } from '@/service-orders/application/usecases/service-order/update-service-order-status.use-case';
+import { FindServiceOrderStatusUseCase } from '@/service-orders/application/usecases/service-order/find-service-order-status.use-case';
+import { ServiceOrderStatusDto } from '@service-orders/application/dto/query/service-order-status.dto';
 
 @ApiTags('Service Orders')
 @Controller('service-orders')
@@ -51,6 +53,7 @@ export class ServiceOrderController {
     private readonly finishServiceOrderUseCase: FinishServiceUseCase,
     private readonly startServiceUseCase: StartServiceUseCase,
     private readonly updateServiceOrderStatusUseCase: UpdateServiceOrderStatusUseCase,
+    private readonly findServiceOrderStatusUseCase: FindServiceOrderStatusUseCase,
   ) {}
 
   @Post()
@@ -71,8 +74,16 @@ export class ServiceOrderController {
     // return this.useCase
     //   .findAll()
     //   .then((dtos) => ServiceOrderPresenter.presentMany(dtos));
-    return this.findAllServiceOrdersUseCase.execute()
+    return this.findAllServiceOrdersUseCase
+      .execute()
       .then((dtos) => ServiceOrderPresenter.presentMany(dtos));
+  }
+
+  @Get(':id/status')
+  @ApiOperation({ summary: 'Consulta o status atual de uma ordem de serviço' })
+  @ApiOkResponse({ type: ServiceOrderStatusDto })
+  findStatus(@Param('id') id: string): Promise<ServiceOrderStatusDto> {
+    return this.findServiceOrderStatusUseCase.execute(id);
   }
 
   @Get(':id')
@@ -84,7 +95,8 @@ export class ServiceOrderController {
     // return this.useCase
     //   .findOne(id)
     //   .then((dto) => ServiceOrderPresenter.presentDetail(dto));
-    return this.findOneServiceOrderUseCase.execute(id)
+    return this.findOneServiceOrderUseCase
+      .execute(id)
       .then((dto) => ServiceOrderPresenter.presentDetail(dto));
   }
 
@@ -122,7 +134,11 @@ export class ServiceOrderController {
     @Body() dto: FinishServiceOrderDto,
     @Req() req: RequestWithUser,
   ) {
-    return this.finishServiceOrderUseCase.execute(id, req.user.userId, dto.notes);
+    return this.finishServiceOrderUseCase.execute(
+      id,
+      req.user.userId,
+      dto.notes,
+    );
   }
 
   @Patch(':id/deliver')

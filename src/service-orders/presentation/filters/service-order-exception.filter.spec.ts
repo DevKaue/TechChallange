@@ -7,6 +7,7 @@ import { ServiceCatalogNotFoundException } from '@service-orders/application/exc
 import { PartNotFoundException } from '@service-orders/application/exceptions/part-not-found.exception';
 import { InvalidMaterialDataException } from '@service-orders/application/exceptions/invalid-material-data.exception';
 import { CustomerNotFoundException } from '@service-orders/application/exceptions/customer-not-found.exception';
+import { EstimateNotFoundException } from '@service-orders/application/exceptions/estimate-not-found.exception';
 
 describe('ServiceOrderExceptionFilter', () => {
   let filter: ServiceOrderExceptionFilter;
@@ -32,6 +33,7 @@ describe('ServiceOrderExceptionFilter', () => {
     [PartNotFoundException, 404, 'part-1'],
     [InvalidMaterialDataException, 400, 'Bad material'],
     [CustomerNotFoundException, 404, 'cust-1'],
+    [EstimateNotFoundException, 404, 'estimate-1'],
   ])('maps %s to status %i', (ExcClass, expectedStatus, msg) => {
     const exc = new (ExcClass as any)(msg);
     filter.catch(exc, mockHost);

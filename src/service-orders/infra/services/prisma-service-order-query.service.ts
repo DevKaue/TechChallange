@@ -5,6 +5,7 @@ import { ServiceOrderSummaryDto } from '@service-orders/application/dto/query/se
 import { ServiceOrderDetailDto } from '@service-orders/application/dto/query/service-order-detail.dto';
 import { EstimateStatus } from '@service-orders/domain/enums/estimate-status.enum';
 import { ServiceOrderStatus } from '@service-orders/domain/enums/service-order-status.enum';
+import { ServiceOrderStatusDto } from '@service-orders/application/dto/query/service-order-status.dto';
 
 const LISTABLE_STATUSES = [
   ServiceOrderStatus.IN_EXECUTION,
@@ -156,5 +157,20 @@ export class PrismaServiceOrderQueryService implements ServiceOrderQueryServiceI
         changedAt: h.changedAt,
       })),
     };
+  }
+
+  async findStatus(id: string): Promise<ServiceOrderStatusDto | null> {
+    const order = await this.prisma.serviceOrder.findUnique({
+      where: { id },
+      select: { id: true, status: true, updatedAt: true },
+    });
+
+    return order
+      ? {
+          id: order.id,
+          status: order.status as ServiceOrderStatus,
+          updatedAt: order.updatedAt,
+        }
+      : null;
   }
 }

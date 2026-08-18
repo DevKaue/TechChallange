@@ -14,7 +14,7 @@ export type {
   PersistedStatusHistory,
 };
 
-type EstimateWithItems = PersistedEstimate & {
+export type EstimateWithItems = PersistedEstimate & {
   items: PersistedEstimateItem[];
 };
 
@@ -63,10 +63,12 @@ export abstract class ServiceOrdersRepositoryInterface {
 
   abstract findById(id: string): Promise<ServiceOrderWithRelations | null>;
 
+  abstract findEstimateById(id: string): Promise<EstimateWithItems | null>;
+
   abstract update(
     id: string,
     //data: ServiceOrderUpdateData,
-    order: ServiceOrder
+    order: ServiceOrder,
   ): Promise<PersistedServiceOrder>;
 
   abstract createStatusHistory(data: {

@@ -6,6 +6,8 @@ import {
   Param,
   UseGuards,
   UseFilters,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { ServiceOrderExceptionFilter } from '@service-orders/presentation/filters/service-order-exception.filter';
 import { JwtAuthGuard } from '@/access-identity/presentation/guards/jwt-auth.guard';
@@ -19,6 +21,7 @@ import {
 //import { EstimateUseCase } from '@/service-orders/application/usecases/estimate/estimate.use-case';
 import { AddEstimateItemDto } from '@service-orders/application/dto/estimate/add-estimate-item.dto';
 import { UpdateEstimateStatusDto } from '@service-orders/application/dto/estimate/update-estimate-status.dto';
+import { EstimateApprovalNotificationDto } from '@service-orders/application/dto/estimate/estimate-approval-notification.dto';
 import { RejectEstimateDto } from '@service-orders/application/dto/estimate/reject-estimate.dto';
 import {
   EstimateResponseDto,
@@ -41,7 +44,6 @@ export class EstimateController {
     private readonly updateEstimateStatusUseCase: UpdateEstimateStatusUseCase,
     private readonly rejectEstimateUseCase: RejectEstimateUseCase,
   ) {}
-
 
   @Post(':id/estimates')
   @UseGuards(JwtAuthGuard)
@@ -74,6 +76,21 @@ export class EstimateController {
     @Body() dto: UpdateEstimateStatusDto,
   ) {
     return this.updateEstimateStatusUseCase.execute(estimateId, dto);
+  }
+
+  @Post('estimates/:estimateId/approval-notifications')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Recebe aprovação ou recusa externa do orçamento' })
+  @ApiOkResponse({ type: EstimateResponseDto })
+  handleApprovalNotification(
+    @Param('estimateId') estimateId: string,
+    @Body() dto: EstimateApprovalNotificationDto,
+  ) {
+    return this.updateEstimateStatusUseCase.execute(
+      estimateId,
+      dto,
+      'external-notification',
+    );
   }
 
   @Patch(':id/reject')

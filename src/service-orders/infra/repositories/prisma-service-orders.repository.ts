@@ -7,6 +7,7 @@ import {
   PersistedEstimate,
   PersistedEstimateItem,
   PersistedStatusHistory,
+  EstimateWithItems,
 } from '@service-orders/domain/contracts/service-orders-repository.interface';
 import { ServiceOrder } from '@service-orders/domain/entities/service-order.entity';
 import { ServiceOrderStatus } from '@service-orders/domain/enums/service-order-status.enum';
@@ -55,6 +56,22 @@ export class PrismaServiceOrdersRepository extends ServiceOrdersRepositoryInterf
     });
     return result
       ? PrismaServiceOrderMapper.toPersistenceWithRelations(result)
+      : null;
+  }
+
+  async findEstimateById(id: string): Promise<EstimateWithItems | null> {
+    const estimate = await this.prisma.estimate.findUnique({
+      where: { id },
+      include: { items: true },
+    });
+
+    return estimate
+      ? {
+          ...PrismaEstimateMapper.toPersistence(estimate),
+          items: estimate.items.map((item) =>
+            PrismaEstimateItemMapper.toPersistence(item),
+          ),
+        }
       : null;
   }
 

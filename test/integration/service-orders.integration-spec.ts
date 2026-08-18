@@ -55,6 +55,42 @@ describe('Service Orders (e2e)', () => {
         })
         .expect(404);
     });
+
+    it('should open a service order with services and parts', async () => {
+      const stockBefore = await prisma.material.findUniqueOrThrow({
+        where: { id: seed.part1Id },
+      });
+
+      const res = await request(testApp.app.getHttpServer())
+        .post('/api/service-orders')
+        .set(authHeader(attendantToken))
+        .send({
+          customerId: seed.customer1Id,
+          vehicleId: seed.vehicle1Id,
+          services: [{ referenceId: seed.service1Id, quantity: 1 }],
+          parts: [{ referenceId: seed.part1Id, quantity: 2 }],
+        })
+        .expect(201);
+
+      expect(res.body).toEqual(
+        expect.objectContaining({
+          id: expect.any(String),
+          status: ServiceOrderStatus.WAITING_APPROVAL,
+        }),
+      );
+
+      const order = await prisma.serviceOrder.findUniqueOrThrow({
+        where: { id: res.body.id },
+        include: { estimates: { include: { items: true } } },
+      });
+      expect(order.estimates).toHaveLength(1);
+      expect(order.estimates[0].items).toHaveLength(2);
+
+      const stockAfter = await prisma.material.findUniqueOrThrow({
+        where: { id: seed.part1Id },
+      });
+      expect(stockAfter.stockQuantity).toBe(stockBefore.stockQuantity - 2);
+    });
   });
 
   describe('GET /api/service-orders', () => {
@@ -316,6 +352,32 @@ describe('Service Orders (e2e)', () => {
   });
 
   describe('GET /api/service-orders/:id', () => {
+    it('should expose a public status-only endpoint', async () => {
+      const order = await prisma.serviceOrder.create({
+        data: {
+          customerId: seed.customer1Id,
+          vehicleId: seed.vehicle1Id,
+          status: ServiceOrderStatus.IN_DIAGNOSIS,
+        },
+      });
+
+      const res = await request(testApp.app.getHttpServer())
+        .get(`/api/service-orders/${order.id}/status`)
+        .expect(200);
+
+      expect(res.body).toEqual({
+        id: order.id,
+        status: ServiceOrderStatus.IN_DIAGNOSIS,
+        updatedAt: order.updatedAt.toISOString(),
+      });
+    });
+
+    it('should return 404 from status endpoint for non-existent OS', async () => {
+      await request(testApp.app.getHttpServer())
+        .get('/api/service-orders/00000000-0000-0000-0000-000000000000/status')
+        .expect(404);
+    });
+
     it('should return 404 for non-existent OS', async () => {
       await request(testApp.app.getHttpServer())
         .get('/api/service-orders/00000000-0000-0000-0000-000000000000')

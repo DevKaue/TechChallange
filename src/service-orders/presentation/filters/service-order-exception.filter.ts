@@ -11,6 +11,7 @@ import { VehicleOwnerMismatchException } from '@service-orders/application/excep
 import { InvalidMaterialDataException } from '@service-orders/application/exceptions/invalid-material-data.exception';
 import { CustomerNotFoundException } from '@service-orders/application/exceptions/customer-not-found.exception';
 import { UserNotMechanicException } from '@service-orders/domain/exceptions/user-not-mechanic.exception';
+import { EstimateNotFoundException } from '@service-orders/application/exceptions/estimate-not-found.exception';
 
 @Catch(
   ServiceOrderNotFoundException,
@@ -24,6 +25,7 @@ import { UserNotMechanicException } from '@service-orders/domain/exceptions/user
   InvalidMaterialDataException,
   CustomerNotFoundException,
   UserNotMechanicException,
+  EstimateNotFoundException,
 )
 export class ServiceOrderExceptionFilter implements ExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost) {
@@ -64,6 +66,9 @@ export class ServiceOrderExceptionFilter implements ExceptionFilter {
       status = 404;
       message = exception.message;
     } else if (exception instanceof UserNotMechanicException) {
+      status = 404;
+      message = exception.message;
+    } else if (exception instanceof EstimateNotFoundException) {
       status = 404;
       message = exception.message;
     }

@@ -7,11 +7,16 @@ import { plainToInstance } from 'class-transformer';
 import { CustomerNotFoundException } from '@service-orders/application/exceptions/customer-not-found.exception';
 import { VehicleNotFoundException } from '@service-orders/application/exceptions/vehicle-not-found.exception';
 import { VehicleOwnerMismatchException } from '@service-orders/application/exceptions/vehicle-owner-mismatch.exception';
+import { CreateEstimateUseCase } from '@service-orders/application/usecases/estimate/create-estimate.use-case';
+import { AddEstimateItemUseCase } from '@service-orders/application/usecases/estimate/add-estimate-item.use-case';
+import { ServiceOrderItemType } from '@service-orders/domain/enums/service-order-item-type.enum';
 
 export class CreateServiceOrderUseCase {
   constructor(
     private readonly repository: ServiceOrdersRepositoryInterface,
     private readonly customerManagement: CustomarManagementInterface,
+    private readonly createEstimateUseCase: CreateEstimateUseCase,
+    private readonly addEstimateItemUseCase: AddEstimateItemUseCase,
   ) {}
 
   async execute(dto: CreateServiceOrderDto) {
@@ -42,8 +47,43 @@ export class CreateServiceOrderUseCase {
       newStatus: ServiceOrderStatus.RECEIVED,
     });
 
-    return plainToInstance(ServiceOrderResponseDto, order, {
-      excludeExtraneousValues: true,
-    });
+    const hasEstimateItems = Boolean(dto.services?.length || dto.parts?.length);
+    if (hasEstimateItems) {
+      await this.createEstimateWithItems(order.id, dto);
+    }
+
+    return plainToInstance(
+      ServiceOrderResponseDto,
+      {
+        ...order,
+        status: hasEstimateItems
+          ? ServiceOrderStatus.WAITING_APPROVAL
+          : order.status,
+      },
+      {
+        excludeExtraneousValues: true,
+      },
+    );
+  }
+
+  private async createEstimateWithItems(
+    orderId: string,
+    dto: CreateServiceOrderDto,
+  ): Promise<void> {
+    const estimate = await this.createEstimateUseCase.execute(orderId);
+    const items = [
+      ...(dto.services ?? []).map((service) => ({
+        ...service,
+        itemType: ServiceOrderItemType.SERVICE,
+      })),
+      ...(dto.parts ?? []).map((part) => ({
+        ...part,
+        itemType: ServiceOrderItemType.PART,
+      })),
+    ];
+
+    for (const item of items) {
+      await this.addEstimateItemUseCase.execute(estimate.id, item);
+    }
   }
 }

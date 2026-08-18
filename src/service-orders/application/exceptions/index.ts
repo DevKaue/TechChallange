@@ -8,3 +8,4 @@ export { VehicleNotFoundException } from './vehicle-not-found.exception';
 export { VehicleOwnerMismatchException } from './vehicle-owner-mismatch.exception';
 export { InvalidMaterialDataException } from './invalid-material-data.exception';
 export { CustomerNotFoundException } from './customer-not-found.exception';
+export { EstimateNotFoundException } from './estimate-not-found.exception';

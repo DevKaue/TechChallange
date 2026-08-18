@@ -38,6 +38,7 @@ import { FindOneServiceOrderUseCase } from './application/usecases/service-order
 import { FinishServiceUseCase } from './application/usecases/service-order/finish-service.use-case';
 import { StartServiceUseCase } from './application/usecases/service-order/start-service.use-case';
 import { UpdateServiceOrderStatusUseCase } from './application/usecases/service-order/update-service-order-status.use-case';
+import { FindServiceOrderStatusUseCase } from './application/usecases/service-order/find-service-order-status.use-case';
 
 @Module({
   imports: [
@@ -72,9 +73,11 @@ import { UpdateServiceOrderStatusUseCase } from './application/usecases/service-
     },
     {
       provide: UpdateEstimateStatusUseCase,
-      useFactory: (repository: ServiceOrdersRepositoryInterface) =>
-        new UpdateEstimateStatusUseCase(repository),
-      inject: [ServiceOrdersRepositoryInterface],
+      useFactory: (
+        repository: ServiceOrdersRepositoryInterface,
+        partRepository: any,
+      ) => new UpdateEstimateStatusUseCase(repository, partRepository),
+      inject: [ServiceOrdersRepositoryInterface, PART_REPOSITORY],
     },
     {
       provide: GetAverageExecutionTimeUseCase,
@@ -104,6 +107,12 @@ import { UpdateServiceOrderStatusUseCase } from './application/usecases/service-
       provide: FindOneServiceOrderUseCase,
       useFactory: (queryService: ServiceOrderQueryServiceInterface) =>
         new FindOneServiceOrderUseCase(queryService),
+      inject: [ServiceOrderQueryServiceInterface],
+    },
+    {
+      provide: FindServiceOrderStatusUseCase,
+      useFactory: (queryService: ServiceOrderQueryServiceInterface) =>
+        new FindServiceOrderStatusUseCase(queryService),
       inject: [ServiceOrderQueryServiceInterface],
     },
     {
@@ -169,8 +178,21 @@ import { UpdateServiceOrderStatusUseCase } from './application/usecases/service-
       useFactory: (
         repository: ServiceOrdersRepositoryInterface,
         customerManagement: CustomerManagementInterface,
-      ) => new CreateServiceOrderUseCase(repository, customerManagement),
-      inject: [ServiceOrdersRepositoryInterface, CustomerManagementInterface],
+        createEstimateUseCase: CreateEstimateUseCase,
+        addEstimateItemUseCase: AddEstimateItemUseCase,
+      ) =>
+        new CreateServiceOrderUseCase(
+          repository,
+          customerManagement,
+          createEstimateUseCase,
+          addEstimateItemUseCase,
+        ),
+      inject: [
+        ServiceOrdersRepositoryInterface,
+        CustomerManagementInterface,
+        CreateEstimateUseCase,
+        AddEstimateItemUseCase,
+      ],
     },
     {
       provide: ServiceOrdersRepositoryInterface,
@@ -190,4 +212,4 @@ import { UpdateServiceOrderStatusUseCase } from './application/usecases/service-
   ],
   exports: [SERVICE_ORDERS_INTERFACE],
 })
-export class ServiceOrdersModule { }
+export class ServiceOrdersModule {}

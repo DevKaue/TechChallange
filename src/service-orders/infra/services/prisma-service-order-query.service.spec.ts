@@ -86,4 +86,29 @@ describe('PrismaServiceOrderQueryService', () => {
       'received-newer',
     ]);
   });
+
+  it('should select only the fields required by the status endpoint', async () => {
+    const updatedAt = new Date('2026-08-17T12:00:00.000Z');
+    const findUnique = jest.fn().mockResolvedValue({
+      id: 'order-1',
+      status: ServiceOrderStatus.WAITING_APPROVAL,
+      updatedAt,
+    });
+    const prisma = {
+      serviceOrder: { findUnique },
+    } as unknown as PrismaService;
+    const queryService = new PrismaServiceOrderQueryService(prisma);
+
+    const result = await queryService.findStatus('order-1');
+
+    expect(findUnique).toHaveBeenCalledWith({
+      where: { id: 'order-1' },
+      select: { id: true, status: true, updatedAt: true },
+    });
+    expect(result).toEqual({
+      id: 'order-1',
+      status: ServiceOrderStatus.WAITING_APPROVAL,
+      updatedAt,
+    });
+  });
 });
