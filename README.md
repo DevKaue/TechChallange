@@ -62,9 +62,30 @@ RECEIVED -> IN_DIAGNOSTICS -> WAITING_APPROVAL -> IN_PROGRESS -> FINISHED -> DEL
 │   ├── common/validators/  # validadores CPF/CNPJ e placa
 │   └── prisma/             # PrismaService global
 ├── test/                   # testes e2e com Supertest
+├── infra/                  # Terraform para cluster Kubernetes local e PostgreSQL
 ├── docker-compose.yml      # API, PostgreSQL e perfil opcional do SonarQube
 └── sonar-project.properties # configuração do scan SonarQube
 ```
+
+## Infraestrutura como Código - Fase 2
+
+Os scripts Terraform da Fase 2 ficam em `infra/` e provisionam um cluster Kubernetes local com Kind, namespace, variáveis da aplicação e PostgreSQL com volume persistente.
+
+```bash
+cd infra
+terraform init
+terraform plan -out=tfplan
+terraform apply tfplan
+```
+
+Depois do apply:
+
+```bash
+export KUBECONFIG="$(terraform output -raw kubeconfig_path)"
+kubectl -n "$(terraform output -raw namespace)" get all
+```
+
+Mais detalhes de recursos, variáveis e destruição do ambiente estão em `infra/README.md`.
 
 ## Como rodar com Docker (API + Banco)
 

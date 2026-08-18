@@ -1,0 +1,13 @@
+project_name          = "techchallenge"
+app_name              = "oficina-api"
+cluster_name          = "techchallenge-fase2"
+namespace             = "techchallenge"
+worker_nodes          = 2
+host_application_port = 8080
+application_node_port = 30080
+
+# Valores opcionais. Se ficarem comentados, o Terraform gera automaticamente
+# e armazena os valores no state local.
+# database_password = "troque-por-uma-senha-forte"
+# jwt_secret        = "troque-por-um-token-com-pelo-menos-32-caracteres"
+# password_salt     = "troque-por-um-salt-com-pelo-menos-32-caracteres"
