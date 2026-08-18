@@ -31,6 +31,8 @@ export class CreateServiceOrderItemDto {
   @ApiPropertyOptional({
     description: 'Optional item description',
   })
+  // Intencional: campo opcional, mas quando informado não pode ser vazio.
+  // Ausente e null são aceitos; '' é rejeitado por @IsNotEmpty.
   @IsString()
   @IsNotEmpty()
   @IsOptional()

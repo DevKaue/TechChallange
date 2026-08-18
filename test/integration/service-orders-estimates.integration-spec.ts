@@ -233,5 +233,18 @@ describe('Service Orders - Estimates (e2e)', () => {
         .send({ decision: 'REJECTED' })
         .expect(400);
     });
+
+    it('rejects estimate via webhook and moves OS back to IN_DIAGNOSIS', async () => {
+      const estimateId = await createPendingEstimate();
+      const body = JSON.stringify({ decision: 'REJECTED' });
+
+      const res = await request(testApp.app.getHttpServer())
+        .post(`/api/service-orders/estimates/${estimateId}/external-status`)
+        .set('x-webhook-signature', sign(body))
+        .send({ decision: 'REJECTED' })
+        .expect(200);
+
+      expect(res.body.status).toBe('IN_DIAGNOSIS');
+    });
   });
 });

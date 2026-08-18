@@ -51,7 +51,10 @@ export class PrismaServiceOrdersRepository extends ServiceOrdersRepositoryInterf
         customer: true,
         vehicle: true,
         mechanic: { select: { id: true, name: true, role: true } },
-        estimates: { include: { items: true } },
+        estimates: {
+          include: { items: true },
+          orderBy: { createdAt: 'desc' },
+        },
         statusHistory: { orderBy: { changedAt: 'asc' } },
       },
     });
