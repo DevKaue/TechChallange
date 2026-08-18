@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { CreateServiceOrderUseCase } from './create-service-order.use-case';
 import { ServiceOrdersRepositoryInterface } from '@service-orders/domain/contracts/service-orders-repository.interface';
 import CustomerManagementInterface from '@/common/application/contracts/customer-management.interface';
+import UnitOfWorkServiceInterface from '@/common/application/contracts/unit-of-work-service.interface';
 import { CreateEstimateUseCase } from '@service-orders/application/usecases/estimate/create-estimate.use-case';
 import { AddEstimateItemUseCase } from '@service-orders/application/usecases/estimate/add-estimate-item.use-case';
 import { ServiceOrderStatus } from '@service-orders/domain/enums/service-order-status.enum';
@@ -16,6 +17,10 @@ describe('CreateServiceOrderUseCase', () => {
   let customerManagement: jest.Mocked<CustomerManagementInterface>;
   let createEstimateUseCase: jest.Mocked<CreateEstimateUseCase>;
   let addEstimateItemUseCase: jest.Mocked<AddEstimateItemUseCase>;
+  let unitOfWork: {
+    runInTransaction: jest.Mock;
+    client: any;
+  };
 
   const mockOrder: any = {
     id: 'order-1',
@@ -53,6 +58,11 @@ describe('CreateServiceOrderUseCase', () => {
   };
 
   beforeEach(async () => {
+    unitOfWork = {
+      runInTransaction: jest.fn((work: () => Promise<unknown>) => work()),
+      client: {},
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         {
@@ -62,19 +72,26 @@ describe('CreateServiceOrderUseCase', () => {
             customerManagement: CustomerManagementInterface,
             createEstimateUseCase: CreateEstimateUseCase,
             addEstimateItemUseCase: AddEstimateItemUseCase,
+            unitOfWork: UnitOfWorkServiceInterface,
           ) =>
             new CreateServiceOrderUseCase(
               repository,
               customerManagement,
               createEstimateUseCase,
               addEstimateItemUseCase,
+              unitOfWork,
             ),
           inject: [
             ServiceOrdersRepositoryInterface,
             CustomerManagementInterface,
             CreateEstimateUseCase,
             AddEstimateItemUseCase,
+            UnitOfWorkServiceInterface,
           ],
+        },
+        {
+          provide: UnitOfWorkServiceInterface,
+          useValue: unitOfWork,
         },
         {
           provide: ServiceOrdersRepositoryInterface,

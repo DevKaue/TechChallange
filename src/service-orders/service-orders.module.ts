@@ -19,6 +19,7 @@ import { PART_REPOSITORY } from '@service-orders/domain/acls/part-repository.int
 import { SERVICE_CATALOG_REPOSITORY } from '@service-orders/domain/acls/service-catalog-repository.interface';
 import { USER_REPOSITORY } from '@service-orders/domain/acls/user-repository.interface';
 import CustomerManagementInterface from '@common/application/contracts/customer-management.interface';
+import UnitOfWorkServiceInterface from '@common/application/contracts/unit-of-work-service.interface';
 import { StartDiagnosisUseCase } from './application/usecases/diagnosis/startDiagnosis.use-case';
 import { AddEstimateItemUseCase } from './application/usecases/estimate/add-estimate-item.use-case';
 import { CreateEstimateUseCase } from './application/usecases/estimate/create-estimate.use-case';
@@ -136,6 +137,7 @@ import { WebhookAuthGuard } from './infra/guards/webhook-auth.guard';
       CustomerManagementInterface,
       CreateEstimateUseCase,
       AddEstimateItemUseCase,
+      UnitOfWorkServiceInterface,
     ]),
     createProvider(StartDiagnosisController, [StartDiagnosisUseCase]),
     createProvider(CreateEstimateController, [CreateEstimateUseCase]),

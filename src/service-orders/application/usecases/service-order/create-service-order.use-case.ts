@@ -1,5 +1,6 @@
 import { ServiceOrdersRepositoryInterface } from '@service-orders/domain/contracts/service-orders-repository.interface';
 import CustomarManagementInterface from '@common/application/contracts/customer-management.interface';
+import UnitOfWorkServiceInterface from '@common/application/contracts/unit-of-work-service.interface';
 import { ServiceOrderStatus } from '@service-orders/domain/enums/service-order-status.enum';
 import { ServiceOrderItemType } from '@service-orders/domain/enums/service-order-item-type.enum';
 import { ServiceOrderResponseDto } from '@service-orders/application/dto/service-order/service-order-response.dto';
@@ -18,6 +19,7 @@ export class CreateServiceOrderUseCase {
     private readonly customerManagement: CustomarManagementInterface,
     private readonly createEstimateUseCase: CreateEstimateUseCase,
     private readonly addEstimateItemUseCase: AddEstimateItemUseCase,
+    private readonly unitOfWork: UnitOfWorkServiceInterface,
   ) {}
 
   async execute(dto: CreateServiceOrderDto) {
@@ -36,59 +38,61 @@ export class CreateServiceOrderUseCase {
       throw new VehicleOwnerMismatchException(vehicle.id, dto.customerId);
     }
 
-    const order = await this.repository.create({
-      customerId: dto.customerId,
-      vehicleId: dto.vehicleId,
-      status: ServiceOrderStatus.RECEIVED,
-      mileage: dto.mileage ?? null,
-      notes: dto.notes ?? null,
-    });
+    return this.unitOfWork.runInTransaction(async () => {
+      const order = await this.repository.create({
+        customerId: dto.customerId,
+        vehicleId: dto.vehicleId,
+        status: ServiceOrderStatus.RECEIVED,
+        mileage: dto.mileage ?? null,
+        notes: dto.notes ?? null,
+      });
 
-    await this.repository.createStatusHistory({
-      serviceOrderId: order.id,
-      previousStatus: null,
-      newStatus: ServiceOrderStatus.RECEIVED,
-    });
+      await this.repository.createStatusHistory({
+        serviceOrderId: order.id,
+        previousStatus: null,
+        newStatus: ServiceOrderStatus.RECEIVED,
+      });
 
-    const hasItems =
-      (dto.services?.length ?? 0) > 0 || (dto.parts?.length ?? 0) > 0;
+      const hasItems =
+        (dto.services?.length ?? 0) > 0 || (dto.parts?.length ?? 0) > 0;
 
-    if (hasItems) {
-      const estimate = await this.createEstimateUseCase.execute(order.id);
+      if (hasItems) {
+        const estimate = await this.createEstimateUseCase.execute(order.id);
 
-      for (const service of dto.services ?? []) {
-        await this.addEstimateItemUseCase.execute(estimate.id, {
-          itemType: ServiceOrderItemType.SERVICE,
-          referenceId: service.referenceId,
-          quantity: service.quantity,
-          description: service.description,
-        });
+        for (const service of dto.services ?? []) {
+          await this.addEstimateItemUseCase.execute(estimate.id, {
+            itemType: ServiceOrderItemType.SERVICE,
+            referenceId: service.referenceId,
+            quantity: service.quantity,
+            description: service.description,
+          });
+        }
+
+        for (const part of dto.parts ?? []) {
+          await this.addEstimateItemUseCase.execute(estimate.id, {
+            itemType: ServiceOrderItemType.PART,
+            referenceId: part.referenceId,
+            quantity: part.quantity,
+            description: part.description,
+          });
+        }
       }
 
-      for (const part of dto.parts ?? []) {
-        await this.addEstimateItemUseCase.execute(estimate.id, {
-          itemType: ServiceOrderItemType.PART,
-          referenceId: part.referenceId,
-          quantity: part.quantity,
-          description: part.description,
-        });
-      }
-    }
+      const persisted = await this.repository.findById(order.id);
+      if (!persisted) throw new ServiceOrderNotFoundException(order.id);
 
-    const persisted = await this.repository.findById(order.id);
-    if (!persisted) throw new ServiceOrderNotFoundException(order.id);
-
-    return plainToInstance(
-      ServiceOrderResponseDto,
-      {
-        ...persisted,
-        client: persisted.customer
-          ? { id: persisted.customer.id, name: persisted.customer.name }
-          : undefined,
-      },
-      {
-        excludeExtraneousValues: true,
-      },
-    );
+      return plainToInstance(
+        ServiceOrderResponseDto,
+        {
+          ...persisted,
+          client: persisted.customer
+            ? { id: persisted.customer.id, name: persisted.customer.name }
+            : undefined,
+        },
+        {
+          excludeExtraneousValues: true,
+        },
+      );
+    });
   }
 }

@@ -1,17 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import type { ServiceCatalog as PrismaServiceCatalog } from '@prisma/client';
-import { PrismaService } from '@/common/infra/prisma/prisma.service';
+import PrismaUnitOfWorkService from '@/common/infra/services/prisma-unit-of-work.service';
 import ServiceCatalogRepositoryInterface from '@service-catalog/domain/contracts/service-catalog-repository.interface';
 import Service from '@service-catalog/domain/entities/service.entity';
 
 @Injectable()
 export class PrismaServiceCatalogRepository extends ServiceCatalogRepositoryInterface {
-  constructor(private readonly prisma: PrismaService) {
+  constructor(private readonly uow: PrismaUnitOfWorkService) {
     super();
   }
 
   async create(service: Service): Promise<void> {
-    await this.prisma.serviceCatalog.create({
+    await this.uow.client.serviceCatalog.create({
       data: {
         id: service.id,
         name: service.name,
@@ -24,21 +24,21 @@ export class PrismaServiceCatalogRepository extends ServiceCatalogRepositoryInte
   }
 
   async findAll(): Promise<Service[]> {
-    const services = await this.prisma.serviceCatalog.findMany({
+    const services = await this.uow.client.serviceCatalog.findMany({
       orderBy: { name: 'asc' },
     });
     return services.map((service) => this.toDomain(service));
   }
 
   async findById(id: string): Promise<Service | null> {
-    const service = await this.prisma.serviceCatalog.findUnique({
+    const service = await this.uow.client.serviceCatalog.findUnique({
       where: { id },
     });
     return service ? this.toDomain(service) : null;
   }
 
   async update(service: Service): Promise<void> {
-    await this.prisma.serviceCatalog.update({
+    await this.uow.client.serviceCatalog.update({
       where: { id: service.id },
       data: {
         name: service.name,
@@ -49,7 +49,7 @@ export class PrismaServiceCatalogRepository extends ServiceCatalogRepositoryInte
   }
 
   async delete(id: string): Promise<void> {
-    await this.prisma.serviceCatalog.delete({ where: { id } });
+    await this.uow.client.serviceCatalog.delete({ where: { id } });
   }
 
   private toDomain(model: PrismaServiceCatalog): Service {
