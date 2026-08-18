@@ -40,6 +40,7 @@ export class CreateServiceOrderUseCase {
       customerId: dto.customerId,
       vehicleId: dto.vehicleId,
       status: ServiceOrderStatus.RECEIVED,
+      mileage: dto.mileage ?? null,
       notes: dto.notes ?? null,
     });
 

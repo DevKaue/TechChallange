@@ -58,6 +58,7 @@ export abstract class ServiceOrdersRepositoryInterface {
     customerId: string;
     vehicleId: string;
     status: ServiceOrderStatus;
+    mileage?: number | null;
     notes?: string | null;
   }): Promise<PersistedServiceOrder>;
 

@@ -2,6 +2,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   IsArray,
+  IsInt,
   IsNotEmpty,
   IsNumber,
   IsOptional,
@@ -48,6 +49,14 @@ export class CreateServiceOrderDto {
   @IsNotEmpty()
   @IsUUID()
   vehicleId: string;
+
+  @ApiPropertyOptional({
+    description: 'Vehicle mileage at check-in (km)',
+  })
+  @IsInt()
+  @Min(0)
+  @IsOptional()
+  mileage?: number;
 
   @ApiPropertyOptional({ description: 'OS opening notes' })
   @IsString()
