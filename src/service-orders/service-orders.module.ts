@@ -1,13 +1,10 @@
 import { Module } from '@nestjs/common';
-import { ServiceOrderController } from './presentation/controllers/service-order.controller';
-import { EstimateController } from './presentation/controllers/estimate.controller';
-import { MechanicController } from './presentation/controllers/mechanic.controller';
-import { DiagnosisController } from './presentation/controllers/diagnosis.controller';
-import { MetricsController } from './presentation/controllers/metrics.controller';
-//import { ServiceOrderUseCase } from './application/usecases/service-order/service-order.use-case';
-//import { EstimateUseCase } from './application/usecases/estimate/estimate.use-case';
-//import { MechanicUseCase } from './application/usecases/mechanic/mechanic.use-case';
-//import { MetricsUseCase } from './application/usecases/metrics/get-avetage-execution-time.use-case';
+import { ServiceOrderInfraController } from './infra/controllers/service-order.controller';
+import { EstimateInfraController } from './infra/controllers/estimate.controller';
+import { EstimateNotificationInfraController } from './infra/controllers/estimate-notification.controller';
+import { MechanicInfraController } from './infra/controllers/mechanic.controller';
+import { DiagnosisInfraController } from './infra/controllers/diagnosis.controller';
+import { MetricsInfraController } from './infra/controllers/metrics.controller';
 import { ServiceOrdersRepositoryInterface } from './domain/contracts/service-orders-repository.interface';
 import { PrismaServiceOrdersRepository } from './infra/repositories/prisma-service-orders.repository';
 import { ServiceOrderQueryServiceInterface } from './application/contracts/service-order-query-service.interface';
@@ -19,9 +16,13 @@ import { ServiceCatalogModule } from '@service-catalog/infra/service-catalog.mod
 import { CustomerManagementModule } from '@customer-management/infra/customer-management.module';
 import { AccessIdentityModule } from '@access-identity/access-identity.module';
 import { PART_REPOSITORY } from '@service-orders/domain/acls/part-repository.interface';
+import type { PartRepository } from '@service-orders/domain/acls/part-repository.interface';
 import { SERVICE_CATALOG_REPOSITORY } from '@service-orders/domain/acls/service-catalog-repository.interface';
 import { USER_REPOSITORY } from '@service-orders/domain/acls/user-repository.interface';
-import CustomerManagementInterface from '@common/contracts/customer-management.interface';
+import CustomerManagementInterface from '@common/application/contracts/customer-management.interface';
+import UnitOfWorkServiceInterface from '@common/application/contracts/unit-of-work-service.interface';
+import InitialEstimateOrchestratorInterface from '@service-orders/application/contracts/initial-estimate-orchestrator.interface';
+import InitialEstimateOrchestratorService from '@service-orders/application/services/initial-estimate-orchestrator.service';
 import { StartDiagnosisUseCase } from './application/usecases/diagnosis/startDiagnosis.use-case';
 import { AddEstimateItemUseCase } from './application/usecases/estimate/add-estimate-item.use-case';
 import { CreateEstimateUseCase } from './application/usecases/estimate/create-estimate.use-case';
@@ -38,7 +39,30 @@ import { FindOneServiceOrderUseCase } from './application/usecases/service-order
 import { FinishServiceUseCase } from './application/usecases/service-order/finish-service.use-case';
 import { StartServiceUseCase } from './application/usecases/service-order/start-service.use-case';
 import { UpdateServiceOrderStatusUseCase } from './application/usecases/service-order/update-service-order-status.use-case';
-import { FindServiceOrderStatusUseCase } from './application/usecases/service-order/find-service-order-status.use-case';
+import { GetServiceOrderStatusUseCase } from './application/usecases/service-order/get-service-order-status.use-case';
+import StartDiagnosisController from './presentation/controllers/start-diagnosis.controller';
+import CreateEstimateController from './presentation/controllers/create-estimate.controller';
+import UpdateEstimateStatusController from './presentation/controllers/update-estimate-status.controller';
+import UpdateEstimateStatusExternalController from './presentation/controllers/update-estimate-status-external.controller';
+import AddEstimateItemController from './presentation/controllers/add-estimate-item.controller';
+import RejectEstimateController from './presentation/controllers/reject-estimate.controller';
+import AssignMechanicController from './presentation/controllers/assign-mechanic.controller';
+import UpdateMechanicAvailabilityController from './presentation/controllers/update-mechanic-availability.controller';
+import GetAverageExecutionTimeController from './presentation/controllers/get-average-execution-time.controller';
+import CreateServiceOrderController from './presentation/controllers/create-service-order.controller';
+import FindAllServiceOrdersController from './presentation/controllers/find-all-service-orders.controller';
+import FindOneServiceOrderController from './presentation/controllers/find-one-service-order.controller';
+import StartServiceController from './presentation/controllers/start-service.controller';
+import FinishServiceController from './presentation/controllers/finish-service.controller';
+import DeliverVehicleController from './presentation/controllers/deliver-vehicle.controller';
+import CloseServiceOrderController from './presentation/controllers/close-service-order.controller';
+import GetServiceOrderStatusController from './presentation/controllers/get-service-order-status.controller';
+import UpdateServiceOrderStatusController from './presentation/controllers/update-service-order-status.controller';
+import { DomainExceptionFilter } from '@/common/infra/filters/domain-exception.filter';
+import { EXCEPTION_STATUS_MAP } from '@/common/infra/filters/exception-status.map';
+import { serviceOrdersStatusMap } from '@/service-orders/infra/filters/service-orders-status.map';
+import { createProvider } from '@/common/infra/di/create-provider';
+import { WebhookAuthGuard } from './infra/guards/webhook-auth.guard';
 
 @Module({
   imports: [
@@ -48,91 +72,48 @@ import { FindServiceOrderStatusUseCase } from './application/usecases/service-or
     AccessIdentityModule,
   ],
   controllers: [
-    ServiceOrderController,
-    EstimateController,
-    MechanicController,
-    DiagnosisController,
-    MetricsController,
+    ServiceOrderInfraController,
+    EstimateInfraController,
+    EstimateNotificationInfraController,
+    MechanicInfraController,
+    DiagnosisInfraController,
+    MetricsInfraController,
   ],
   providers: [
-    // ServiceOrderUseCase,
-    // EstimateUseCase,
-    // MechanicUseCase,
-    // MetricsUseCase,
-    {
-      provide: StartDiagnosisUseCase,
-      useFactory: (repository: ServiceOrdersRepositoryInterface) =>
-        new StartDiagnosisUseCase(repository),
-      inject: [ServiceOrdersRepositoryInterface],
-    },
-    {
-      provide: CreateEstimateUseCase,
-      useFactory: (repository: ServiceOrdersRepositoryInterface) =>
-        new CreateEstimateUseCase(repository),
-      inject: [ServiceOrdersRepositoryInterface],
-    },
+    { provide: EXCEPTION_STATUS_MAP, useValue: serviceOrdersStatusMap },
+    DomainExceptionFilter,
+    WebhookAuthGuard,
+    createProvider(StartDiagnosisUseCase, [ServiceOrdersRepositoryInterface]),
+    createProvider(CreateEstimateUseCase, [ServiceOrdersRepositoryInterface]),
     {
       provide: UpdateEstimateStatusUseCase,
       useFactory: (
         repository: ServiceOrdersRepositoryInterface,
-        partRepository: any,
+        partRepository: PartRepository,
       ) => new UpdateEstimateStatusUseCase(repository, partRepository),
       inject: [ServiceOrdersRepositoryInterface, PART_REPOSITORY],
     },
-    {
-      provide: GetAverageExecutionTimeUseCase,
-      useFactory: (repository: ServiceOrdersRepositoryInterface) =>
-        new GetAverageExecutionTimeUseCase(repository),
-      inject: [ServiceOrdersRepositoryInterface],
-    },
-    {
-      provide: CloseServiceOrderUseCase,
-      useFactory: (repository: ServiceOrdersRepositoryInterface) =>
-        new CloseServiceOrderUseCase(repository),
-      inject: [ServiceOrdersRepositoryInterface],
-    },
-    {
-      provide: DeliverVehicleUseCase,
-      useFactory: (repository: ServiceOrdersRepositoryInterface) =>
-        new DeliverVehicleUseCase(repository),
-      inject: [ServiceOrdersRepositoryInterface],
-    },
-    {
-      provide: FindAllServiceOrdersUseCase,
-      useFactory: (queryService: ServiceOrderQueryServiceInterface) =>
-        new FindAllServiceOrdersUseCase(queryService),
-      inject: [ServiceOrderQueryServiceInterface],
-    },
-    {
-      provide: FindOneServiceOrderUseCase,
-      useFactory: (queryService: ServiceOrderQueryServiceInterface) =>
-        new FindOneServiceOrderUseCase(queryService),
-      inject: [ServiceOrderQueryServiceInterface],
-    },
-    {
-      provide: FindServiceOrderStatusUseCase,
-      useFactory: (queryService: ServiceOrderQueryServiceInterface) =>
-        new FindServiceOrderStatusUseCase(queryService),
-      inject: [ServiceOrderQueryServiceInterface],
-    },
-    {
-      provide: FinishServiceUseCase,
-      useFactory: (repository: ServiceOrdersRepositoryInterface) =>
-        new FinishServiceUseCase(repository),
-      inject: [ServiceOrdersRepositoryInterface],
-    },
-    {
-      provide: StartServiceUseCase,
-      useFactory: (repository: ServiceOrdersRepositoryInterface) =>
-        new StartServiceUseCase(repository),
-      inject: [ServiceOrdersRepositoryInterface],
-    },
-    {
-      provide: UpdateServiceOrderStatusUseCase,
-      useFactory: (repository: ServiceOrdersRepositoryInterface) =>
-        new UpdateServiceOrderStatusUseCase(repository),
-      inject: [ServiceOrdersRepositoryInterface],
-    },
+    createProvider(GetAverageExecutionTimeUseCase, [
+      ServiceOrdersRepositoryInterface,
+    ]),
+    createProvider(CloseServiceOrderUseCase, [
+      ServiceOrdersRepositoryInterface,
+    ]),
+    createProvider(DeliverVehicleUseCase, [ServiceOrdersRepositoryInterface]),
+    createProvider(FindAllServiceOrdersUseCase, [
+      ServiceOrderQueryServiceInterface,
+    ]),
+    createProvider(FindOneServiceOrderUseCase, [
+      ServiceOrderQueryServiceInterface,
+    ]),
+    createProvider(GetServiceOrderStatusUseCase, [
+      ServiceOrderQueryServiceInterface,
+    ]),
+    createProvider(FinishServiceUseCase, [ServiceOrdersRepositoryInterface]),
+    createProvider(StartServiceUseCase, [ServiceOrdersRepositoryInterface]),
+    createProvider(UpdateServiceOrderStatusUseCase, [
+      ServiceOrdersRepositoryInterface,
+    ]),
     {
       provide: AddEstimateItemUseCase,
       useFactory: (
@@ -151,49 +132,63 @@ import { FindServiceOrderStatusUseCase } from './application/usecases/service-or
         SERVICE_CATALOG_REPOSITORY,
       ],
     },
+    createProvider(RejectEstimateUseCase, [
+      ServiceOrdersRepositoryInterface,
+      PART_REPOSITORY,
+    ]),
+    createProvider(AssignMechanicUseCase, [
+      ServiceOrdersRepositoryInterface,
+      USER_REPOSITORY,
+    ]),
+    createProvider(UpdateMechanicAvailabilityUseCase, [USER_REPOSITORY]),
+    createProvider(InitialEstimateOrchestratorService, [
+      CreateEstimateUseCase,
+      AddEstimateItemUseCase,
+    ]),
     {
-      provide: RejectEstimateUseCase,
-      useFactory: (
-        repository: ServiceOrdersRepositoryInterface,
-        partRepository: any,
-      ) => new RejectEstimateUseCase(repository, partRepository),
-      inject: [ServiceOrdersRepositoryInterface, PART_REPOSITORY],
+      provide: InitialEstimateOrchestratorInterface,
+      useExisting: InitialEstimateOrchestratorService,
     },
-    {
-      provide: AssignMechanicUseCase,
-      useFactory: (
-        repository: ServiceOrdersRepositoryInterface,
-        userRepository: any,
-      ) => new AssignMechanicUseCase(repository, userRepository),
-      inject: [ServiceOrdersRepositoryInterface, USER_REPOSITORY],
-    },
-    {
-      provide: UpdateMechanicAvailabilityUseCase,
-      useFactory: (userRepository: any) =>
-        new UpdateMechanicAvailabilityUseCase(userRepository),
-      inject: [USER_REPOSITORY],
-    },
-    {
-      provide: CreateServiceOrderUseCase,
-      useFactory: (
-        repository: ServiceOrdersRepositoryInterface,
-        customerManagement: CustomerManagementInterface,
-        createEstimateUseCase: CreateEstimateUseCase,
-        addEstimateItemUseCase: AddEstimateItemUseCase,
-      ) =>
-        new CreateServiceOrderUseCase(
-          repository,
-          customerManagement,
-          createEstimateUseCase,
-          addEstimateItemUseCase,
-        ),
-      inject: [
-        ServiceOrdersRepositoryInterface,
-        CustomerManagementInterface,
-        CreateEstimateUseCase,
-        AddEstimateItemUseCase,
-      ],
-    },
+    createProvider(CreateServiceOrderUseCase, [
+      ServiceOrdersRepositoryInterface,
+      CustomerManagementInterface,
+      InitialEstimateOrchestratorInterface,
+      UnitOfWorkServiceInterface,
+    ]),
+    createProvider(StartDiagnosisController, [StartDiagnosisUseCase]),
+    createProvider(CreateEstimateController, [CreateEstimateUseCase]),
+    createProvider(UpdateEstimateStatusController, [
+      UpdateEstimateStatusUseCase,
+    ]),
+    createProvider(UpdateEstimateStatusExternalController, [
+      UpdateEstimateStatusUseCase,
+      RejectEstimateUseCase,
+      ServiceOrdersRepositoryInterface,
+    ]),
+    createProvider(AddEstimateItemController, [AddEstimateItemUseCase]),
+    createProvider(RejectEstimateController, [RejectEstimateUseCase]),
+    createProvider(AssignMechanicController, [AssignMechanicUseCase]),
+    createProvider(UpdateMechanicAvailabilityController, [
+      UpdateMechanicAvailabilityUseCase,
+    ]),
+    createProvider(GetAverageExecutionTimeController, [
+      GetAverageExecutionTimeUseCase,
+    ]),
+    createProvider(CreateServiceOrderController, [CreateServiceOrderUseCase]),
+    createProvider(FindAllServiceOrdersController, [
+      FindAllServiceOrdersUseCase,
+    ]),
+    createProvider(FindOneServiceOrderController, [FindOneServiceOrderUseCase]),
+    createProvider(GetServiceOrderStatusController, [
+      GetServiceOrderStatusUseCase,
+    ]),
+    createProvider(UpdateServiceOrderStatusController, [
+      UpdateServiceOrderStatusUseCase,
+    ]),
+    createProvider(StartServiceController, [StartServiceUseCase]),
+    createProvider(FinishServiceController, [FinishServiceUseCase]),
+    createProvider(DeliverVehicleController, [DeliverVehicleUseCase]),
+    createProvider(CloseServiceOrderController, [CloseServiceOrderUseCase]),
     {
       provide: ServiceOrdersRepositoryInterface,
       useClass: PrismaServiceOrdersRepository,

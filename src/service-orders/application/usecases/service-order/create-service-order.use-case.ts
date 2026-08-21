@@ -1,22 +1,23 @@
 import { ServiceOrdersRepositoryInterface } from '@service-orders/domain/contracts/service-orders-repository.interface';
-import CustomarManagementInterface from '@common/contracts/customer-management.interface';
-import { ServiceOrderStatus } from '@service-orders/domain/enums/service-order-status.enum';
+import CustomarManagementInterface from '@common/application/contracts/customer-management.interface';
+import UnitOfWorkServiceInterface from '@common/application/contracts/unit-of-work-service.interface';
+import InitialEstimateOrchestratorInterface from '@service-orders/application/contracts/initial-estimate-orchestrator.interface';
+import { ServiceOrder } from '@service-orders/domain/entities/service-order.entity';
 import { ServiceOrderResponseDto } from '@service-orders/application/dto/service-order/service-order-response.dto';
 import { CreateServiceOrderDto } from '@service-orders/application/dto/service-order/create-service-order.dto';
 import { plainToInstance } from 'class-transformer';
+import { randomUUID } from 'crypto';
 import { CustomerNotFoundException } from '@service-orders/application/exceptions/customer-not-found.exception';
 import { VehicleNotFoundException } from '@service-orders/application/exceptions/vehicle-not-found.exception';
 import { VehicleOwnerMismatchException } from '@service-orders/application/exceptions/vehicle-owner-mismatch.exception';
-import { CreateEstimateUseCase } from '@service-orders/application/usecases/estimate/create-estimate.use-case';
-import { AddEstimateItemUseCase } from '@service-orders/application/usecases/estimate/add-estimate-item.use-case';
-import { ServiceOrderItemType } from '@service-orders/domain/enums/service-order-item-type.enum';
+import { ServiceOrderNotFoundException } from '@service-orders/application/exceptions/service-order-not-found.exception';
 
 export class CreateServiceOrderUseCase {
   constructor(
     private readonly repository: ServiceOrdersRepositoryInterface,
     private readonly customerManagement: CustomarManagementInterface,
-    private readonly createEstimateUseCase: CreateEstimateUseCase,
-    private readonly addEstimateItemUseCase: AddEstimateItemUseCase,
+    private readonly initialEstimateOrchestrator: InitialEstimateOrchestratorInterface,
+    private readonly unitOfWork: UnitOfWorkServiceInterface,
   ) {}
 
   async execute(dto: CreateServiceOrderDto) {
@@ -35,55 +36,48 @@ export class CreateServiceOrderUseCase {
       throw new VehicleOwnerMismatchException(vehicle.id, dto.customerId);
     }
 
-    const order = await this.repository.create({
-      customerId: dto.customerId,
-      vehicleId: dto.vehicleId,
-      status: ServiceOrderStatus.RECEIVED,
-    });
+    return this.unitOfWork.runInTransaction(async () => {
+      const hasItems =
+        (dto.services?.length ?? 0) > 0 || (dto.parts?.length ?? 0) > 0;
 
-    await this.repository.createStatusHistory({
-      serviceOrderId: order.id,
-      previousStatus: null,
-      newStatus: ServiceOrderStatus.RECEIVED,
-    });
+      const order = ServiceOrder.open({ id: randomUUID() });
 
-    const hasEstimateItems = Boolean(dto.services?.length || dto.parts?.length);
-    if (hasEstimateItems) {
-      await this.createEstimateWithItems(order.id, dto);
-    }
+      const created = await this.repository.create({
+        customerId: dto.customerId,
+        vehicleId: dto.vehicleId,
+        status: order.status,
+        mileage: dto.mileage ?? null,
+        notes: dto.notes ?? null,
+      });
 
-    return plainToInstance(
-      ServiceOrderResponseDto,
-      {
-        ...order,
-        status: hasEstimateItems
-          ? ServiceOrderStatus.WAITING_APPROVAL
-          : order.status,
-      },
-      {
+      await this.repository.createStatusHistory({
+        serviceOrderId: created.id,
+        previousStatus: null,
+        newStatus: order.status,
+      });
+
+      if (hasItems) {
+        const change = order.startDiagnosis();
+        await this.repository.update(created.id, order);
+        await this.repository.createStatusHistory({
+          serviceOrderId: created.id,
+          previousStatus: change.previousStatus,
+          newStatus: change.newStatus,
+        });
+      }
+
+      await this.initialEstimateOrchestrator.execute({
+        orderId: created.id,
+        services: dto.services ?? [],
+        parts: dto.parts ?? [],
+      });
+
+      const persisted = await this.repository.findById(created.id);
+      if (!persisted) throw new ServiceOrderNotFoundException(created.id);
+
+      return plainToInstance(ServiceOrderResponseDto, persisted, {
         excludeExtraneousValues: true,
-      },
-    );
-  }
-
-  private async createEstimateWithItems(
-    orderId: string,
-    dto: CreateServiceOrderDto,
-  ): Promise<void> {
-    const estimate = await this.createEstimateUseCase.execute(orderId);
-    const items = [
-      ...(dto.services ?? []).map((service) => ({
-        ...service,
-        itemType: ServiceOrderItemType.SERVICE,
-      })),
-      ...(dto.parts ?? []).map((part) => ({
-        ...part,
-        itemType: ServiceOrderItemType.PART,
-      })),
-    ];
-
-    for (const item of items) {
-      await this.addEstimateItemUseCase.execute(estimate.id, item);
-    }
+      });
+    });
   }
 }

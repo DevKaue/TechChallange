@@ -1,7 +1,7 @@
 // import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 // import { ServiceOrdersRepositoryInterface } from '@service-orders/domain/contracts/service-orders-repository.interface';
 // import { ServiceOrderQueryServiceInterface } from '@service-orders/application/contracts/service-order-query-service.interface';
-// import CustomarManagementInterface from '@common/contracts/customer-management.interface';
+// import CustomarManagementInterface from '@common/application/contracts/customer-management.interface';
 // import { CUSTOMER_REPOSITORY } from '@service-orders/domain/acls/customer-repository.interface';
 // import type { CustomerRepository } from '@service-orders/domain/acls/customer-repository.interface';
 // import { VEHICLE_REPOSITORY } from '@service-orders/domain/acls/vehicle-repository.interface';

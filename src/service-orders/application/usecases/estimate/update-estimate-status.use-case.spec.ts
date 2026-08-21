@@ -101,6 +101,61 @@ describe('UpdateEstimateStatusUseCase', () => {
     expect(result).toHaveProperty('status', EstimateStatus.NEGOTIATED);
   });
 
+  it('should be idempotent when estimate already has the target status (APPROVED)', async () => {
+    const mockEstimate = {
+      id: 'est-1',
+      serviceOrderId: 'order-1',
+      status: EstimateStatus.APPROVED,
+      items: [],
+    } as any;
+
+    repository.findEstimateById.mockResolvedValue(mockEstimate);
+
+    const result = await useCase.execute('est-1', {
+      status: EstimateStatus.APPROVED,
+    });
+
+    expect(repository.updateEstimateStatus).not.toHaveBeenCalled();
+    expect(repository.update).not.toHaveBeenCalled();
+    expect(repository.createStatusHistory).not.toHaveBeenCalled();
+    expect(result).toHaveProperty('status', EstimateStatus.APPROVED);
+  });
+
+  it('should be idempotent when estimate already has the target status (REJECTED)', async () => {
+    const mockEstimate = {
+      id: 'est-1',
+      serviceOrderId: 'order-1',
+      status: EstimateStatus.REJECTED,
+      items: [],
+    } as any;
+
+    repository.findEstimateById.mockResolvedValue(mockEstimate);
+
+    const result = await useCase.execute('est-1', {
+      status: EstimateStatus.REJECTED,
+    });
+
+    expect(repository.updateEstimateStatus).not.toHaveBeenCalled();
+    expect(result).toHaveProperty('status', EstimateStatus.REJECTED);
+  });
+
+  it('should throw when trying to change an already APPROVED estimate', async () => {
+    const mockEstimate = {
+      id: 'est-1',
+      serviceOrderId: 'order-1',
+      status: EstimateStatus.APPROVED,
+      items: [],
+    } as any;
+
+    repository.findEstimateById.mockResolvedValue(mockEstimate);
+
+    await expect(
+      useCase.execute('est-1', { status: EstimateStatus.REJECTED }),
+    ).rejects.toThrow(InvalidStatusTransitionException);
+
+    expect(repository.updateEstimateStatus).not.toHaveBeenCalled();
+  });
+
   it('should reject estimate, return OS to diagnosis and restore parts', async () => {
     const mockEstimate = {
       id: 'est-1',
@@ -190,5 +245,7 @@ describe('UpdateEstimateStatusUseCase', () => {
         status: EstimateStatus.APPROVED,
       }),
     ).rejects.toThrow(EstimateNotFoundException);
+
+    expect(repository.updateEstimateStatus).not.toHaveBeenCalled();
   });
 });

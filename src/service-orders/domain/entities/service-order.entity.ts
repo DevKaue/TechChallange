@@ -35,6 +35,10 @@ export class ServiceOrder {
     return new ServiceOrder(props.id, props.status, props.mechanic ?? null);
   }
 
+  static open(props: { id: string }): ServiceOrder {
+    return new ServiceOrder(props.id, ServiceOrderStatus.RECEIVED, null);
+  }
+
   assignMechanic(mechanic: MechanicAssignment): void {
     if (this._status !== ServiceOrderStatus.RECEIVED) {
       throw new Error(
@@ -59,12 +63,9 @@ export class ServiceOrder {
   }
 
   requestApproval(): StatusChange {
-    if (
-      this._status !== ServiceOrderStatus.RECEIVED &&
-      this._status !== ServiceOrderStatus.IN_DIAGNOSIS
-    ) {
+    if (this._status !== ServiceOrderStatus.IN_DIAGNOSIS) {
       throw new Error(
-        `Cannot request approval when status is ${this._status}. Expected: ${ServiceOrderStatus.RECEIVED} or ${ServiceOrderStatus.IN_DIAGNOSIS}`,
+        `Cannot request approval when status is ${this._status}. Expected: ${ServiceOrderStatus.IN_DIAGNOSIS}`,
       );
     }
     const previous = this._status;

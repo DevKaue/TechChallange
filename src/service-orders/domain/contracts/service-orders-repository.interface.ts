@@ -22,6 +22,7 @@ export type ServiceOrderWithRelations = PersistedServiceOrder & {
   customer: {
     id: string;
     document: string;
+    name: string;
     email: string | null;
     phone: string | null;
     createdAt: Date;
@@ -57,6 +58,8 @@ export abstract class ServiceOrdersRepositoryInterface {
     customerId: string;
     vehicleId: string;
     status: ServiceOrderStatus;
+    mileage?: number | null;
+    notes?: string | null;
   }): Promise<PersistedServiceOrder>;
 
   abstract findAll(): Promise<PersistedServiceOrder[]>;

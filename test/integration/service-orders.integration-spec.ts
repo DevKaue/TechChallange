@@ -6,7 +6,7 @@ import {
   loginAsMechanic,
   authHeader,
 } from './setup/auth.helper';
-import { PrismaService } from '@/prisma/prisma.service';
+import { PrismaService } from '@/common/infra/prisma/prisma.service';
 import { ServiceOrderStatus } from '@/service-orders/domain/enums/service-order-status.enum';
 
 describe('Service Orders (e2e)', () => {
@@ -90,6 +90,84 @@ describe('Service Orders (e2e)', () => {
         where: { id: seed.part1Id },
       });
       expect(stockAfter.stockQuantity).toBe(stockBefore.stockQuantity - 2);
+    });
+  });
+
+  describe('POST /api/service-orders with services and parts', () => {
+    it('should create OS with initial estimate and move to WAITING_APPROVAL', async () => {
+      const res = await request(testApp.app.getHttpServer())
+        .post('/api/service-orders')
+        .set(authHeader(attendantToken))
+        .send({
+          customerId: seed.customer1Id,
+          vehicleId: seed.vehicle1Id,
+          notes: 'Cliente relatou barulho no motor',
+          services: [{ referenceId: seed.service1Id, quantity: 1 }],
+          parts: [{ referenceId: seed.part1Id, quantity: 2 }],
+        })
+        .expect(201);
+
+      expect(res.body).toHaveProperty('id');
+      expect(res.body.status).toBe(ServiceOrderStatus.WAITING_APPROVAL);
+      expect(res.body.notes).toBe('Cliente relatou barulho no motor');
+      expect(res.body.estimates).toHaveLength(1);
+      expect(res.body.estimates[0].status).toBe('PENDING');
+      expect(res.body.estimates[0].items).toHaveLength(2);
+      const itemTypes = res.body.estimates[0].items.map((i: any) => i.itemType);
+      expect(itemTypes.sort()).toEqual(['PART', 'SERVICE']);
+      expect(res.body.estimates[0].totalAmount).toBe(220);
+    });
+
+    it('should return 404 for non-existent service in the initial estimate', async () => {
+      await request(testApp.app.getHttpServer())
+        .post('/api/service-orders')
+        .set(authHeader(attendantToken))
+        .send({
+          customerId: seed.customer1Id,
+          vehicleId: seed.vehicle1Id,
+          services: [
+            {
+              referenceId: '00000000-0000-0000-0000-000000000000',
+              quantity: 1,
+            },
+          ],
+        })
+        .expect(404);
+    });
+  });
+
+  describe('GET /api/service-orders/:id/status', () => {
+    it('should return the current status with authentication', async () => {
+      const createRes = await request(testApp.app.getHttpServer())
+        .post('/api/service-orders')
+        .set(authHeader(attendantToken))
+        .send({
+          customerId: seed.customer1Id,
+          vehicleId: seed.vehicle1Id,
+        })
+        .expect(201);
+
+      const res = await request(testApp.app.getHttpServer())
+        .get(`/api/service-orders/${createRes.body.id}/status`)
+        .set(authHeader(attendantToken))
+        .expect(200);
+
+      expect(res.body).toHaveProperty('id', createRes.body.id);
+      expect(res.body).toHaveProperty('status', ServiceOrderStatus.RECEIVED);
+      expect(res.body).toHaveProperty('updatedAt');
+    });
+
+    it('should return 401 without token', async () => {
+      await request(testApp.app.getHttpServer())
+        .get('/api/service-orders/00000000-0000-0000-0000-000000000000/status')
+        .expect(401);
+    });
+
+    it('should return 404 for non-existent OS', async () => {
+      await request(testApp.app.getHttpServer())
+        .get('/api/service-orders/00000000-0000-0000-0000-000000000000/status')
+        .set(authHeader(attendantToken))
+        .expect(404);
     });
   });
 
@@ -352,32 +430,6 @@ describe('Service Orders (e2e)', () => {
   });
 
   describe('GET /api/service-orders/:id', () => {
-    it('should expose a public status-only endpoint', async () => {
-      const order = await prisma.serviceOrder.create({
-        data: {
-          customerId: seed.customer1Id,
-          vehicleId: seed.vehicle1Id,
-          status: ServiceOrderStatus.IN_DIAGNOSIS,
-        },
-      });
-
-      const res = await request(testApp.app.getHttpServer())
-        .get(`/api/service-orders/${order.id}/status`)
-        .expect(200);
-
-      expect(res.body).toEqual({
-        id: order.id,
-        status: ServiceOrderStatus.IN_DIAGNOSIS,
-        updatedAt: order.updatedAt.toISOString(),
-      });
-    });
-
-    it('should return 404 from status endpoint for non-existent OS', async () => {
-      await request(testApp.app.getHttpServer())
-        .get('/api/service-orders/00000000-0000-0000-0000-000000000000/status')
-        .expect(404);
-    });
-
     it('should return 404 for non-existent OS', async () => {
       await request(testApp.app.getHttpServer())
         .get('/api/service-orders/00000000-0000-0000-0000-000000000000')

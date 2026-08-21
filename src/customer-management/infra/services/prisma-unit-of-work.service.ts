@@ -1,5 +1,5 @@
 import UnitOfWorkServiceInterface from '@customer-management/application/contracts/unit-of-work-service.interface';
-import { PrismaService } from '@/prisma/prisma.service';
+import { PrismaService } from '@/common/infra/prisma/prisma.service';
 import { Injectable } from '@nestjs/common';
 import { AsyncLocalStorage } from 'async_hooks';
 import { Prisma } from '@prisma/client';

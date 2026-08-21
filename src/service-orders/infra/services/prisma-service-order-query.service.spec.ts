@@ -1,4 +1,4 @@
-import { PrismaService } from '@/prisma/prisma.service';
+import { PrismaService } from '@/common/infra/prisma/prisma.service';
 import { ServiceOrderStatus } from '@service-orders/domain/enums/service-order-status.enum';
 import { PrismaServiceOrderQueryService } from './prisma-service-order-query.service';
 

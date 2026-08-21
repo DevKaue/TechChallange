@@ -1,10 +1,10 @@
-import CustomerDTO from '@/common/dtos/customer.dto';
-import VehicleDTO from '@/common/dtos/vehicle.dto';
+import CustomerDTO from '@/common/application/dtos/customer.dto';
+import VehicleDTO from '@/common/application/dtos/vehicle.dto';
 import FindCustomerByIdUseCase from '@/customer-management/application/usecases/find-customer-by-id.usecase';
 import CustomerNotFoundException from '@/customer-management/domain/exceptions/customer-not-found.exception';
 import FindVehicleByIdUseCase from '@/customer-management/application/usecases/find-vehicle-by-id.usecase';
 import VehicleNotFoundException from '@/customer-management/domain/exceptions/vehicle-not-found.exception';
-import CustomerManagementInterface from '@/common/contracts/customer-management.interface';
+import CustomerManagementInterface from '@/common/application/contracts/customer-management.interface';
 
 export default class CustomerManagementFacade implements CustomerManagementInterface {
   constructor(

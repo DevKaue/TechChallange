@@ -5,9 +5,10 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { AppModule } from '@/app.module';
-import { PrismaService } from '@/prisma/prisma.service';
-import { HttpExceptionFilter } from '@/common/filters/http-exception.filter';
-import { LoggingInterceptor } from '@/common/interceptors/logging.interceptor';
+import { PrismaService } from '@/common/infra/prisma/prisma.service';
+import { HttpExceptionFilter } from '@/common/infra/filters/http-exception.filter';
+import { LoggingInterceptor } from '@/common/infra/interceptors/logging.interceptor';
+import { allExceptionStatusMaps } from '@/exception-status.registry';
 import { truncateAll } from './db-cleaner';
 
 export interface TestApp {
@@ -19,6 +20,7 @@ export async function createTestApp(): Promise<TestApp> {
   const app = await NestFactory.create(AppModule, {
     bufferLogs: true,
     logger: ['error', 'warn'],
+    rawBody: true,
   });
 
   app.useGlobalPipes(
@@ -35,7 +37,7 @@ export async function createTestApp(): Promise<TestApp> {
     new LoggingInterceptor(),
   );
 
-  app.useGlobalFilters(new HttpExceptionFilter());
+  app.useGlobalFilters(new HttpExceptionFilter(allExceptionStatusMaps));
   app.setGlobalPrefix('api');
 
   await app.init();

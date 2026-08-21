@@ -57,17 +57,16 @@ describe('ServiceOrder', () => {
     });
   });
 
-  describe('requestApproval', () => {
-    it('should transition from RECEIVED to WAITING_APPROVAL', () => {
-      const order = ServiceOrder.create(defaultProps);
-      const change = order.requestApproval();
-      expect(change).toEqual({
-        previousStatus: ServiceOrderStatus.RECEIVED,
-        newStatus: ServiceOrderStatus.WAITING_APPROVAL,
-      });
-      expect(order.status).toBe(ServiceOrderStatus.WAITING_APPROVAL);
+  describe('open', () => {
+    it('should create a new entity in RECEIVED', () => {
+      const order = ServiceOrder.open({ id: 'order-1' });
+      expect(order.id).toBe('order-1');
+      expect(order.status).toBe(ServiceOrderStatus.RECEIVED);
+      expect(order.mechanicId).toBeNull();
     });
+  });
 
+  describe('requestApproval', () => {
     it('should transition from IN_DIAGNOSIS to WAITING_APPROVAL', () => {
       const props = {
         ...defaultProps,
@@ -75,10 +74,21 @@ describe('ServiceOrder', () => {
       };
       const order = ServiceOrder.create(props);
       const change = order.requestApproval();
-      expect(change.newStatus).toBe(ServiceOrderStatus.WAITING_APPROVAL);
+      expect(change).toEqual({
+        previousStatus: ServiceOrderStatus.IN_DIAGNOSIS,
+        newStatus: ServiceOrderStatus.WAITING_APPROVAL,
+      });
+      expect(order.status).toBe(ServiceOrderStatus.WAITING_APPROVAL);
     });
 
-    it('should throw when status is not RECEIVED or IN_DIAGNOSIS', () => {
+    it('should throw when status is RECEIVED', () => {
+      const order = ServiceOrder.create(defaultProps);
+      expect(() => order.requestApproval()).toThrow(
+        'Cannot request approval when status is RECEIVED. Expected: IN_DIAGNOSIS',
+      );
+    });
+
+    it('should throw when status is IN_EXECUTION', () => {
       const props = {
         ...defaultProps,
         status: ServiceOrderStatus.IN_EXECUTION,

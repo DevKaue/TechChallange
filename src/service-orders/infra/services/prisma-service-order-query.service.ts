@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '@/prisma/prisma.service';
+import { PrismaService } from '@/common/infra/prisma/prisma.service';
 import { ServiceOrderQueryServiceInterface } from '@service-orders/application/contracts/service-order-query-service.interface';
 import { ServiceOrderSummaryDto } from '@service-orders/application/dto/query/service-order-summary.dto';
 import { ServiceOrderDetailDto } from '@service-orders/application/dto/query/service-order-detail.dto';
+import { ServiceOrderStatusDto } from '@service-orders/application/dto/query/service-order-status.dto';
 import { EstimateStatus } from '@service-orders/domain/enums/estimate-status.enum';
 import { ServiceOrderStatus } from '@service-orders/domain/enums/service-order-status.enum';
-import { ServiceOrderStatusDto } from '@service-orders/application/dto/query/service-order-status.dto';
 
 const LISTABLE_STATUSES = [
   ServiceOrderStatus.IN_EXECUTION,
@@ -21,6 +21,21 @@ const STATUS_PRIORITY = new Map(
 @Injectable()
 export class PrismaServiceOrderQueryService implements ServiceOrderQueryServiceInterface {
   constructor(private readonly prisma: PrismaService) {}
+
+  async findStatus(id: string): Promise<ServiceOrderStatusDto | null> {
+    const order = await this.prisma.serviceOrder.findUnique({
+      where: { id },
+      select: { id: true, status: true, updatedAt: true },
+    });
+
+    return order
+      ? {
+          id: order.id,
+          status: order.status as ServiceOrderStatus,
+          updatedAt: order.updatedAt,
+        }
+      : null;
+  }
 
   async findAll(): Promise<ServiceOrderSummaryDto[]> {
     const orders = await this.prisma.serviceOrder.findMany({
@@ -157,20 +172,5 @@ export class PrismaServiceOrderQueryService implements ServiceOrderQueryServiceI
         changedAt: h.changedAt,
       })),
     };
-  }
-
-  async findStatus(id: string): Promise<ServiceOrderStatusDto | null> {
-    const order = await this.prisma.serviceOrder.findUnique({
-      where: { id },
-      select: { id: true, status: true, updatedAt: true },
-    });
-
-    return order
-      ? {
-          id: order.id,
-          status: order.status as ServiceOrderStatus,
-          updatedAt: order.updatedAt,
-        }
-      : null;
   }
 }
