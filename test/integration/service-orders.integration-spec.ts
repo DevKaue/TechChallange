@@ -78,9 +78,7 @@ describe('Service Orders (e2e)', () => {
       expect(res.body.estimates).toHaveLength(1);
       expect(res.body.estimates[0].status).toBe('PENDING');
       expect(res.body.estimates[0].items).toHaveLength(2);
-      const itemTypes = res.body.estimates[0].items.map(
-        (i: any) => i.itemType,
-      );
+      const itemTypes = res.body.estimates[0].items.map((i: any) => i.itemType);
       expect(itemTypes.sort()).toEqual(['PART', 'SERVICE']);
       expect(res.body.estimates[0].totalAmount).toBe(220);
     });

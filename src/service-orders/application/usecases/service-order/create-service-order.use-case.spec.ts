@@ -61,7 +61,7 @@ describe('CreateServiceOrderUseCase', () => {
     };
     initialEstimateOrchestrator = {
       execute: jest.fn(),
-    } as jest.Mocked<InitialEstimateOrchestratorInterface>;
+    };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -152,7 +152,10 @@ describe('CreateServiceOrderUseCase', () => {
       parts: [],
     });
     expect(result).toHaveProperty('id', 'order-1');
-    expect(result).toHaveProperty('customer', { id: 'client-1', name: 'Maria' });
+    expect(result).toHaveProperty('customer', {
+      id: 'client-1',
+      name: 'Maria',
+    });
   });
 
   it('should persist mileage and notes when provided', async () => {
