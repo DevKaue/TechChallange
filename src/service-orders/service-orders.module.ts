@@ -12,7 +12,6 @@ import { PrismaServiceOrderQueryService } from './infra/services/prisma-service-
 import { SERVICE_ORDERS_INTERFACE } from './application/contracts/service-orders-public.interface';
 import { ServiceOrdersFacade } from './infra/integrations/service-orders.facade';
 import { MaterialsModule } from '@materials/infra/materials.module';
-import { ServiceCatalogModule } from '@service-catalog/infra/service-catalog.module';
 import { CustomerManagementModule } from '@customer-management/infra/customer-management.module';
 import { AccessIdentityModule } from '@access-identity/access-identity.module';
 import { PART_REPOSITORY } from '@service-orders/domain/acls/part-repository.interface';
@@ -63,14 +62,22 @@ import { EXCEPTION_STATUS_MAP } from '@/common/infra/filters/exception-status.ma
 import { serviceOrdersStatusMap } from '@/service-orders/infra/filters/service-orders-status.map';
 import { createProvider } from '@/common/infra/di/create-provider';
 import { WebhookAuthGuard } from './infra/guards/webhook-auth.guard';
+import { ServiceCatalogInfraController } from './catalog/infra/controllers/service-catalog.controller';
+import ServiceCatalogRepositoryInterface from './catalog/domain/contracts/service-catalog-repository.interface';
+import { PrismaServiceCatalogRepository } from './catalog/infra/repositories/prisma-service-catalog.repository';
+import { CreateServiceCatalogUseCase } from './catalog/application/usecases/create-service-catalog.use-case';
+import { ListServiceCatalogUseCase } from './catalog/application/usecases/list-service-catalog.use-case';
+import { FindByIdServiceCatalogUseCase } from './catalog/application/usecases/find-by-id-service-catalog.use-case';
+import { UpdateServiceCatalogUseCase } from './catalog/application/usecases/update-service-catalog.use-case';
+import { DeleteServiceCatalogUseCase } from './catalog/application/usecases/delete-service-catalog.use-case';
+import CreateServiceCatalogController from './catalog/presentation/controllers/create-service-catalog.controller';
+import ListServiceCatalogController from './catalog/presentation/controllers/list-service-catalog.controller';
+import FindServiceCatalogByIdController from './catalog/presentation/controllers/find-service-catalog-by-id.controller';
+import UpdateServiceCatalogController from './catalog/presentation/controllers/update-service-catalog.controller';
+import DeleteServiceCatalogController from './catalog/presentation/controllers/delete-service-catalog.controller';
 
 @Module({
-  imports: [
-    MaterialsModule,
-    ServiceCatalogModule,
-    CustomerManagementModule,
-    AccessIdentityModule,
-  ],
+  imports: [MaterialsModule, CustomerManagementModule, AccessIdentityModule],
   controllers: [
     ServiceOrderInfraController,
     EstimateInfraController,
@@ -78,9 +85,13 @@ import { WebhookAuthGuard } from './infra/guards/webhook-auth.guard';
     MechanicInfraController,
     DiagnosisInfraController,
     MetricsInfraController,
+    ServiceCatalogInfraController,
   ],
   providers: [
-    { provide: EXCEPTION_STATUS_MAP, useValue: serviceOrdersStatusMap },
+    {
+      provide: EXCEPTION_STATUS_MAP,
+      useValue: serviceOrdersStatusMap,
+    },
     DomainExceptionFilter,
     WebhookAuthGuard,
     createProvider(StartDiagnosisUseCase, [ServiceOrdersRepositoryInterface]),
@@ -189,6 +200,51 @@ import { WebhookAuthGuard } from './infra/guards/webhook-auth.guard';
     createProvider(FinishServiceController, [FinishServiceUseCase]),
     createProvider(DeliverVehicleController, [DeliverVehicleUseCase]),
     createProvider(CloseServiceOrderController, [CloseServiceOrderUseCase]),
+    // Service Catalog (mesclado neste contexto)
+    {
+      provide: ServiceCatalogRepositoryInterface,
+      useClass: PrismaServiceCatalogRepository,
+    },
+    createProvider(CreateServiceCatalogUseCase, [
+      ServiceCatalogRepositoryInterface,
+    ]),
+    createProvider(ListServiceCatalogUseCase, [
+      ServiceCatalogRepositoryInterface,
+    ]),
+    createProvider(FindByIdServiceCatalogUseCase, [
+      ServiceCatalogRepositoryInterface,
+    ]),
+    createProvider(UpdateServiceCatalogUseCase, [
+      ServiceCatalogRepositoryInterface,
+    ]),
+    createProvider(DeleteServiceCatalogUseCase, [
+      ServiceCatalogRepositoryInterface,
+    ]),
+    createProvider(CreateServiceCatalogController, [
+      CreateServiceCatalogUseCase,
+    ]),
+    createProvider(ListServiceCatalogController, [ListServiceCatalogUseCase]),
+    createProvider(FindServiceCatalogByIdController, [
+      FindByIdServiceCatalogUseCase,
+    ]),
+    createProvider(UpdateServiceCatalogController, [
+      UpdateServiceCatalogUseCase,
+    ]),
+    createProvider(DeleteServiceCatalogController, [
+      DeleteServiceCatalogUseCase,
+    ]),
+    // Adapta o repositório de domínio do catálogo ao contrato (ACL) usado
+    // para precificar serviços no orçamento.
+    {
+      provide: SERVICE_CATALOG_REPOSITORY,
+      useFactory: (repository: ServiceCatalogRepositoryInterface) => ({
+        findById: async (id: string) => {
+          const service = await repository.findById(id);
+          return service ? { id: service.id, price: service.price } : null;
+        },
+      }),
+      inject: [ServiceCatalogRepositoryInterface],
+    },
     {
       provide: ServiceOrdersRepositoryInterface,
       useClass: PrismaServiceOrdersRepository,
@@ -202,7 +258,7 @@ import { WebhookAuthGuard } from './infra/guards/webhook-auth.guard';
       provide: SERVICE_ORDERS_INTERFACE,
       useExisting: ServiceOrdersFacade,
     },
-    // ACLs cross-context (CUSTOMER/VEHICLE/USER/PART/SERVICE_CATALOG) são providos
+    // ACLs cross-context (CUSTOMER/VEHICLE/USER/PART) são providos
     // e exportados pelos módulos donos e chegam aqui via os imports acima.
   ],
   exports: [SERVICE_ORDERS_INTERFACE],

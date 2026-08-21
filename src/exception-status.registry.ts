@@ -2,7 +2,6 @@ import { ExceptionStatusMap } from '@/common/infra/filters/exception-status.map'
 import { accessIdentityStatusMap } from '@/access-identity/infra/filters/access-identity-status.map';
 import { customerManagementStatusMap } from '@/customer-management/infra/filters/customer-management-status.map';
 import { materialsStatusMap } from '@/materials/infra/filters/materials-status.map';
-import { serviceCatalogStatusMap } from '@/service-catalog/infra/filters/service-catalog-status.map';
 import { serviceOrdersStatusMap } from '@/service-orders/infra/filters/service-orders-status.map';
 
 /**
@@ -17,6 +16,5 @@ export const allExceptionStatusMaps: ExceptionStatusMap = [
   ...accessIdentityStatusMap,
   ...customerManagementStatusMap,
   ...materialsStatusMap,
-  ...serviceCatalogStatusMap,
   ...serviceOrdersStatusMap,
 ];

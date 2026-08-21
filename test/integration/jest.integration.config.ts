@@ -13,7 +13,6 @@ const config: Config = {
     '^@/(.*)$': '<rootDir>/src/$1',
     '^@materials/(.*)$': '<rootDir>/src/materials/$1',
     '^@service-orders/(.*)$': '<rootDir>/src/service-orders/$1',
-    '^@service-catalog/(.*)$': '<rootDir>/src/service-catalog/$1',
     '^@customer-management/(.*)$': '<rootDir>/src/customer-management/$1',
     '^@access-identity/(.*)$': '<rootDir>/src/access-identity/$1',
     '^@common/(.*)$': '<rootDir>/src/common/$1',
@@ -84,7 +83,7 @@ const config: Config = {
       functions: 80,
       lines: 80,
     },
-    'src/service-catalog/infra/repositories/': {
+    'src/service-orders/catalog/infra/repositories/': {
       statements: 80,
       branches: 70,
       functions: 80,
@@ -114,7 +113,7 @@ const config: Config = {
       functions: 80,
       lines: 80,
     },
-    'src/service-catalog/presentation/': {
+    'src/service-orders/catalog/presentation/': {
       statements: 80,
       branches: 70,
       functions: 80,

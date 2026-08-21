@@ -100,7 +100,6 @@
       "^@/(.*)$": "<rootDir>/$1",
       "^@materials/(.*)$": "<rootDir>/materials/$1",
       "^@service-orders/(.*)$": "<rootDir>/service-orders/$1",
-      "^@service-catalog/(.*)$": "<rootDir>/service-catalog/$1",
       "^@customer-management/(.*)$": "<rootDir>/customer-management/$1",
       "^@access-identity/(.*)$": "<rootDir>/access-identity/$1",
       "^@common/(.*)$": "<rootDir>/common/$1"
