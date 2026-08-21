@@ -12,7 +12,10 @@ import { LoggingInterceptor } from './common/infra/interceptors/logging.intercep
 import { allExceptionStatusMaps } from './exception-status.registry';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { bufferLogs: true });
+  const app = await NestFactory.create(AppModule, {
+    bufferLogs: true,
+    rawBody: true,
+  });
 
   app.useGlobalPipes(
     new ValidationPipe({

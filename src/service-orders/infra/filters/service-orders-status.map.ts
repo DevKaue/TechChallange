@@ -7,6 +7,7 @@ import { InvalidStatusTransitionException } from '@service-orders/application/ex
 import { PartNotFoundException } from '@service-orders/application/exceptions/part-not-found.exception';
 import { ServiceCatalogNotFoundException } from '@service-orders/application/exceptions/service-catalog-not-found.exception';
 import { ServiceOrderNotFoundException } from '@service-orders/application/exceptions/service-order-not-found.exception';
+import { EstimateNotFoundException } from '@service-orders/application/exceptions/estimate-not-found.exception';
 import { UnauthorizedMechanicException } from '@service-orders/application/exceptions/unauthorized-mechanic.exception';
 import { VehicleNotFoundException } from '@service-orders/application/exceptions/vehicle-not-found.exception';
 import { VehicleOwnerMismatchException } from '@service-orders/application/exceptions/vehicle-owner-mismatch.exception';
@@ -17,6 +18,7 @@ import { VehicleOwnerMismatchException as DomainVehicleOwnerMismatchException } 
 
 export const serviceOrdersStatusMap: ExceptionStatusMap = [
   [ServiceOrderNotFoundException, HttpStatus.NOT_FOUND],
+  [EstimateNotFoundException, HttpStatus.NOT_FOUND],
   [CustomerNotFoundException, HttpStatus.NOT_FOUND],
   [VehicleNotFoundException, HttpStatus.NOT_FOUND],
   [DomainVehicleNotFoundException, HttpStatus.NOT_FOUND],

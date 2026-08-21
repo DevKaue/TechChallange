@@ -12,7 +12,11 @@ describe('CreateServiceOrderController', () => {
 
     // Act
     const response = await controller.handle({
-      body: { customerId: 'c-1', vehicleId: 'v-1' },
+      body: {
+        customerId: 'c-1',
+        vehicleId: 'v-1',
+        services: [{ referenceId: 's-1', quantity: 1 }],
+      },
       params: undefined,
       query: undefined,
     });
@@ -23,6 +27,7 @@ describe('CreateServiceOrderController', () => {
     expect(execute).toHaveBeenCalledWith({
       customerId: 'c-1',
       vehicleId: 'v-1',
+      services: [{ referenceId: 's-1', quantity: 1 }],
     });
   });
 });

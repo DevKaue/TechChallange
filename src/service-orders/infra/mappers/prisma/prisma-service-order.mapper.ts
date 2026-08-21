@@ -118,6 +118,7 @@ export class PrismaServiceOrderMapper {
       customer: {
         id: entity.customer.id,
         document: entity.customer.document,
+        name: entity.customer.name,
         email: entity.customer.email,
         phone: entity.customer.phone,
         createdAt: entity.customer.createdAt,

@@ -1,13 +1,10 @@
 import { Module } from '@nestjs/common';
 import { ServiceOrderInfraController } from './infra/controllers/service-order.controller';
 import { EstimateInfraController } from './infra/controllers/estimate.controller';
+import { EstimateNotificationInfraController } from './infra/controllers/estimate-notification.controller';
 import { MechanicInfraController } from './infra/controllers/mechanic.controller';
 import { DiagnosisInfraController } from './infra/controllers/diagnosis.controller';
 import { MetricsInfraController } from './infra/controllers/metrics.controller';
-//import { ServiceOrderUseCase } from './application/usecases/service-order/service-order.use-case';
-//import { EstimateUseCase } from './application/usecases/estimate/estimate.use-case';
-//import { MechanicUseCase } from './application/usecases/mechanic/mechanic.use-case';
-//import { MetricsUseCase } from './application/usecases/metrics/get-avetage-execution-time.use-case';
 import { ServiceOrdersRepositoryInterface } from './domain/contracts/service-orders-repository.interface';
 import { PrismaServiceOrdersRepository } from './infra/repositories/prisma-service-orders.repository';
 import { ServiceOrderQueryServiceInterface } from './application/contracts/service-order-query-service.interface';
@@ -22,6 +19,9 @@ import { PART_REPOSITORY } from '@service-orders/domain/acls/part-repository.int
 import { SERVICE_CATALOG_REPOSITORY } from '@service-orders/domain/acls/service-catalog-repository.interface';
 import { USER_REPOSITORY } from '@service-orders/domain/acls/user-repository.interface';
 import CustomerManagementInterface from '@common/application/contracts/customer-management.interface';
+import UnitOfWorkServiceInterface from '@common/application/contracts/unit-of-work-service.interface';
+import InitialEstimateOrchestratorInterface from '@service-orders/application/contracts/initial-estimate-orchestrator.interface';
+import InitialEstimateOrchestratorService from '@service-orders/application/services/initial-estimate-orchestrator.service';
 import { StartDiagnosisUseCase } from './application/usecases/diagnosis/startDiagnosis.use-case';
 import { AddEstimateItemUseCase } from './application/usecases/estimate/add-estimate-item.use-case';
 import { CreateEstimateUseCase } from './application/usecases/estimate/create-estimate.use-case';
@@ -37,9 +37,11 @@ import { FindAllServiceOrdersUseCase } from './application/usecases/service-orde
 import { FindOneServiceOrderUseCase } from './application/usecases/service-order/find-one-service-order.use-case';
 import { FinishServiceUseCase } from './application/usecases/service-order/finish-service.use-case';
 import { StartServiceUseCase } from './application/usecases/service-order/start-service.use-case';
+import { GetServiceOrderStatusUseCase } from './application/usecases/service-order/get-service-order-status.use-case';
 import StartDiagnosisController from './presentation/controllers/start-diagnosis.controller';
 import CreateEstimateController from './presentation/controllers/create-estimate.controller';
 import UpdateEstimateStatusController from './presentation/controllers/update-estimate-status.controller';
+import UpdateEstimateStatusExternalController from './presentation/controllers/update-estimate-status-external.controller';
 import AddEstimateItemController from './presentation/controllers/add-estimate-item.controller';
 import RejectEstimateController from './presentation/controllers/reject-estimate.controller';
 import AssignMechanicController from './presentation/controllers/assign-mechanic.controller';
@@ -52,10 +54,12 @@ import StartServiceController from './presentation/controllers/start-service.con
 import FinishServiceController from './presentation/controllers/finish-service.controller';
 import DeliverVehicleController from './presentation/controllers/deliver-vehicle.controller';
 import CloseServiceOrderController from './presentation/controllers/close-service-order.controller';
+import GetServiceOrderStatusController from './presentation/controllers/get-service-order-status.controller';
 import { DomainExceptionFilter } from '@/common/infra/filters/domain-exception.filter';
 import { EXCEPTION_STATUS_MAP } from '@/common/infra/filters/exception-status.map';
 import { serviceOrdersStatusMap } from '@/service-orders/infra/filters/service-orders-status.map';
 import { createProvider } from '@/common/infra/di/create-provider';
+import { WebhookAuthGuard } from './infra/guards/webhook-auth.guard';
 
 @Module({
   imports: [
@@ -67,6 +71,7 @@ import { createProvider } from '@/common/infra/di/create-provider';
   controllers: [
     ServiceOrderInfraController,
     EstimateInfraController,
+    EstimateNotificationInfraController,
     MechanicInfraController,
     DiagnosisInfraController,
     MetricsInfraController,
@@ -74,6 +79,7 @@ import { createProvider } from '@/common/infra/di/create-provider';
   providers: [
     { provide: EXCEPTION_STATUS_MAP, useValue: serviceOrdersStatusMap },
     DomainExceptionFilter,
+    WebhookAuthGuard,
     // ServiceOrderUseCase,
     // EstimateUseCase,
     // MechanicUseCase,
@@ -94,6 +100,9 @@ import { createProvider } from '@/common/infra/di/create-provider';
       ServiceOrderQueryServiceInterface,
     ]),
     createProvider(FindOneServiceOrderUseCase, [
+      ServiceOrderQueryServiceInterface,
+    ]),
+    createProvider(GetServiceOrderStatusUseCase, [
       ServiceOrderQueryServiceInterface,
     ]),
     createProvider(FinishServiceUseCase, [ServiceOrdersRepositoryInterface]),
@@ -125,14 +134,29 @@ import { createProvider } from '@/common/infra/di/create-provider';
       USER_REPOSITORY,
     ]),
     createProvider(UpdateMechanicAvailabilityUseCase, [USER_REPOSITORY]),
+    createProvider(InitialEstimateOrchestratorService, [
+      CreateEstimateUseCase,
+      AddEstimateItemUseCase,
+    ]),
+    {
+      provide: InitialEstimateOrchestratorInterface,
+      useExisting: InitialEstimateOrchestratorService,
+    },
     createProvider(CreateServiceOrderUseCase, [
       ServiceOrdersRepositoryInterface,
       CustomerManagementInterface,
+      InitialEstimateOrchestratorInterface,
+      UnitOfWorkServiceInterface,
     ]),
     createProvider(StartDiagnosisController, [StartDiagnosisUseCase]),
     createProvider(CreateEstimateController, [CreateEstimateUseCase]),
     createProvider(UpdateEstimateStatusController, [
       UpdateEstimateStatusUseCase,
+    ]),
+    createProvider(UpdateEstimateStatusExternalController, [
+      UpdateEstimateStatusUseCase,
+      RejectEstimateUseCase,
+      ServiceOrdersRepositoryInterface,
     ]),
     createProvider(AddEstimateItemController, [AddEstimateItemUseCase]),
     createProvider(RejectEstimateController, [RejectEstimateUseCase]),
@@ -148,6 +172,9 @@ import { createProvider } from '@/common/infra/di/create-provider';
       FindAllServiceOrdersUseCase,
     ]),
     createProvider(FindOneServiceOrderController, [FindOneServiceOrderUseCase]),
+    createProvider(GetServiceOrderStatusController, [
+      GetServiceOrderStatusUseCase,
+    ]),
     createProvider(StartServiceController, [StartServiceUseCase]),
     createProvider(FinishServiceController, [FinishServiceUseCase]),
     createProvider(DeliverVehicleController, [DeliverVehicleUseCase]),

@@ -72,6 +72,14 @@ describe('CreateEstimateUseCase', () => {
       status: EstimateStatus.PENDING,
       totalAmount: 0,
     });
+    expect(repository.update).toHaveBeenCalled();
+    expect(repository.createStatusHistory).toHaveBeenCalledWith({
+      serviceOrderId: 'order-1',
+      previousStatus: ServiceOrderStatus.IN_DIAGNOSIS,
+      newStatus: ServiceOrderStatus.WAITING_APPROVAL,
+      changedBy: 'system',
+      notes: 'Estimate generated',
+    });
     expect(result).toHaveProperty('id', 'est-1');
   });
 

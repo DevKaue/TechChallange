@@ -16,3 +16,4 @@ process.env.DATABASE_URL ??=
   'postgresql://admin:adminpassword@localhost:5433/oficinadb_test?schema=public';
 process.env.JWT_SECRET ??= 'test-secret';
 process.env.PASSWORD_SALT ??= 'test-salt';
+process.env.WEBHOOK_SECRET ??= 'test-webhook-secret';

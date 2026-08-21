@@ -4,6 +4,7 @@ import { ServiceOrdersRepositoryInterface } from '@service-orders/domain/contrac
 import { ServiceOrderStatus } from '@service-orders/domain/enums/service-order-status.enum';
 import { EstimateStatus } from '@service-orders/domain/enums/estimate-status.enum';
 import { ServiceOrderNotFoundException } from '@service-orders/application/exceptions/service-order-not-found.exception';
+import { EstimateNotFoundException } from '@service-orders/application/exceptions/estimate-not-found.exception';
 import { InvalidStatusTransitionException } from '@service-orders/application/exceptions/invalid-status-transition.exception';
 
 describe('UpdateEstimateStatusUseCase', () => {
@@ -29,6 +30,7 @@ describe('UpdateEstimateStatusUseCase', () => {
         {
           provide: ServiceOrdersRepositoryInterface,
           useValue: {
+            findEstimateById: jest.fn(),
             updateEstimateStatus: jest.fn(),
             findById: jest.fn(),
             update: jest.fn(),
@@ -43,13 +45,18 @@ describe('UpdateEstimateStatusUseCase', () => {
   });
 
   it('should approve estimate and move OS to IN_EXECUTION', async () => {
-    const mockEstimate = {
+    const pendingEstimate = {
       id: 'est-1',
       serviceOrderId: 'order-1',
-      status: EstimateStatus.APPROVED,
+      status: EstimateStatus.PENDING,
     } as any;
+    const approvedEstimate = {
+      ...pendingEstimate,
+      status: EstimateStatus.APPROVED,
+    };
 
-    repository.updateEstimateStatus.mockResolvedValue(mockEstimate);
+    repository.findEstimateById.mockResolvedValue(pendingEstimate);
+    repository.updateEstimateStatus.mockResolvedValue(approvedEstimate);
     repository.findById.mockResolvedValue(mockOrder);
     repository.update.mockResolvedValue({
       ...mockOrder,
@@ -71,10 +78,14 @@ describe('UpdateEstimateStatusUseCase', () => {
     const mockEstimate = {
       id: 'est-1',
       serviceOrderId: 'order-1',
-      status: EstimateStatus.REJECTED,
+      status: EstimateStatus.PENDING,
     } as any;
 
-    repository.updateEstimateStatus.mockResolvedValue(mockEstimate);
+    repository.findEstimateById.mockResolvedValue(mockEstimate);
+    repository.updateEstimateStatus.mockResolvedValue({
+      ...mockEstimate,
+      status: EstimateStatus.REJECTED,
+    });
 
     const result = await useCase.execute('est-1', {
       status: EstimateStatus.REJECTED,
@@ -84,14 +95,70 @@ describe('UpdateEstimateStatusUseCase', () => {
     expect(result).toHaveProperty('status', EstimateStatus.REJECTED);
   });
 
-  it('should throw if service order not found after approve', async () => {
+  it('should be idempotent when estimate already has the target status (APPROVED)', async () => {
     const mockEstimate = {
       id: 'est-1',
       serviceOrderId: 'order-1',
       status: EstimateStatus.APPROVED,
     } as any;
 
-    repository.updateEstimateStatus.mockResolvedValue(mockEstimate);
+    repository.findEstimateById.mockResolvedValue(mockEstimate);
+
+    const result = await useCase.execute('est-1', {
+      status: EstimateStatus.APPROVED,
+    });
+
+    expect(repository.updateEstimateStatus).not.toHaveBeenCalled();
+    expect(repository.update).not.toHaveBeenCalled();
+    expect(repository.createStatusHistory).not.toHaveBeenCalled();
+    expect(result).toHaveProperty('status', EstimateStatus.APPROVED);
+  });
+
+  it('should be idempotent when estimate already has the target status (REJECTED)', async () => {
+    const mockEstimate = {
+      id: 'est-1',
+      serviceOrderId: 'order-1',
+      status: EstimateStatus.REJECTED,
+    } as any;
+
+    repository.findEstimateById.mockResolvedValue(mockEstimate);
+
+    const result = await useCase.execute('est-1', {
+      status: EstimateStatus.REJECTED,
+    });
+
+    expect(repository.updateEstimateStatus).not.toHaveBeenCalled();
+    expect(result).toHaveProperty('status', EstimateStatus.REJECTED);
+  });
+
+  it('should throw when trying to change an already APPROVED estimate', async () => {
+    const mockEstimate = {
+      id: 'est-1',
+      serviceOrderId: 'order-1',
+      status: EstimateStatus.APPROVED,
+    } as any;
+
+    repository.findEstimateById.mockResolvedValue(mockEstimate);
+
+    await expect(
+      useCase.execute('est-1', { status: EstimateStatus.REJECTED }),
+    ).rejects.toThrow(InvalidStatusTransitionException);
+
+    expect(repository.updateEstimateStatus).not.toHaveBeenCalled();
+  });
+
+  it('should throw if service order not found after approve', async () => {
+    const mockEstimate = {
+      id: 'est-1',
+      serviceOrderId: 'order-1',
+      status: EstimateStatus.PENDING,
+    } as any;
+
+    repository.findEstimateById.mockResolvedValue(mockEstimate);
+    repository.updateEstimateStatus.mockResolvedValue({
+      ...mockEstimate,
+      status: EstimateStatus.APPROVED,
+    });
     repository.findById.mockResolvedValue(null);
 
     await expect(
@@ -103,10 +170,14 @@ describe('UpdateEstimateStatusUseCase', () => {
     const mockEstimate = {
       id: 'est-1',
       serviceOrderId: 'order-1',
-      status: EstimateStatus.APPROVED,
+      status: EstimateStatus.PENDING,
     } as any;
 
-    repository.updateEstimateStatus.mockResolvedValue(mockEstimate);
+    repository.findEstimateById.mockResolvedValue(mockEstimate);
+    repository.updateEstimateStatus.mockResolvedValue({
+      ...mockEstimate,
+      status: EstimateStatus.APPROVED,
+    });
     repository.findById.mockResolvedValue({
       ...mockOrder,
       status: ServiceOrderStatus.RECEIVED,
@@ -115,5 +186,15 @@ describe('UpdateEstimateStatusUseCase', () => {
     await expect(
       useCase.execute('est-1', { status: EstimateStatus.APPROVED }),
     ).rejects.toThrow(InvalidStatusTransitionException);
+  });
+
+  it('should throw EstimateNotFoundException when estimate does not exist', async () => {
+    repository.findEstimateById.mockResolvedValue(null);
+
+    await expect(
+      useCase.execute('est-1', { status: EstimateStatus.APPROVED }),
+    ).rejects.toThrow(EstimateNotFoundException);
+
+    expect(repository.updateEstimateStatus).not.toHaveBeenCalled();
   });
 });

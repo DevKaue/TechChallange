@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '@/common/infra/prisma/prisma.service';
+import PrismaUnitOfWorkService from '@/common/infra/services/prisma-unit-of-work.service';
 import {
   ServiceOrdersRepositoryInterface,
   ServiceOrderWithRelations,
@@ -18,7 +18,7 @@ import { PrismaEstimateItemMapper } from '@service-orders/infra/mappers/prisma/p
 
 @Injectable()
 export class PrismaServiceOrdersRepository extends ServiceOrdersRepositoryInterface {
-  constructor(private readonly prisma: PrismaService) {
+  constructor(private readonly uow: PrismaUnitOfWorkService) {
     super();
   }
 
@@ -26,14 +26,16 @@ export class PrismaServiceOrdersRepository extends ServiceOrdersRepositoryInterf
     customerId: string;
     vehicleId: string;
     status: ServiceOrderStatus;
+    mileage?: number | null;
+    notes?: string | null;
   }): Promise<PersistedServiceOrder> {
-    const serviceOrder = await this.prisma.serviceOrder.create({ data });
+    const serviceOrder = await this.uow.client.serviceOrder.create({ data });
 
     return PrismaServiceOrderMapper.toPersistence(serviceOrder);
   }
 
   async findAll(): Promise<PersistedServiceOrder[]> {
-    const serviceOrders = await this.prisma.serviceOrder.findMany({
+    const serviceOrders = await this.uow.client.serviceOrder.findMany({
       include: { customer: true, vehicle: true },
     });
 
@@ -43,13 +45,16 @@ export class PrismaServiceOrdersRepository extends ServiceOrdersRepositoryInterf
   }
 
   async findById(id: string): Promise<ServiceOrderWithRelations | null> {
-    const result = await this.prisma.serviceOrder.findUnique({
+    const result = await this.uow.client.serviceOrder.findUnique({
       where: { id },
       include: {
         customer: true,
         vehicle: true,
         mechanic: { select: { id: true, name: true, role: true } },
-        estimates: { include: { items: true } },
+        estimates: {
+          include: { items: true },
+          orderBy: { createdAt: 'desc' },
+        },
         statusHistory: { orderBy: { changedAt: 'asc' } },
       },
     });
@@ -62,7 +67,7 @@ export class PrismaServiceOrdersRepository extends ServiceOrdersRepositoryInterf
     id: string,
     order: ServiceOrder,
   ): Promise<PersistedServiceOrder> {
-    const serviceOrder = await this.prisma.serviceOrder.update({
+    const serviceOrder = await this.uow.client.serviceOrder.update({
       where: { id },
       data: order.toUpdateData(),
       include: { mechanic: { select: { id: true, name: true } } },
@@ -78,7 +83,7 @@ export class PrismaServiceOrdersRepository extends ServiceOrdersRepositoryInterf
     changedBy?: string;
     notes?: string;
   }): Promise<PersistedStatusHistory> {
-    return this.prisma.serviceOrderStatusHistory.create({ data });
+    return this.uow.client.serviceOrderStatusHistory.create({ data });
   }
 
   async createEstimate(data: {
@@ -86,9 +91,17 @@ export class PrismaServiceOrdersRepository extends ServiceOrdersRepositoryInterf
     status: EstimateStatus;
     totalAmount: number;
   }): Promise<PersistedEstimate> {
-    const estimate = await this.prisma.estimate.create({ data });
+    const estimate = await this.uow.client.estimate.create({ data });
 
     return PrismaEstimateMapper.toPersistence(estimate);
+  }
+
+  async findEstimateById(id: string): Promise<PersistedEstimate | null> {
+    const estimate = await this.uow.client.estimate.findUnique({
+      where: { id },
+    });
+
+    return estimate ? PrismaEstimateMapper.toPersistence(estimate) : null;
   }
 
   async addEstimateItem(data: {
@@ -100,7 +113,7 @@ export class PrismaServiceOrdersRepository extends ServiceOrdersRepositoryInterf
     unitPrice: number;
     totalPrice: number;
   }): Promise<PersistedEstimateItem> {
-    const estimate = await this.prisma.estimateItem.create({ data });
+    const estimate = await this.uow.client.estimateItem.create({ data });
 
     return PrismaEstimateItemMapper.toPersistence(estimate);
   }
@@ -110,7 +123,7 @@ export class PrismaServiceOrdersRepository extends ServiceOrdersRepositoryInterf
     status: EstimateStatus,
     approvedAt?: Date,
   ): Promise<PersistedEstimate> {
-    const estimate = await this.prisma.estimate.update({
+    const estimate = await this.uow.client.estimate.update({
       where: { id },
       data: { status, ...(approvedAt ? { approvedAt } : {}) },
     });
@@ -119,12 +132,12 @@ export class PrismaServiceOrdersRepository extends ServiceOrdersRepositoryInterf
   }
 
   async recalcEstimateTotal(estimateId: string): Promise<PersistedEstimate> {
-    const aggregate = await this.prisma.estimateItem.aggregate({
+    const aggregate = await this.uow.client.estimateItem.aggregate({
       where: { estimateId },
       _sum: { totalPrice: true },
     });
 
-    const estimate = await this.prisma.estimate.update({
+    const estimate = await this.uow.client.estimate.update({
       where: { id: estimateId },
       data: { totalAmount: aggregate._sum.totalPrice ?? 0 },
     });
@@ -133,7 +146,7 @@ export class PrismaServiceOrdersRepository extends ServiceOrdersRepositoryInterf
   }
 
   async findExecutionTimes() {
-    const history = await this.prisma.serviceOrderStatusHistory.findMany({
+    const history = await this.uow.client.serviceOrderStatusHistory.findMany({
       where: {
         newStatus: {
           in: [ServiceOrderStatus.IN_EXECUTION, ServiceOrderStatus.FINISHED],

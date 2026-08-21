@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import type { Material as PrismaMaterialModel } from '@prisma/client';
-import { PrismaService } from '@/common/infra/prisma/prisma.service';
+import PrismaUnitOfWorkService from '@/common/infra/services/prisma-unit-of-work.service';
 import MaterialRepositoryInterface from '@materials/domain/contracts/material-repository.interface';
 import Material from '@materials/domain/entities/material.entity';
 import InsufficientMaterialStockException from '@materials/domain/exceptions/insufficient-material-stock.exception';
@@ -11,10 +11,10 @@ import type { PartRepository as ServiceOrdersPartRepository } from '@service-ord
 export default class PrismaMaterialRepository
   implements MaterialRepositoryInterface, ServiceOrdersPartRepository
 {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly uow: PrismaUnitOfWorkService) {}
 
   async create(material: Material): Promise<void> {
-    await this.prisma.material.create({
+    await this.uow.client.material.create({
       data: {
         id: material.id,
         name: material.name,
@@ -31,7 +31,7 @@ export default class PrismaMaterialRepository
   }
 
   async findAll(): Promise<Material[]> {
-    const materials = await this.prisma.material.findMany({
+    const materials = await this.uow.client.material.findMany({
       orderBy: { name: 'asc' },
     });
 
@@ -39,7 +39,7 @@ export default class PrismaMaterialRepository
   }
 
   async findById(id: string): Promise<Material | null> {
-    const material = await this.prisma.material.findUnique({
+    const material = await this.uow.client.material.findUnique({
       where: { id },
     });
 
@@ -47,7 +47,7 @@ export default class PrismaMaterialRepository
   }
 
   async update(material: Material): Promise<void> {
-    await this.prisma.material.update({
+    await this.uow.client.material.update({
       where: { id: material.id },
       data: {
         name: material.name,
@@ -62,7 +62,7 @@ export default class PrismaMaterialRepository
   }
 
   async delete(id: string): Promise<void> {
-    await this.prisma.material.delete({
+    await this.uow.client.material.delete({
       where: { id },
     });
   }
@@ -76,7 +76,7 @@ export default class PrismaMaterialRepository
 
     material.decrementStock(quantity);
 
-    const result = await this.prisma.material.updateMany({
+    const result = await this.uow.client.material.updateMany({
       where: {
         id: materialId,
         stockQuantity: {
@@ -100,7 +100,7 @@ export default class PrismaMaterialRepository
   }
 
   async incrementStock(materialId: string, quantity: number): Promise<void> {
-    await this.prisma.material.updateMany({
+    await this.uow.client.material.updateMany({
       where: { id: materialId },
       data: {
         stockQuantity: {

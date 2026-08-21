@@ -20,6 +20,7 @@ export async function createTestApp(): Promise<TestApp> {
   const app = await NestFactory.create(AppModule, {
     bufferLogs: true,
     logger: ['error', 'warn'],
+    rawBody: true,
   });
 
   app.useGlobalPipes(
