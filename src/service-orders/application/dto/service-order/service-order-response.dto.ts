@@ -2,7 +2,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Expose, Type } from 'class-transformer';
 import { EstimateResponseDto } from '@service-orders/application/dto/estimate/estimate-response.dto';
 
-export class ClientRefDto {
+export class CustomerRefDto {
   @ApiProperty() @Expose() id: string;
   @ApiProperty() @Expose() name: string;
 }
@@ -41,10 +41,10 @@ export class ServiceOrderResponseDto {
   @ApiProperty() @Expose() createdAt: Date;
   @ApiProperty() @Expose() updatedAt: Date;
 
-  @ApiProperty({ type: ClientRefDto })
+  @ApiProperty({ type: CustomerRefDto })
   @Expose()
-  @Type(() => ClientRefDto)
-  client?: ClientRefDto;
+  @Type(() => CustomerRefDto)
+  customer?: CustomerRefDto;
 
   @ApiProperty({ type: VehicleRefDto })
   @Expose()

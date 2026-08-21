@@ -29,6 +29,7 @@ services:
     environment:
       - DATABASE_URL=postgresql://admin:adminpassword@db:5432/oficinadb?schema=public
       - JWT_SECRET=techchallenge_secret_key_2026
+      - WEBHOOK_SECRET=techchallenge_webhook_secret_2026
       - PORT=3000
       - NODE_ENV=production
     depends_on:

@@ -24,12 +24,14 @@ import { DomainExceptionFilter } from '@/common/infra/filters/domain-exception.f
 import { CreateServiceOrderDto } from '@service-orders/application/dto/service-order/create-service-order.dto';
 import { FinishServiceOrderDto } from '@service-orders/application/dto/service-order/finish-service-order.dto';
 import { ServiceOrderResponseDto } from '@service-orders/application/dto/service-order/service-order-response.dto';
+import { ServiceOrderStatusDto } from '@service-orders/application/dto/query/service-order-status.dto';
 import CloseServiceOrderController from '@service-orders/presentation/controllers/close-service-order.controller';
 import CreateServiceOrderController from '@service-orders/presentation/controllers/create-service-order.controller';
 import DeliverVehicleController from '@service-orders/presentation/controllers/deliver-vehicle.controller';
 import FindAllServiceOrdersController from '@service-orders/presentation/controllers/find-all-service-orders.controller';
 import FindOneServiceOrderController from '@service-orders/presentation/controllers/find-one-service-order.controller';
 import FinishServiceController from '@service-orders/presentation/controllers/finish-service.controller';
+import GetServiceOrderStatusController from '@service-orders/presentation/controllers/get-service-order-status.controller';
 import StartServiceController from '@service-orders/presentation/controllers/start-service.controller';
 import {
   ServiceOrderDetailResponse,
@@ -50,6 +52,7 @@ export class ServiceOrderInfraController {
     private readonly findOneServiceOrderController: FindOneServiceOrderController,
     private readonly finishServiceController: FinishServiceController,
     private readonly startServiceController: StartServiceController,
+    private readonly getServiceOrderStatusController: GetServiceOrderStatusController,
   ) {}
 
   @Post()
@@ -83,6 +86,19 @@ export class ServiceOrderInfraController {
     @Param('id') id: string,
   ): Promise<HttpResponse<ServiceOrderDetailResponse>> {
     return adaptNestRoute(this.findOneServiceOrderController, {
+      body: undefined,
+      params: { id },
+      query: undefined,
+    });
+  }
+
+  @Get(':id/status')
+  @ApiOperation({ summary: 'Consulta do status atual da OS' })
+  @ApiOkResponse({ type: ServiceOrderStatusDto })
+  findStatus(
+    @Param('id') id: string,
+  ): Promise<HttpResponse<ServiceOrderStatusDto>> {
+    return adaptNestRoute(this.getServiceOrderStatusController, {
       body: undefined,
       params: { id },
       query: undefined,
