@@ -265,4 +265,53 @@ describe('ServiceOrder', () => {
       );
     });
   });
+
+  describe('updateStatus', () => {
+    it('should use the domain transition for the requested status', () => {
+      const order = ServiceOrder.create(defaultProps);
+
+      const change = order.updateStatus(
+        ServiceOrderStatus.IN_DIAGNOSIS,
+        'attendant-1',
+      );
+
+      expect(change).toEqual({
+        previousStatus: ServiceOrderStatus.RECEIVED,
+        newStatus: ServiceOrderStatus.IN_DIAGNOSIS,
+      });
+    });
+
+    it('should return to diagnosis when an estimate is rejected', () => {
+      const order = ServiceOrder.create({
+        ...defaultProps,
+        status: ServiceOrderStatus.WAITING_APPROVAL,
+      });
+
+      const change = order.updateStatus(
+        ServiceOrderStatus.IN_DIAGNOSIS,
+        'attendant-1',
+      );
+
+      expect(change.newStatus).toBe(ServiceOrderStatus.IN_DIAGNOSIS);
+    });
+
+    it('should not allow the status to return to RECEIVED', () => {
+      const order = ServiceOrder.create({
+        ...defaultProps,
+        status: ServiceOrderStatus.IN_DIAGNOSIS,
+      });
+
+      expect(() =>
+        order.updateStatus(ServiceOrderStatus.RECEIVED, 'attendant-1'),
+      ).toThrow('Cannot move a service order back to RECEIVED');
+    });
+
+    it('should not create a transition to the current status', () => {
+      const order = ServiceOrder.create(defaultProps);
+
+      expect(() =>
+        order.updateStatus(ServiceOrderStatus.RECEIVED, 'attendant-1'),
+      ).toThrow('Service order is already in status RECEIVED');
+    });
+  });
 });

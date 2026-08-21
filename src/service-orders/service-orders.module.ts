@@ -16,6 +16,7 @@ import { ServiceCatalogModule } from '@service-catalog/infra/service-catalog.mod
 import { CustomerManagementModule } from '@customer-management/infra/customer-management.module';
 import { AccessIdentityModule } from '@access-identity/access-identity.module';
 import { PART_REPOSITORY } from '@service-orders/domain/acls/part-repository.interface';
+import type { PartRepository } from '@service-orders/domain/acls/part-repository.interface';
 import { SERVICE_CATALOG_REPOSITORY } from '@service-orders/domain/acls/service-catalog-repository.interface';
 import { USER_REPOSITORY } from '@service-orders/domain/acls/user-repository.interface';
 import CustomerManagementInterface from '@common/application/contracts/customer-management.interface';
@@ -37,6 +38,7 @@ import { FindAllServiceOrdersUseCase } from './application/usecases/service-orde
 import { FindOneServiceOrderUseCase } from './application/usecases/service-order/find-one-service-order.use-case';
 import { FinishServiceUseCase } from './application/usecases/service-order/finish-service.use-case';
 import { StartServiceUseCase } from './application/usecases/service-order/start-service.use-case';
+import { UpdateServiceOrderStatusUseCase } from './application/usecases/service-order/update-service-order-status.use-case';
 import { GetServiceOrderStatusUseCase } from './application/usecases/service-order/get-service-order-status.use-case';
 import StartDiagnosisController from './presentation/controllers/start-diagnosis.controller';
 import CreateEstimateController from './presentation/controllers/create-estimate.controller';
@@ -55,6 +57,7 @@ import FinishServiceController from './presentation/controllers/finish-service.c
 import DeliverVehicleController from './presentation/controllers/deliver-vehicle.controller';
 import CloseServiceOrderController from './presentation/controllers/close-service-order.controller';
 import GetServiceOrderStatusController from './presentation/controllers/get-service-order-status.controller';
+import UpdateServiceOrderStatusController from './presentation/controllers/update-service-order-status.controller';
 import { DomainExceptionFilter } from '@/common/infra/filters/domain-exception.filter';
 import { EXCEPTION_STATUS_MAP } from '@/common/infra/filters/exception-status.map';
 import { serviceOrdersStatusMap } from '@/service-orders/infra/filters/service-orders-status.map';
@@ -80,15 +83,16 @@ import { WebhookAuthGuard } from './infra/guards/webhook-auth.guard';
     { provide: EXCEPTION_STATUS_MAP, useValue: serviceOrdersStatusMap },
     DomainExceptionFilter,
     WebhookAuthGuard,
-    // ServiceOrderUseCase,
-    // EstimateUseCase,
-    // MechanicUseCase,
-    // MetricsUseCase,
     createProvider(StartDiagnosisUseCase, [ServiceOrdersRepositoryInterface]),
     createProvider(CreateEstimateUseCase, [ServiceOrdersRepositoryInterface]),
-    createProvider(UpdateEstimateStatusUseCase, [
-      ServiceOrdersRepositoryInterface,
-    ]),
+    {
+      provide: UpdateEstimateStatusUseCase,
+      useFactory: (
+        repository: ServiceOrdersRepositoryInterface,
+        partRepository: PartRepository,
+      ) => new UpdateEstimateStatusUseCase(repository, partRepository),
+      inject: [ServiceOrdersRepositoryInterface, PART_REPOSITORY],
+    },
     createProvider(GetAverageExecutionTimeUseCase, [
       ServiceOrdersRepositoryInterface,
     ]),
@@ -107,6 +111,9 @@ import { WebhookAuthGuard } from './infra/guards/webhook-auth.guard';
     ]),
     createProvider(FinishServiceUseCase, [ServiceOrdersRepositoryInterface]),
     createProvider(StartServiceUseCase, [ServiceOrdersRepositoryInterface]),
+    createProvider(UpdateServiceOrderStatusUseCase, [
+      ServiceOrdersRepositoryInterface,
+    ]),
     {
       provide: AddEstimateItemUseCase,
       useFactory: (
@@ -174,6 +181,9 @@ import { WebhookAuthGuard } from './infra/guards/webhook-auth.guard';
     createProvider(FindOneServiceOrderController, [FindOneServiceOrderUseCase]),
     createProvider(GetServiceOrderStatusController, [
       GetServiceOrderStatusUseCase,
+    ]),
+    createProvider(UpdateServiceOrderStatusController, [
+      UpdateServiceOrderStatusUseCase,
     ]),
     createProvider(StartServiceController, [StartServiceUseCase]),
     createProvider(FinishServiceController, [FinishServiceUseCase]),

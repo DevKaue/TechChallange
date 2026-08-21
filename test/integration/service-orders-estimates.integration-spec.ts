@@ -40,6 +40,10 @@ describe('Service Orders - Estimates (e2e)', () => {
     return osId;
   }
 
+  const webhookSecret = process.env.WEBHOOK_SECRET ?? 'test-webhook-secret';
+  const sign = (body: string) =>
+    `sha256=${createHmac('sha256', webhookSecret).update(body).digest('hex')}`;
+
   describe('Estimate CRUD', () => {
     it('should create estimate for diagnosed OS', async () => {
       const osId = await createAndDiagnoseOS();
@@ -116,6 +120,26 @@ describe('Service Orders - Estimates (e2e)', () => {
       expect(res.body.status).toBe('APPROVED');
     });
 
+    it('should receive an external approval notification without JWT', async () => {
+      const osId = await createAndDiagnoseOS();
+      const estRes = await request(testApp.app.getHttpServer())
+        .post(`/api/service-orders/${osId}/estimates`)
+        .set(authHeader(token));
+
+      const body = JSON.stringify({ decision: 'APPROVED' });
+      const res = await request(testApp.app.getHttpServer())
+        .post(`/api/service-orders/estimates/${estRes.body.id}/external-status`)
+        .set('x-webhook-signature', sign(body))
+        .send({ decision: 'APPROVED' })
+        .expect(200);
+
+      expect(res.body.status).toBe('APPROVED');
+      const order = await prisma.serviceOrder.findUniqueOrThrow({
+        where: { id: osId },
+      });
+      expect(order.status).toBe('IN_EXECUTION');
+    });
+
     it('should reject estimate via status endpoint', async () => {
       const osId = await createAndDiagnoseOS();
 
@@ -130,6 +154,56 @@ describe('Service Orders - Estimates (e2e)', () => {
         .expect(200);
 
       expect(res.body.status).toBe('REJECTED');
+    });
+
+    it('should receive an external rejection and restore reserved parts', async () => {
+      const osId = await createAndDiagnoseOS();
+      const estRes = await request(testApp.app.getHttpServer())
+        .post(`/api/service-orders/${osId}/estimates`)
+        .set(authHeader(token));
+      const stockBefore = await prisma.material.findUniqueOrThrow({
+        where: { id: seed.part1Id },
+      });
+
+      await request(testApp.app.getHttpServer())
+        .post(`/api/service-orders/estimates/${estRes.body.id}/items`)
+        .set(authHeader(token))
+        .send({
+          itemType: 'PART',
+          referenceId: seed.part1Id,
+          quantity: 2,
+        })
+        .expect(201);
+
+      const body = JSON.stringify({ decision: 'REJECTED' });
+      const res = await request(testApp.app.getHttpServer())
+        .post(`/api/service-orders/estimates/${estRes.body.id}/external-status`)
+        .set('x-webhook-signature', sign(body))
+        .send({ decision: 'REJECTED' })
+        .expect(200);
+
+      expect(res.body.status).toBe('IN_DIAGNOSIS');
+      const order = await prisma.serviceOrder.findUniqueOrThrow({
+        where: { id: osId },
+      });
+      expect(order.status).toBe('IN_DIAGNOSIS');
+
+      const stockAfter = await prisma.material.findUniqueOrThrow({
+        where: { id: seed.part1Id },
+      });
+      expect(stockAfter.stockQuantity).toBe(stockBefore.stockQuantity);
+
+      const history = await prisma.serviceOrderStatusHistory.findFirstOrThrow({
+        where: { serviceOrderId: osId },
+        orderBy: { changedAt: 'desc' },
+      });
+      expect(history).toEqual(
+        expect.objectContaining({
+          changedBy: null,
+          notes: 'Recusado via notificação externa',
+          newStatus: 'IN_DIAGNOSIS',
+        }),
+      );
     });
 
     it('should reject estimate via /reject endpoint (returns to diagnosis)', async () => {
@@ -150,12 +224,6 @@ describe('Service Orders - Estimates (e2e)', () => {
   });
 
   describe('Estimate external notification (webhook)', () => {
-    const webhookSecret = process.env.WEBHOOK_SECRET ?? 'test-webhook-secret';
-    const sign = (body: string) =>
-      `sha256=${createHmac('sha256', webhookSecret)
-        .update(body)
-        .digest('hex')}`;
-
     async function createPendingEstimate(): Promise<string> {
       const osId = await createAndDiagnoseOS();
       const estRes = await request(testApp.app.getHttpServer())

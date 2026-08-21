@@ -40,6 +40,7 @@ describe('RejectEstimateUseCase', () => {
           useValue: {
             findById: jest.fn(),
             update: jest.fn(),
+            updateEstimateStatus: jest.fn(),
             createStatusHistory: jest.fn(),
           },
         },
@@ -102,6 +103,10 @@ describe('RejectEstimateUseCase', () => {
 
     expect(partRepository.incrementStock).toHaveBeenCalledTimes(1);
     expect(partRepository.incrementStock).toHaveBeenCalledWith('part-1', 3);
+    expect(repository.updateEstimateStatus).toHaveBeenCalledWith(
+      'est-1',
+      EstimateStatus.REJECTED,
+    );
   });
 
   it('should throw if order not found', async () => {

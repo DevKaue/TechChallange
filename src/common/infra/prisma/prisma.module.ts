@@ -13,10 +13,6 @@ import UnitOfWorkServiceInterface from '@/common/application/contracts/unit-of-w
       useClass: PrismaUnitOfWorkService,
     },
   ],
-  exports: [
-    PrismaService,
-    PrismaUnitOfWorkService,
-    UnitOfWorkServiceInterface,
-  ],
+  exports: [PrismaService, PrismaUnitOfWorkService, UnitOfWorkServiceInterface],
 })
 export class PrismaModule {}

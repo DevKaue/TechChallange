@@ -6,9 +6,7 @@ import { CreateEstimateUseCase } from '@service-orders/application/usecases/esti
 import { AddEstimateItemUseCase } from '@service-orders/application/usecases/estimate/add-estimate-item.use-case';
 import { ServiceOrderItemType } from '@service-orders/domain/enums/service-order-item-type.enum';
 
-export default class InitialEstimateOrchestratorService
-  implements InitialEstimateOrchestratorInterface
-{
+export default class InitialEstimateOrchestratorService implements InitialEstimateOrchestratorInterface {
   constructor(
     private readonly createEstimateUseCase: CreateEstimateUseCase,
     private readonly addEstimateItemUseCase: AddEstimateItemUseCase,

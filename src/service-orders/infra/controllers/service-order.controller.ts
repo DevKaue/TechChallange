@@ -17,12 +17,14 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import type { AuthenticatedRequest } from '@/access-identity/presentation/authenticated-request';
+import type { RequestWithUser } from '@/access-identity/presentation/interfaces/authenticated-user.interface';
 import { JwtAuthGuard } from '@/access-identity/infra/guards/jwt-auth.guard';
 import { adaptNestRoute } from '@/common/presentation/adapters/nest-route.adapter';
 import type { HttpResponse } from '@/common/application/contracts/http';
 import { DomainExceptionFilter } from '@/common/infra/filters/domain-exception.filter';
 import { CreateServiceOrderDto } from '@service-orders/application/dto/service-order/create-service-order.dto';
 import { FinishServiceOrderDto } from '@service-orders/application/dto/service-order/finish-service-order.dto';
+import { UpdateServiceOrderStatusDto } from '@service-orders/application/dto/service-order/update-service-order-status.dto';
 import { ServiceOrderResponseDto } from '@service-orders/application/dto/service-order/service-order-response.dto';
 import { ServiceOrderStatusDto } from '@service-orders/application/dto/query/service-order-status.dto';
 import CloseServiceOrderController from '@service-orders/presentation/controllers/close-service-order.controller';
@@ -33,6 +35,7 @@ import FindOneServiceOrderController from '@service-orders/presentation/controll
 import FinishServiceController from '@service-orders/presentation/controllers/finish-service.controller';
 import GetServiceOrderStatusController from '@service-orders/presentation/controllers/get-service-order-status.controller';
 import StartServiceController from '@service-orders/presentation/controllers/start-service.controller';
+import UpdateServiceOrderStatusController from '@service-orders/presentation/controllers/update-service-order-status.controller';
 import {
   ServiceOrderDetailResponse,
   ServiceOrderSummaryResponse,
@@ -53,6 +56,7 @@ export class ServiceOrderInfraController {
     private readonly finishServiceController: FinishServiceController,
     private readonly startServiceController: StartServiceController,
     private readonly getServiceOrderStatusController: GetServiceOrderStatusController,
+    private readonly updateServiceOrderStatusController: UpdateServiceOrderStatusController,
   ) {}
 
   @Post()
@@ -100,6 +104,25 @@ export class ServiceOrderInfraController {
   ): Promise<HttpResponse<ServiceOrderStatusDto>> {
     return adaptNestRoute(this.getServiceOrderStatusController, {
       body: undefined,
+      params: { id },
+      query: undefined,
+    });
+  }
+
+  @Patch(':id/status')
+  @ApiOperation({ summary: 'Atualiza o status atual da OS' })
+  @ApiOkResponse({ type: ServiceOrderResponseDto })
+  updateStatus(
+    @Param('id') id: string,
+    @Body() dto: UpdateServiceOrderStatusDto,
+    @Req() req: RequestWithUser,
+  ): Promise<HttpResponse<ServiceOrderResponseDto>> {
+    return adaptNestRoute(this.updateServiceOrderStatusController, {
+      body: {
+        ...dto,
+        userId: req.user.userId,
+        email: req.user.email,
+      },
       params: { id },
       query: undefined,
     });
