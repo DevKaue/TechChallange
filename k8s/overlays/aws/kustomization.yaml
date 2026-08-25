@@ -32,7 +32,8 @@ images:
     # "ACCOUNT_ID" ou "PLACEHOLDER" — erro impossível de confundir.
     # Confira antes com:
     #   kubectl kustomize k8s/overlays/aws | grep "image:"
-    newName: ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/techchallenge-api
+    #newName: ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/techchallenge-api
+    newName: ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com/techchallenge-api
     newTag: PLACEHOLDER
 
 # SEM secretGenerator e SEM namespace.yaml: os dois são criados pelo Terraform
