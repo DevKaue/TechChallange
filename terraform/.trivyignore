@@ -28,3 +28,7 @@ AWS-0176
 # funcionar sem intervenção manual, para não deixar recurso queimando crédito.
 # Em produção de verdade seria `true`.
 AWS-0177
+
+# AWS-0077 — RDS com retention period baixo de backup (1 dia).
+# Deliberado: ambiente de teste/descartável, não necessita de retenção longa de backup.
+AWS-0077
