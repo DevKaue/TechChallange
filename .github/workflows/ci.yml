@@ -194,7 +194,7 @@ jobs:
       #                da comunidade, que não são nosso código.
       #   trivyignore → decisões conscientes, cada uma com o porquê no arquivo.
       - name: Scan de misconfiguração (trivy)
-        uses: aquasecurity/trivy-action@v0.28.0
+        uses: aquasecurity/trivy-action@v0.29.0
         with:
           scan-type: config
           scan-ref: terraform
