@@ -1,0 +1,25 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: techchallenge
+
+# Forma moderna (commonLabels está deprecada). includeSelectors: false é
+# deliberado: selector de Deployment é IMUTÁVEL, então não se deve injetar
+# label gerado nele — removê-la depois quebraria o apply.
+labels:
+  - pairs:
+      app.kubernetes.io/part-of: techchallenge
+    includeSelectors: false
+
+# O Namespace NÃO está aqui: no overlay local ele é criado pelo Kustomize; no
+# aws, pelo Terraform (que precisa dele para criar o Secret antes do apply).
+# Dois donos para o mesmo objeto seria pior que esta assimetria.
+resources:
+  - serviceaccount.yaml
+  - rbac.yaml
+  - configmap.yaml
+  - deployment.yaml
+  - service.yaml
+  - networkpolicy.yaml
+  - hpa.yaml
+  - pdb.yaml
