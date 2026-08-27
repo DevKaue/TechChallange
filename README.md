@@ -47,6 +47,16 @@ Fluxo principal da OS:
 RECEIVED -> IN_DIAGNOSTICS -> WAITING_APPROVAL -> IN_PROGRESS -> FINISHED -> DELIVERED
 ```
 
+## Desenho da arquitetura proposta
+
+Os diagramas do projeto ficam em `docs/diagrams` (formato Mermaid).
+
+O fluxo de deploy descreve o pipeline de CI/CD até o ambiente de produção em AWS:
+
+| Diagrama | Conteúdo |
+|---|---|
+| [docs/diagrams/07-fluxo-deploy.mmd](docs/diagrams/07-fluxo-deploy.mmd) | Fluxo de deploy: CI, push no ECR e rollout no EKS |
+
 ## Estrutura principal
 
 ```text
