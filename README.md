@@ -30,6 +30,17 @@ A modelagem foi alinhada com as notas do Obsidian em `Pessoal/Pós Graduação/F
 | Segurança / scan | SonarQube | SAST, cobertura, vulnerabilidades e code smells em um único painel. |
 | Controle de versão | Git + GitHub | Base preparada para repositório privado e colaboração do time. |
 
+## ADRs (Architecture Decision Records)
+
+As ADRs do projeto estão em [docs/ADRs](docs/ADRs):
+
+- [ADR-001-monolito-modular-bounded-contexts.md](docs/ADRs/ADR-001-monolito-modular-bounded-contexts.md)
+- [ADR-002-clean-architecture-ddd-tatico-por-modulo.md](docs/ADRs/ADR-002-clean-architecture-ddd-tatico-por-modulo.md)
+- [ADR-003-nodejs-typescript-nest.md](docs/ADRs/ADR-003-nodejs-typescript-nest.md)
+- [ADR-004-postgresql-como-banco-principal.md](docs/ADRs/ADR-004-postgresql-como-banco-principal.md)
+
+> Observação: essas ADRs foram inseridas na Fase 2 da Pós-Graduação FIAP.
+
 ## Arquitetura
 
 O MVP segue um monólito modular. A aplicação fica em um único deploy, mas os módulos refletem os bounded contexts do domínio para facilitar manutenção e futura separação, caso necessário.
