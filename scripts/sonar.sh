@@ -67,7 +67,11 @@ if [ "$IN_CONTAINER" = true ]; then
 else
   echo "  On host — running scanner..."
   cd "$ROOT_DIR"
-  sonar-scanner -Dsonar.host.url=http://localhost:9000 -Dsonar.token=squ_ece4455f374071d59b177a199450d69840e945a8
+  if [ -z "${SONAR_TOKEN:-}" ]; then
+    echo "  ERRO: defina SONAR_TOKEN (ex.: export SONAR_TOKEN=... ou coloque no .env)"
+    exit 1
+  fi
+  sonar-scanner -Dsonar.host.url=http://localhost:9000 -Dsonar.token="$SONAR_TOKEN"
 fi
 
 echo ""

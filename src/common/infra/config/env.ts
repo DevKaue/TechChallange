@@ -1,5 +1,10 @@
 export function validateEnv(): void {
-  const required = ['DATABASE_URL', 'JWT_SECRET', 'WEBHOOK_SECRET'];
+  const required = [
+    'DATABASE_URL',
+    'JWT_SECRET',
+    'PASSWORD_SALT',
+    'WEBHOOK_SECRET',
+  ];
   const missing: string[] = [];
 
   for (const key of required) {

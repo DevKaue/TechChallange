@@ -51,18 +51,18 @@ RECEIVED -> IN_DIAGNOSTICS -> WAITING_APPROVAL -> IN_PROGRESS -> FINISHED -> DEL
 
 ```text
 .
-├── prisma/                 # schema, migrations e config do Prisma
+├── prisma/                  # schema, migrations e config do Prisma
 ├── src/
-│   ├── access-identity/    # identidade de acesso, JWT + Passport
-│   ├── clients/            # clientes
-│   ├── vehicles/           # veículos
-│   ├── parts/              # peças e estoque
-│   ├── service-catalog/    # catálogo de serviços
-│   ├── service-orders/     # ordens de serviço
-│   ├── common/validators/  # validadores CPF/CNPJ e placa
-│   └── prisma/             # PrismaService global
-├── test/                   # testes e2e com Supertest
-├── docker-compose.yml      # API, PostgreSQL e perfil opcional do SonarQube
+│   ├── access-identity/     # identidade de acesso, JWT + Passport
+│   ├── customer-management/ # clientes e veículos
+│   ├── materials/           # peças e estoque
+│   ├── service-orders/      # ordens de serviço (inclui catalog/)
+│   └── common/              # infraestrutura compartilhada, validadores, Prisma
+├── test/                    # testes de integração e e2e
+├── k8s/                     # manifestos Kustomize (base + overlays local/aws)
+├── terraform/               # infraestrutura AWS (VPC, EKS, RDS, ECR)
+├── .github/workflows/       # CI e deploy contínuo
+├── docker-compose.yml       # API, PostgreSQL e perfil opcional do SonarQube
 └── sonar-project.properties # configuração do scan SonarQube
 ```
 
@@ -74,15 +74,45 @@ Pré-requisitos:
 
 ### 1. Inicialização Básica
 
-Para subir a aplicação completa (API e Banco de Dados) já executando as migrations e os dados iniciais (*seed*), rode o comando abaixo na raiz do projeto:
+Copie o arquivo de variáveis e suba a aplicação completa (API e Banco de Dados),
+que já executa as migrations e os dados iniciais (*seed*):
 
 ```bash
+cp .env.example .env          # Windows: copy .env.example .env
 docker compose up --build
 ```
+
+Os valores de exemplo funcionam sem edição. O `.env` é gitignored.
+
+> Esqueceu o `cp`? O Compose aborta com
+> `required variable POSTGRES_PASSWORD is missing a value: copie .env.example para .env`.
 
 ### 2. Documentação API
 
 http://localhost:3000/api/docs
+
+## Deploy — Kubernetes e AWS
+
+O Docker Compose acima é o ambiente de desenvolvimento. O alvo de produção é
+**Kubernetes**: cluster local para desenvolver e **AWS EKS** para valer.
+
+| Documento | Para quê |
+|---|---|
+| **[QUICKSTART.md](QUICKSTART.md)** | **Comece aqui.** Passo a passo para subir na sua máquina (~10 min) ou na AWS (~30 min) |
+| [k8s/README.md](k8s/README.md) | Contrato de configuração, validação dos manifestos e CI/CD |
+| [terraform/README.md](terraform/README.md) | Infraestrutura AWS: decisões, custo e teardown |
+
+Atalho para o ambiente local, depois de habilitar o Kubernetes no Docker Desktop:
+
+```bash
+cp k8s/overlays/local/.env.secret.example k8s/overlays/local/.env.secret
+npm run k8s:build && npm run k8s:apply
+npm run k8s:seed
+npm run k8s:forward     # http://localhost:8080/api/docs
+```
+
+> A AWS custa **~US$ 7/dia** com tudo de pé. O teardown está no QUICKSTART e a
+> ordem importa: `kubectl delete -k` **antes** do `terraform destroy`.
 
 ## Autenticação
 
