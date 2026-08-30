@@ -58,6 +58,12 @@ Fluxo principal da OS:
 RECEIVED -> IN_DIAGNOSTICS -> WAITING_APPROVAL -> IN_PROGRESS -> FINISHED -> DELIVERED
 ```
 
+## Diagramas C4
+
+Visualização direta dos diagramas de Contexto, Container e Components no GitHub:
+
+- [docs/C4Model/README.md](docs/C4Model/README.md)
+
 ## Estrutura principal
 
 ```text
