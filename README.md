@@ -30,16 +30,20 @@ A modelagem foi alinhada com as notas do Obsidian em `Pessoal/Pós Graduação/F
 | Segurança / scan | SonarQube | SAST, cobertura, vulnerabilidades e code smells em um único painel. |
 | Controle de versão | Git + GitHub | Base preparada para repositório privado e colaboração do time. |
 
+## ADRs (Architecture Decision Records)
+
+As ADRs do projeto estão em [docs/ADRs](docs/ADRs):
+
+- [ADR-001-monolito-modular-bounded-contexts.md](docs/ADRs/ADR-001-monolito-modular-bounded-contexts.md)
+- [ADR-002-clean-architecture-ddd-tatico-por-modulo.md](docs/ADRs/ADR-002-clean-architecture-ddd-tatico-por-modulo.md)
+- [ADR-003-nodejs-typescript-nest.md](docs/ADRs/ADR-003-nodejs-typescript-nest.md)
+- [ADR-004-postgresql-como-banco-principal.md](docs/ADRs/ADR-004-postgresql-como-banco-principal.md)
+
+> Observação: essas ADRs foram inseridas na Fase 2 da Pós-Graduação FIAP.
+
 ## Arquitetura
 
 O MVP segue um monólito modular. A aplicação fica em um único deploy, mas os módulos refletem os bounded contexts do domínio para facilitar manutenção e futura separação, caso necessário.
-
-| Bounded context | Módulos | Responsabilidade |
-|---|---|---|
-| Administrativo / Core Data | `clients`, `vehicles`, `service-catalog` | Manter os cadastros-base usados pelas ordens de serviço. |
-| Operação / Atendimento | `service-orders` | Criar OS, controlar status, itens, orçamento e métricas de execução. |
-| Estoque | `parts` | Controlar peças, insumos e saldo disponível para uso em OS. |
-| Plataforma | `access-identity`, `prisma`, `common` | Autenticação, acesso ao banco e validadores compartilhados. |
 
 Fluxo principal da OS:
 
@@ -56,6 +60,12 @@ O fluxo de deploy descreve o pipeline de CI/CD até o ambiente de produção em 
 | Diagrama | Conteúdo |
 |---|---|
 | [docs/diagrams/07-fluxo-deploy.mmd](docs/diagrams/07-fluxo-deploy.mmd) | Fluxo de deploy: CI, push no ECR e rollout no EKS |
+
+## Diagramas C4
+
+Visualização direta dos diagramas de Contexto, Container e Components no GitHub:
+
+- [docs/C4Model/README.md](docs/C4Model/README.md)
 
 ## Estrutura principal
 
