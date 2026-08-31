@@ -45,18 +45,21 @@ As ADRs do projeto estão em [docs/ADRs](docs/ADRs):
 
 O MVP segue um monólito modular. A aplicação fica em um único deploy, mas os módulos refletem os bounded contexts do domínio para facilitar manutenção e futura separação, caso necessário.
 
-| Bounded context | Módulos | Responsabilidade |
-|---|---|---|
-| Administrativo / Core Data | `clients`, `vehicles`, `service-catalog` | Manter os cadastros-base usados pelas ordens de serviço. |
-| Operação / Atendimento | `service-orders` | Criar OS, controlar status, itens, orçamento e métricas de execução. |
-| Estoque | `parts` | Controlar peças, insumos e saldo disponível para uso em OS. |
-| Plataforma | `access-identity`, `prisma`, `common` | Autenticação, acesso ao banco e validadores compartilhados. |
-
 Fluxo principal da OS:
 
 ```text
 RECEIVED -> IN_DIAGNOSTICS -> WAITING_APPROVAL -> IN_PROGRESS -> FINISHED -> DELIVERED
 ```
+
+## Desenho da arquitetura proposta
+
+Os diagramas do projeto ficam em `docs/diagrams` (formato Mermaid).
+
+O fluxo de deploy descreve o pipeline de CI/CD até o ambiente de produção em AWS:
+
+| Diagrama | Conteúdo |
+|---|---|
+| [docs/diagrams/07-fluxo-deploy.mmd](docs/diagrams/07-fluxo-deploy.mmd) | Fluxo de deploy: CI, push no ECR e rollout no EKS |
 
 ## Diagramas C4
 

@@ -1,0 +1,117 @@
+graph TB
+    classDef gh fill:#fff2cc,stroke:#d6b656
+    classDef ci fill:#d5e8d4,stroke:#82b366
+    classDef deploy fill:#dae8fc,stroke:#6c8ebf
+    classDef aws fill:#ffe6cc,stroke:#d79b00
+    classDef data fill:#f8cecc,stroke:#b85450
+    classDef local fill:#f5f5f5,stroke:#666
+
+    DEV["Desenvolvedor"]
+    CLIENTE["Cliente / Internet"]
+
+    subgraph GitHubActions["GitHub Actions"]
+        direction TB
+
+        subgraph CI["ci.yml - PR e push em develop/main"]
+            direction TB
+            C1["build-and-unit<br/>lint + typecheck + build<br/>+ testes unitarios (Jest)"]
+            C2["integration<br/>prisma migrate deploy +<br/>testes de integracao (Postgres service)"]
+            C3["docker (so PR)<br/>build imagem production<br/>sem push"]
+            C4["manifests<br/>kustomize + kubeconform<br/>+ checagens de overlay"]
+            C5["terraform<br/>fmt + validate<br/>+ trivy config scan"]
+        end
+
+        subgraph DEPLOY["deploy.yml - push em main (ou manual)"]
+            direction TB
+            D1["1. Resolver tags<br/>v&lt;run_number&gt; e &lt;commit-sha&gt;"]
+            D2["2. Credenciais AWS OIDC<br/>sem chave estatica"]
+            D3["3. Login no ECR"]
+            D4["4. Build multi-stage + push<br/>ECR:v&lt;N&gt; | ECR:&lt;sha&gt;"]
+            D5["5. kubeconfig do EKS"]
+            D6["6. kustomize edit set image"]
+            D7["7. kubectl diff (log)"]
+            D8["8. kubectl apply -k aws"]
+            D9["9. rollout status<br/>timeout 300s"]
+            D10["10. rollback automatico<br/>rollout undo"]
+            D11["11. smoke test /api/health"]
+            D12["12. resumo no job"]
+        end
+
+        subgraph QUALIDADE["Qualidade local (docker-compose profile quality)"]
+            SONAR["SonarQube 26<br/>coverage scan"]
+        end
+    end
+
+    subgraph AWS["AWS"]
+        direction TB
+        ECR[("Amazon ECR<br/>tag imutavel")]
+
+        subgraph EKS["EKS - cluster techchallenge"]
+            direction TB
+            ING["ALB Ingress<br/>internet-facing :80<br/>NetworkPolicy api-vpc-access"]
+            SVC["Service techchallenge-api :80<br/>target-type ip"]
+            DEP["Deployment techchallenge-api<br/>RollingUpdate maxUnavailable=0<br/>3 replicas (HPA 3-10)"]
+            INIT["initContainer migrate<br/>prisma migrate deploy"]
+            API["container api - NestJS :3000<br/>startup / readiness / liveness<br/>non-root, read-only FS"]
+            CFG["ConfigMap techchallenge-config"]
+            SEC["Secret techchallenge-secrets"]
+        end
+
+        RDS[("RDS PostgreSQL 15<br/>privado, single-AZ")]
+    end
+
+    TF["Terraform (infra)<br/>provisiona VPC, EKS, RDS,<br/>ECR, ALB Controller, OIDC"]
+
+    subgraph LOCAL["Desenvolvimento local"]
+        LAPI["docker compose - target development<br/>hot reload / seed"]
+        LDB[("Postgres 15<br/>:5433")]
+    end
+
+    DEV -->|"PR / push develop"| CI
+    DEV -->|"push main"| DEPLOY
+
+    C1 --> C2
+    C1 -.->|"upload coverage"| SONAR
+    C3 --> C4
+    C4 --> C5
+
+    D1 --> D2 --> D3 --> D4 --> D5 --> D6 --> D7 --> D8 --> D9
+    D9 -->|"sucesso"| D11
+    D9 -->|"falha no rollout"| D10 --> D11
+    D11 --> D12
+
+    D4 -->|"push"| ECR
+    D8 -->|"apply -k"| EKS
+
+    ECR -.->|"pull image"| DEP
+    DEP --> INIT
+    DEP --> API
+    INIT -->|"migrate deploy"| RDS
+    API -->|"SQL"| RDS
+    CFG -.->|"envFrom"| API
+    SEC -.->|"envFrom"| API
+
+    ING -->|"HTTP :80 /api/*"| SVC
+    SVC -->|"target ip"| API
+    CLIENTE -->|"Health / Docs / API"| ING
+
+    TF --> ECR
+    TF --> EKS
+    TF --> RDS
+
+    DEV -->|"docker compose up"| LOCAL
+    LAPI --> LDB
+
+    style GitHubActions fill:#fbfbfb,stroke:#999,stroke-dasharray:3
+    style AWS fill:#fdf4ec,stroke:#999,stroke-dasharray:3
+    style CI fill:#f3f9f3
+    style DEPLOY fill:#f3f7fb
+
+    class DEV,CLIENTE gh
+    class C1,C2,C3,C4,C5 ci
+    class D1,D2,D3,D4,D5,D6,D7,D8,D9,D10,D11,D12 deploy
+    class ECR,ING,SVC,DEP,INIT,API,CFG,SEC aws
+    class RDS data
+    class TF deploy
+    class LAPI,LDB local
+    class SONAR ci
