@@ -1,26 +1,27 @@
 services:
   db:
-    image: postgres:15-alpine
+    image: postgres:15.19-alpine
     container_name: techchallenge_db
     restart: unless-stopped
     environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: adminpassword
-      POSTGRES_DB: oficinadb
+      POSTGRES_USER: ${POSTGRES_USER:?copie .env.example para .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?copie .env.example para .env}
+      POSTGRES_DB: ${POSTGRES_DB:?copie .env.example para .env}
     ports:
-      - '0.0.0.0:5433:5432'
+      - '127.0.0.1:5433:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./backend/scripts/init-test-db.sql:/docker-entrypoint-initdb.d/init-test-db.sql
+      - ./scripts/init-test-db.sql:/docker-entrypoint-initdb.d/init-test-db.sql
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U admin -d oficinadb']
+      test:
+        ['CMD-SHELL', 'pg_isready -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"']
       interval: 10s
       timeout: 5s
       retries: 5
 
   api:
     build:
-      context: ./backend
+      context: .
       dockerfile: Dockerfile
       target: development
     container_name: techchallenge_api
@@ -29,17 +30,27 @@ services:
     command: >
       sh -c "npm run prisma:generate &&
       npm run prisma:migrate:deploy &&
-      npm run prisma:seed &&
-      DATABASE_URL=postgresql://admin:adminpassword@db:5432/oficinadb_test npx prisma migrate deploy &&
+      (npm run prisma:seed || echo '[WARN] seed pulado — siga o boot') &&
+      DATABASE_URL=$${DATABASE_URL_TEST} npx prisma migrate deploy &&
       npm run start:dev"
     ports:
       - '3000:3000'
+      # Debugger do Node: `npm run start:debug` já existia, mas a porta nunca
+      # era publicada — o debugger era inalcançável de fora do container.
+      # Anexe o VS Code / chrome://inspect em localhost:9229.
+      - '127.0.0.1:9229:9229'
+    # Interpolação a partir do .env, com `:?` para FALHAR ALTO se ele não existir.
+    # Sem o `:?`, variável ausente vira string vazia: o container sobe e morre
+    # com erro de conexão, sem dizer que faltou copiar o .env.
     environment:
-      - DATABASE_URL=postgresql://admin:adminpassword@db:5432/oficinadb?schema=public
-      - JWT_SECRET=techchallenge_secret_key_2026
+      - DATABASE_URL=${DATABASE_URL:?copie .env.example para .env}
+      - JWT_SECRET=${JWT_SECRET:?copie .env.example para .env}
+      - WEBHOOK_SECRET=${WEBHOOK_SECRET:?copie .env.example para .env}
+      - PASSWORD_SALT=${PASSWORD_SALT:?copie .env.example para .env}
+      # Usado só pelo `migrate deploy` do banco de testes, na linha do command.
+      - DATABASE_URL_TEST=${DATABASE_URL_TEST:?copie .env.example para .env}
       - PORT=3000
       - NODE_ENV=development
-      - PASSWORD_SALT=4a7b1e8f9c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f
     depends_on:
       db:
         condition: service_healthy
@@ -48,22 +59,27 @@ services:
       interval: 15s
       timeout: 5s
       retries: 3
-      start_period: 120s
+      start_period: 45s
     volumes:
-      - ./backend/src:/usr/src/app/src
-      - ./backend/prisma:/usr/src/app/prisma
-      - ./backend/test:/usr/src/app/test
-      - ./backend/coverage:/usr/src/app/coverage
-      - ./backend/coverage-integration:/usr/src/app/coverage-integration
-      - ./backend/coverage-e2e:/usr/src/app/coverage-e2e
-      - ./backend/combined-coverage:/usr/src/app/combined-coverage
-      - ./backend/scripts:/usr/src/app/scripts
-      - ./backend/package.json:/usr/src/app/package.json
-      - ./backend/package-lock.json:/usr/src/app/package-lock.json
+      - ./src:/usr/src/app/src
+      - ./prisma:/usr/src/app/prisma
+      - ./test:/usr/src/app/test
+      - ./coverage:/usr/src/app/coverage
+      - ./coverage-integration:/usr/src/app/coverage-integration
+      - ./coverage-e2e:/usr/src/app/coverage-e2e
+      - ./combined-coverage:/usr/src/app/combined-coverage
+      - ./scripts:/usr/src/app/scripts
+      - ./tsconfig.json:/usr/src/app/tsconfig.json
+      - ./tsconfig.build.json:/usr/src/app/tsconfig.build.json
+      - ./nest-cli.json:/usr/src/app/nest-cli.json
+      - ./prisma.config.ts:/usr/src/app/prisma.config.ts
+      - ./eslint.config.mjs:/usr/src/app/eslint.config.mjs
+      - ./package.json:/usr/src/app/package.json
+      - ./package-lock.json:/usr/src/app/package-lock.json
       - /usr/src/app/node_modules
 
   sonar_db:
-    image: postgres:15-alpine
+    image: postgres:15.19-alpine
     container_name: techchallenge_sonar_db
     profiles:
       - quality
@@ -81,7 +97,7 @@ services:
       retries: 5
 
   sonarqube:
-    image: sonarqube:community
+    image: sonarqube:26.8.0.126808-community
     container_name: techchallenge_sonarqube
     profiles:
       - quality
@@ -101,13 +117,16 @@ services:
       timeout: 10s
       retries: 10
       start_period: 60s
+    deploy:
+      resources:
+        limits: { memory: 3G }
     volumes:
       - sonarqube_data:/opt/sonarqube/data
       - sonarqube_extensions:/opt/sonarqube/extensions
       - sonarqube_logs:/opt/sonarqube/logs
 
   sonar-scanner:
-    image: sonarsource/sonar-scanner-cli:latest
+    image: sonarsource/sonar-scanner-cli:12.1.0.3233_8.0.1
     container_name: techchallenge_sonar_scanner
     profiles:
       - quality
@@ -119,6 +138,7 @@ services:
     working_dir: /usr/src/app
     environment:
       - SONAR_SCANNER_OPTS=-Xmx2g
+      - SONAR_TOKEN=${SONAR_TOKEN:-}
     # platform: linux/amd64
     command: >
       sh -c "
@@ -127,7 +147,7 @@ services:
       done &&
       sonar-scanner
       -Dsonar.host.url=http://sonarqube:9000
-      -Dsonar.token=squ_ece4455f374071d59b177a199450d69840e945a8
+      -Dsonar.token=$${SONAR_TOKEN:?defina SONAR_TOKEN no .env}
       "
 
 volumes:
