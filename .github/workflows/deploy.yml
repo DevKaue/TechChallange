@@ -118,10 +118,15 @@ jobs:
             echo "::warning::Ingress ainda sem ADDRESS — smoke test pulado"
             exit 0
           fi
-          for i in $(seq 1 10); do
-            code=$(curl -s -o /dev/null -w '%{http_code}' "http://$HOST/api/health" || true)
+          # Um ALB recém-criado devolve o hostname quase na hora, mas o DNS
+          # ainda leva para propagar e os target groups para passar no
+          # primeiro health check — nos testes reais, ~2-3 min. 24×15s dá
+          # 6 min de folga; --max-time evita que uma tentativa trave o job
+          # inteiro se a conexão nem completar.
+          for i in $(seq 1 24); do
+            code=$(curl -s --max-time 5 -o /dev/null -w '%{http_code}' "http://$HOST/api/health" || true)
             [ "$code" = "200" ] && { echo "health OK"; exit 0; }
-            sleep 10
+            sleep 15
           done
           echo "::error::/api/health não respondeu 200 (último: $code)"
           exit 1
