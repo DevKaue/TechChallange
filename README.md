@@ -190,3 +190,9 @@ npm run test:all:cov
 Assista à apresentação da Fase 2 do Tech Challenge no YouTube:
 
 https://youtu.be/QETAfdl-jHI?feature=shared
+
+### Fallback de visualização
+
+Se a visualização no YouTube falhar, use o arquivo local da apresentação:
+
+[docs/apresentacao-fase2.mp4](docs/apresentacao-fase2.mp4)
