@@ -39,6 +39,7 @@ terraform
 # ─── Docs e tooling ─────────────────────────────────────────────
 README.md
 docs
+docs/apresentacao-fase2.mp4
 docs-2
 .claude
 .opencode
