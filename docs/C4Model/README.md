@@ -79,7 +79,7 @@ graph TD
 
 ```mermaid
 graph TD
-    %% Estilos visuais alinhados com os diagramas existentes
+    %% Estilos visuais
     classDef person fill:#084298,stroke:#052c65,stroke-width:2px,color:#ffffff,rx:10px,ry:10px;
     classDef systemBoundary fill:#e7f1ff,stroke:#0b4884,stroke-width:2px,color:#052c65,rx:10px,ry:10px;
     classDef container fill:#1168bd,stroke:#0b4884,stroke-width:2px,color:#ffffff,rx:8px,ry:8px;
@@ -123,22 +123,26 @@ graph TD
     M -->|"HTTPS + REST/JSON"| SO
     E -->|"HTTPS + REST/JSON"| MT
 
-    %% Relações internas entre componentes (bounded contexts)
-    SO -. "In-process call (NestJS DI/Provider)" .-> AI
-    SO -. "In-process call (NestJS DI/Provider)" .-> CM
-    SO -. "In-process call (NestJS DI/Provider)" .-> MT
+    %% Relações diretas entre módulos funcionais
+    CM -. "In-process call" .-> AI
+    MT -. "In-process call" .-> AI
+    SO -. "In-process call" .-> AI
+    SO -. "In-process call" .-> CM
+    SO -. "In-process call" .-> MT
 
+    %% Dependência do Shared Kernel (common)
     AI -->|"In-process (imports/contracts)"| SK
     CM -->|"In-process (imports/contracts)"| SK
     MT -->|"In-process (imports/contracts)"| SK
     SO -->|"In-process (imports/contracts)"| SK
 
+    %% Acesso a dados (Prisma Module)
     AI -->|"Prisma Client (in-process)"| PM
     CM -->|"Prisma Client (in-process)"| PM
     MT -->|"Prisma Client (in-process)"| PM
     SO -->|"Prisma Client (in-process)"| PM
     PM -->|"SQL/TCP 5432 (PostgreSQL)"| DB
 
+    %% Integração Externa (Apenas materials)
     MT -->|"HTTPS + REST/JSON"| F
-    SO -->|"HTTPS + REST/JSON"| F
 ```
